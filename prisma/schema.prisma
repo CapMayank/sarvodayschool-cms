@@ -174,3 +174,104 @@ model PlaylistVideo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Result Management System
+
+// Class Configuration (Nursery to 12th)
+model Class {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // e.g., "Nursery", "1st", "2nd", ..., "10th", "11th", "12th"
+  displayName String    // Display name
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  subjects    Subject[]
+  students    Student[]
+}
+
+// Subject Configuration per Class
+model Subject {
+  id              Int           @id @default(autoincrement())
+  name            String        // Subject name (e.g., "Mathematics", "Science")
+  code            String?       // Optional subject code
+  classId         Int
+  class           Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  maxMarks        Int           @default(100)
+  passingMarks    Int           @default(33)
+  isAdditional    Boolean       @default(false) // For XI/XII additional subjects not in grand total
+  order           Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  subjectMarks    SubjectMark[]
+  
+  @@unique([classId, name])
+}
+
+// Student Information
+model Student {
+  id             Int       @id @default(autoincrement())
+  rollNumber     String    // Roll Number
+  enrollmentNo   String    // Enrollment Number
+  name           String
+  fatherName     String
+  dateOfBirth    DateTime
+  classId        Int
+  class          Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   String    // e.g., "2024-25"
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  results        Result[]
+  
+  @@unique([rollNumber, academicYear])
+  @@unique([enrollmentNo, academicYear])
+  @@index([academicYear])
+}
+
+// Annual Examination Result
+model Result {
+  id              Int           @id @default(autoincrement())
+  studentId       Int
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear    String
+  totalMarks      Float         @default(0)
+  maxTotalMarks   Float         @default(0)
+  percentage      Float         @default(0)
+  isPassed        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  subjectMarks    SubjectMark[]
+  
+  @@unique([studentId, academicYear])
+  @@index([academicYear])
+}
+
+// Individual Subject Marks
+model SubjectMark {
+  id              Int       @id @default(autoincrement())
+  resultId        Int
+  result          Result    @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  subjectId       Int
+  subject         Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  marksObtained   Float
+  isPassed        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([resultId, subjectId])
+}
+
+// Result Publication Control
+model ResultPublication {
+  id              Int       @id @default(autoincrement())
+  academicYear    String    @unique
+  publishDate     DateTime  // Date and time when results become available
+  isPublished     Boolean   @default(false)
+  publishedBy     String?   // User who published
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
