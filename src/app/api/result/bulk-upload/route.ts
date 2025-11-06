@@ -176,8 +176,16 @@ export async function POST(request: NextRequest) {
 							continue;
 						}
 
-						const isPassed =
-							parseFloat(marksObtained as string) >= subject.passingMarks;
+						const parsedMarks = parseFloat(marksObtained as string);
+						if (isNaN(parsedMarks) || !isFinite(parsedMarks)) {
+							errors.push({
+								rollNumber,
+								error: `Invalid marks value for subject "${subjectName}"`,
+							});
+							continue;
+						}
+
+						const isPassed = parsedMarks >= subject.passingMarks;
 
 						await prisma.subjectMark.upsert({
 							where: {
@@ -187,13 +195,13 @@ export async function POST(request: NextRequest) {
 								},
 							},
 							update: {
-								marksObtained: parseFloat(marksObtained as string),
+								marksObtained: parsedMarks,
 								isPassed,
 							},
 							create: {
 								resultId: result.id,
 								subjectId: subject.id,
-								marksObtained: parseFloat(marksObtained as string),
+								marksObtained: parsedMarks,
 								isPassed,
 							},
 						});

@@ -95,7 +95,10 @@ export default function BulkUpload() {
 				selectedClass.subjects.forEach((subject) => {
 					const markValue = row[subject.name];
 					if (markValue !== undefined && markValue !== null && markValue !== "") {
-						marks[subject.name] = parseFloat(markValue.toString());
+						const parsedMark = parseFloat(markValue.toString());
+						if (!isNaN(parsedMark) && isFinite(parsedMark)) {
+							marks[subject.name] = parsedMark;
+						}
 					}
 				});
 
