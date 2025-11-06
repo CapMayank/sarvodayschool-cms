@@ -923,16 +923,11 @@ const Result = () => {
 					</div>
 
 					{/* Button */}
-					<a href="https://results.sarvodayaschool.co.in/find-result.php">
+					<a href="/result/search">
 						<button
-							className={`bg-linear-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg transition-transform transform ${
-								isButtonEnabled
-									? "hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-red-300"
-									: "opacity-50 cursor-not-allowed"
-							}`}
-							disabled={!isButtonEnabled}
+							className="bg-linear-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-red-300"
 						>
-							Get Result
+							Search Your Result
 						</button>
 					</a>
 				</div>
