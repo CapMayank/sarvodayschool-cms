@@ -1,0 +1,176 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  image         String?
+  role          String    @default("user")
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
+
+  accounts Account[]
+  sessions Session[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  @@map("session")
+}
+
+model Account {
+  id           String    @id
+  accountId    String
+  providerId   String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+  password     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+
+// Achievement Model
+model Achievement {
+  id        Int     @id @default(autoincrement())
+  title     String  @unique
+  description String
+  imageUrl  String
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// SlideShow Model
+model SlideShow {
+  id        Int     @id @default(autoincrement())
+  title     String?
+  imageUrl  String
+  isActive  Boolean @default(true)
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// News Model
+model News {
+  id          Int     @id @default(autoincrement())
+  title       String
+  content     String
+  imageUrl    String?
+  category    String  @default("General")
+  publishDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Admission Form Submission
+model AdmissionForm {
+  id                      Int     @id @default(autoincrement())
+  studentName             String
+  gender                  String
+  dateOfBirth             DateTime
+  fatherName              String
+  motherName              String
+  mobileNumber            String
+  alternateMobile         String?
+  class                   String
+  district                String
+  block                   String
+  address                 String
+  previousSchool          String?
+  status                  String  @default("New")
+  notes                   String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+// Teacher Application Submission
+model TeacherApplication {
+  id        Int      @id @default(autoincrement())
+  name      String
+  gender    String
+  mobileNumber String
+  address   String
+  district  String
+  block     String
+  qualifications String
+  specialization String
+  professionalQualification String
+  otherProfessionalQualification String?
+  subject   String
+  class     String
+  experience Int
+  status    String   @default("New")
+  notes     String?
+  resumeUrl String?  // ← ADD THIS LINE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Gallery Image Category Management
+model GalleryCategory {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  title     String
+  description String
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// YouTube Playlist Management
+model PlaylistVideo {
+  id        Int     @id @default(autoincrement())
+  youtubeId String  @unique
+  title     String
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
