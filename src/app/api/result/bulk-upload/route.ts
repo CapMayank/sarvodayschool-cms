@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 // Helper function to calculate result
 async function calculateResult(resultId: number) {
