@@ -2,14 +2,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 // GET all playlists
 export async function GET(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+
+	try {
 
 		const playlists = await prisma.playlistVideo.findMany({
 			orderBy: { order: "asc" },
@@ -28,10 +31,12 @@ export async function GET(request: NextRequest) {
 // POST - Create new playlist
 export async function POST(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+
+	try {
 
 		const body = await request.json();
 		const { youtubeId, title } = body;
@@ -75,10 +80,12 @@ export async function POST(request: NextRequest) {
 // PUT - Reorder playlists
 export async function PUT(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+
+	try {
 
 		const body = await request.json();
 		const { playlists } = body;
