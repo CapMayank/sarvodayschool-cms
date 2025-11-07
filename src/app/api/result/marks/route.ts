@@ -25,7 +25,15 @@ async function calculateResult(resultId: number) {
 	for (const subjectMark of result.subjectMarks) {
 		// Only include non-additional subjects in grand total
 		if (!subjectMark.subject.isAdditional) {
-			totalMarks += subjectMark.marksObtained;
+			// For theory/practical subjects, use the sum of both components
+			if (subjectMark.subject.hasPractical) {
+				const theoryMarks = subjectMark.theoryMarks ?? 0;
+				const practicalMarks = subjectMark.practicalMarks ?? 0;
+				totalMarks += theoryMarks + practicalMarks;
+			} else {
+				// For traditional subjects, use marksObtained
+				totalMarks += subjectMark.marksObtained;
+			}
 			maxTotalMarks += subjectMark.subject.maxMarks;
 		}
 
@@ -142,16 +150,44 @@ export async function POST(request: NextRequest) {
 
 		// Create or update subject marks
 		for (const mark of marks) {
-			const { subjectId, marksObtained } = mark;
+			const { subjectId, marksObtained, theoryMarks, practicalMarks } = mark;
 
-			// Get subject to check passing marks
+			// Get subject to check passing marks and if it has practical
 			const subject = await prisma.subject.findUnique({
 				where: { id: subjectId },
 			});
 
 			if (!subject) continue;
 
-			const isPassed = marksObtained >= subject.passingMarks;
+			let isPassed = false;
+			let isTheoryPassed = null;
+			let isPracticalPassed = null;
+			let finalMarksObtained = marksObtained || 0;
+
+			if (subject.hasPractical) {
+				// For theory/practical subjects (classes 9-12)
+				const theoryScore = theoryMarks ?? 0;
+				const practicalScore = practicalMarks ?? 0;
+				const totalScore = theoryScore + practicalScore;
+
+				// Check theory pass (33% of theory max)
+				isTheoryPassed = theoryScore >= (subject.theoryPassingMarks ?? 0);
+
+				// Check practical pass (33% of practical max)
+				isPracticalPassed =
+					practicalScore >= (subject.practicalPassingMarks ?? 0);
+
+				// Check total pass (33% of combined max)
+				const totalPassed = totalScore >= (subject.passingMarks ?? 0);
+
+				// Student passes only if ALL three conditions are met
+				isPassed = isTheoryPassed && isPracticalPassed && totalPassed;
+				finalMarksObtained = totalScore;
+			} else {
+				// For traditional subjects (Nursery to 8th)
+				isPassed = marksObtained >= subject.passingMarks;
+				finalMarksObtained = marksObtained;
+			}
 
 			await prisma.subjectMark.upsert({
 				where: {
@@ -161,14 +197,22 @@ export async function POST(request: NextRequest) {
 					},
 				},
 				update: {
-					marksObtained,
+					marksObtained: finalMarksObtained,
+					theoryMarks: subject.hasPractical ? theoryMarks ?? null : null,
+					practicalMarks: subject.hasPractical ? practicalMarks ?? null : null,
 					isPassed,
+					isTheoryPassed: subject.hasPractical ? isTheoryPassed : null,
+					isPracticalPassed: subject.hasPractical ? isPracticalPassed : null,
 				},
 				create: {
 					resultId: result.id,
 					subjectId,
-					marksObtained,
+					marksObtained: finalMarksObtained,
+					theoryMarks: subject.hasPractical ? theoryMarks ?? null : null,
+					practicalMarks: subject.hasPractical ? practicalMarks ?? null : null,
 					isPassed,
+					isTheoryPassed: subject.hasPractical ? isTheoryPassed : null,
+					isPracticalPassed: subject.hasPractical ? isPracticalPassed : null,
 				},
 			});
 		}

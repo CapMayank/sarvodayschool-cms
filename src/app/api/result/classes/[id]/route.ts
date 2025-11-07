@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // GET - Get class by ID
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -14,7 +14,8 @@ export async function GET(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const classId = parseInt(params.id);
+		const { id } = await params;
+		const classId = parseInt(id);
 		const classData = await prisma.class.findUnique({
 			where: { id: classId },
 			include: {
@@ -41,7 +42,7 @@ export async function GET(
 // PUT - Update class
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -49,7 +50,8 @@ export async function PUT(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const classId = parseInt(params.id);
+		const { id } = await params;
+		const classId = parseInt(id);
 		const body = await request.json();
 		const { name, displayName, order, isActive } = body;
 
@@ -76,7 +78,7 @@ export async function PUT(
 // DELETE - Delete class
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -84,7 +86,8 @@ export async function DELETE(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const classId = parseInt(params.id);
+		const { id } = await params;
+		const classId = parseInt(id);
 		await prisma.class.delete({
 			where: { id: classId },
 		});

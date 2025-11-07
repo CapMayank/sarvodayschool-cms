@@ -25,8 +25,19 @@ async function calculateResult(resultId: number) {
 	for (const subjectMark of result.subjectMarks) {
 		// Only include non-additional subjects in grand total
 		if (!subjectMark.subject.isAdditional) {
-			totalMarks += subjectMark.marksObtained;
-			maxTotalMarks += subjectMark.subject.maxMarks;
+			if (subjectMark.subject.hasPractical) {
+				// For classes 9-12 with theory+practical
+				const theoryMarks = subjectMark.theoryMarks || 0;
+				const practicalMarks = subjectMark.practicalMarks || 0;
+				totalMarks += theoryMarks + practicalMarks;
+				maxTotalMarks +=
+					(subjectMark.subject.theoryMaxMarks || 0) +
+					(subjectMark.subject.practicalMaxMarks || 0);
+			} else {
+				// For classes Nursery-8th (traditional marking)
+				totalMarks += subjectMark.marksObtained;
+				maxTotalMarks += subjectMark.subject.maxMarks;
+			}
 		}
 
 		// Check if subject is passed
@@ -62,8 +73,7 @@ export async function POST(request: NextRequest) {
 		if (!academicYear || !classId || !students || !Array.isArray(students)) {
 			return NextResponse.json(
 				{
-					error:
-						"Academic year, class ID, and students array are required",
+					error: "Academic year, class ID, and students array are required",
 				},
 				{ status: 400 }
 			);
@@ -165,7 +175,7 @@ export async function POST(request: NextRequest) {
 
 				// Create subject marks
 				if (marks && typeof marks === "object") {
-					for (const [subjectName, marksObtained] of Object.entries(marks)) {
+					for (const [subjectName, markData] of Object.entries(marks)) {
 						const subject = subjects.find((s) => s.name === subjectName);
 
 						if (!subject) {
@@ -176,35 +186,140 @@ export async function POST(request: NextRequest) {
 							continue;
 						}
 
-						const parsedMarks = parseFloat(marksObtained as string);
-						if (isNaN(parsedMarks) || !isFinite(parsedMarks)) {
-							errors.push({
-								rollNumber,
-								error: `Invalid marks value for subject "${subjectName}"`,
-							});
-							continue;
-						}
+						// Handle different marking systems
+						if (
+							subject.hasPractical &&
+							markData &&
+							typeof markData === "object"
+						) {
+							// For classes 9-12 with theory+practical
+							const { theoryMarks, practicalMarks } = markData as {
+								theoryMarks?: number;
+								practicalMarks?: number;
+								subjectId: number;
+							};
 
-						const isPassed = parsedMarks >= subject.passingMarks;
+							// Validate marks
+							let validTheoryMarks = 0;
+							let validPracticalMarks = 0;
+							let hasValidTheory = false;
+							let hasValidPractical = false;
 
-						await prisma.subjectMark.upsert({
-							where: {
-								resultId_subjectId: {
+							if (theoryMarks !== undefined && theoryMarks !== null) {
+								if (!isNaN(theoryMarks) && isFinite(theoryMarks)) {
+									validTheoryMarks = theoryMarks;
+									hasValidTheory = true;
+								}
+							}
+
+							if (practicalMarks !== undefined && practicalMarks !== null) {
+								if (!isNaN(practicalMarks) && isFinite(practicalMarks)) {
+									validPracticalMarks = practicalMarks;
+									hasValidPractical = true;
+								}
+							}
+
+							if (!hasValidTheory && !hasValidPractical) {
+								errors.push({
+									rollNumber,
+									error: `Invalid theory or practical marks for subject "${subjectName}"`,
+								});
+								continue;
+							}
+
+							// Check passing criteria for theory/practical
+							const theoryPassing = subject.theoryPassingMarks || 0;
+							const practicalPassing = subject.practicalPassingMarks || 0;
+
+							const isTheoryPassed = hasValidTheory
+								? validTheoryMarks >= theoryPassing
+								: false;
+							const isPracticalPassed = hasValidPractical
+								? validPracticalMarks >= practicalPassing
+								: false;
+							const isOverallPassed = isTheoryPassed && isPracticalPassed;
+
+							await prisma.subjectMark.upsert({
+								where: {
+									resultId_subjectId: {
+										resultId: result.id,
+										subjectId: subject.id,
+									},
+								},
+								update: {
+									theoryMarks: hasValidTheory ? validTheoryMarks : null,
+									practicalMarks: hasValidPractical
+										? validPracticalMarks
+										: null,
+									isTheoryPassed: hasValidTheory ? isTheoryPassed : null,
+									isPracticalPassed: hasValidPractical
+										? isPracticalPassed
+										: null,
+									isPassed: isOverallPassed,
+									marksObtained: 0, // Reset traditional marks
+								},
+								create: {
 									resultId: result.id,
 									subjectId: subject.id,
+									theoryMarks: hasValidTheory ? validTheoryMarks : null,
+									practicalMarks: hasValidPractical
+										? validPracticalMarks
+										: null,
+									isTheoryPassed: hasValidTheory ? isTheoryPassed : null,
+									isPracticalPassed: hasValidPractical
+										? isPracticalPassed
+										: null,
+									isPassed: isOverallPassed,
+									marksObtained: 0,
 								},
-							},
-							update: {
-								marksObtained: parsedMarks,
-								isPassed,
-							},
-							create: {
-								resultId: result.id,
-								subjectId: subject.id,
-								marksObtained: parsedMarks,
-								isPassed,
-							},
-						});
+							});
+						} else {
+							// For classes Nursery-8th (traditional marking)
+							const marksObtained =
+								markData && typeof markData === "object"
+									? (markData as { marksObtained?: number }).marksObtained
+									: typeof markData === "number"
+									? markData
+									: 0;
+
+							if (
+								marksObtained === undefined ||
+								marksObtained === null ||
+								isNaN(marksObtained) ||
+								!isFinite(marksObtained)
+							) {
+								errors.push({
+									rollNumber,
+									error: `Invalid marks value for subject "${subjectName}"`,
+								});
+								continue;
+							}
+
+							const isPassed = marksObtained >= subject.passingMarks;
+
+							await prisma.subjectMark.upsert({
+								where: {
+									resultId_subjectId: {
+										resultId: result.id,
+										subjectId: subject.id,
+									},
+								},
+								update: {
+									marksObtained: marksObtained,
+									isPassed,
+									theoryMarks: null, // Reset theory/practical marks
+									practicalMarks: null,
+									isTheoryPassed: null,
+									isPracticalPassed: null,
+								},
+								create: {
+									resultId: result.id,
+									subjectId: subject.id,
+									marksObtained: marksObtained,
+									isPassed,
+								},
+							});
+						}
 					}
 				}
 

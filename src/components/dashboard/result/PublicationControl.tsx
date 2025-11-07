@@ -7,7 +7,24 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Calendar, CheckCircle, XCircle } from "lucide-react";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import {
+	Loader2,
+	Calendar,
+	CheckCircle,
+	XCircle,
+	Trash2,
+	AlertTriangle,
+	Database,
+	Users,
+	FileSpreadsheet,
+} from "lucide-react";
 
 interface Publication {
 	id: number;
@@ -20,6 +37,10 @@ export default function PublicationControl() {
 	const [publications, setPublications] = useState<Publication[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
+	const [deleting, setDeleting] = useState(false);
+	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [selectedYearForDeletion, setSelectedYearForDeletion] = useState("");
+	const [confirmationText, setConfirmationText] = useState("");
 	const [formData, setFormData] = useState({
 		academicYear: "2024-25",
 		publishDate: "",
@@ -75,7 +96,10 @@ export default function PublicationControl() {
 		}
 	};
 
-	const handleTogglePublish = async (academicYear: string, currentStatus: boolean) => {
+	const handleTogglePublish = async (
+		academicYear: string,
+		currentStatus: boolean
+	) => {
 		try {
 			const response = await fetch("/api/result/publication", {
 				method: "PUT",
@@ -96,6 +120,50 @@ export default function PublicationControl() {
 			console.error("Error updating publication status:", error);
 			toast.error("Failed to update publication status");
 		}
+	};
+
+	const handleDeleteOlderData = async () => {
+		if (confirmationText !== selectedYearForDeletion) {
+			toast.error("Please type the academic year exactly to confirm");
+			return;
+		}
+
+		try {
+			setDeleting(true);
+			const response = await fetch("/api/result/publication/delete", {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					academicYear: selectedYearForDeletion,
+				}),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "Failed to delete data");
+			}
+
+			const result = await response.json();
+			toast.success(
+				`Successfully deleted ${result.studentsDeleted} students and ${result.resultsDeleted} results for ${selectedYearForDeletion}`
+			);
+
+			setShowDeleteDialog(false);
+			setConfirmationText("");
+			setSelectedYearForDeletion("");
+			await loadPublications();
+		} catch (error) {
+			console.error("Error deleting older data:", error);
+			toast.error("Failed to delete data: " + (error as Error).message);
+		} finally {
+			setDeleting(false);
+		}
+	};
+
+	const openDeleteDialog = (academicYear: string) => {
+		setSelectedYearForDeletion(academicYear);
+		setConfirmationText("");
+		setShowDeleteDialog(true);
 	};
 
 	if (loading) {
@@ -173,45 +241,160 @@ export default function PublicationControl() {
 				) : (
 					<div className="space-y-3">
 						{publications.map((pub) => (
-							<div
-								key={pub.id}
-								className="border rounded-lg p-4 flex items-center justify-between"
-							>
-								<div className="space-y-1">
-									<div className="flex items-center gap-3">
-										<h4 className="font-semibold text-lg">
-											{pub.academicYear}
-										</h4>
-										{pub.isPublished ? (
-											<span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-												<CheckCircle className="h-3 w-3" />
-												Published
-											</span>
-										) : (
-											<span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-												<XCircle className="h-3 w-3" />
-												Not Published
-											</span>
-										)}
+							<div key={pub.id} className="border rounded-lg p-4">
+								<div className="flex items-center justify-between mb-3">
+									<div className="space-y-1">
+										<div className="flex items-center gap-3">
+											<h4 className="font-semibold text-lg">
+												{pub.academicYear}
+											</h4>
+											{pub.isPublished ? (
+												<span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+													<CheckCircle className="h-3 w-3" />
+													Published
+												</span>
+											) : (
+												<span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+													<XCircle className="h-3 w-3" />
+													Not Published
+												</span>
+											)}
+										</div>
+										<p className="text-sm text-gray-600">
+											Publish Date: {new Date(pub.publishDate).toLocaleString()}
+										</p>
 									</div>
-									<p className="text-sm text-gray-600">
-										Publish Date:{" "}
-										{new Date(pub.publishDate).toLocaleString()}
-									</p>
+									<div className="flex gap-2">
+										<Button
+											variant={pub.isPublished ? "outline" : "default"}
+											onClick={() =>
+												handleTogglePublish(pub.academicYear, pub.isPublished)
+											}
+										>
+											{pub.isPublished ? "Unpublish" : "Publish Now"}
+										</Button>
+										<Button
+											variant="destructive"
+											size="sm"
+											onClick={() => openDeleteDialog(pub.academicYear)}
+											className="flex items-center gap-1"
+										>
+											<Trash2 className="h-4 w-4" />
+											Delete All Data
+										</Button>
+									</div>
 								</div>
-								<Button
-									variant={pub.isPublished ? "outline" : "default"}
-									onClick={() =>
-										handleTogglePublish(pub.academicYear, pub.isPublished)
-									}
-								>
-									{pub.isPublished ? "Unpublish" : "Publish Now"}
-								</Button>
+
+								{/* Warning notice for data deletion */}
+								<div className="bg-red-50 border border-red-200 rounded p-3">
+									<div className="flex items-start gap-2">
+										<AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+										<div className="text-xs text-red-700">
+											<p className="font-medium mb-1">
+												⚠️ Danger Zone: Complete Data Removal
+											</p>
+											<p>
+												Clicking &quot;Delete All Data&quot; will permanently
+												remove ALL students, marks, and results for academic
+												year {pub.academicYear}. This action cannot be undone.
+											</p>
+										</div>
+									</div>
+								</div>
 							</div>
 						))}
 					</div>
 				)}
 			</div>
+
+			{/* Confirmation Dialog for Data Deletion */}
+			<Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2 text-red-600">
+							<AlertTriangle className="h-5 w-5" />
+							Confirm Complete Data Deletion
+						</DialogTitle>
+					</DialogHeader>
+
+					<div className="space-y-4">
+						<div className="bg-red-50 border border-red-200 rounded-lg p-4">
+							<div className="flex items-start gap-3">
+								<Database className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+								<div className="space-y-2">
+									<h4 className="font-semibold text-red-900">
+										This will permanently delete:
+									</h4>
+									<ul className="text-sm text-red-800 space-y-1">
+										<li className="flex items-center gap-2">
+											<Users className="h-4 w-4" />
+											All students for {selectedYearForDeletion}
+										</li>
+										<li className="flex items-center gap-2">
+											<FileSpreadsheet className="h-4 w-4" />
+											All marks and results for {selectedYearForDeletion}
+										</li>
+										<li className="flex items-center gap-2">
+											<Database className="h-4 w-4" />
+											All related database records
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="text-sm font-medium text-gray-900">
+								Type the academic year &quot;{selectedYearForDeletion}&quot; to
+								confirm:
+							</Label>
+							<Input
+								value={confirmationText}
+								onChange={(e) => setConfirmationText(e.target.value)}
+								placeholder={selectedYearForDeletion}
+								className="border-red-300 focus:ring-red-500 focus:border-red-500"
+							/>
+						</div>
+
+						<div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+							<p className="text-xs text-yellow-800">
+								<strong>⚠️ Warning:</strong> This action is irreversible. Make
+								sure you have a backup before proceeding.
+							</p>
+						</div>
+					</div>
+
+					<DialogFooter className="gap-2">
+						<Button
+							variant="outline"
+							onClick={() => setShowDeleteDialog(false)}
+							disabled={deleting}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={handleDeleteOlderData}
+							disabled={
+								deleting || confirmationText !== selectedYearForDeletion
+							}
+							className="flex items-center gap-2"
+						>
+							{deleting ? (
+								<>
+									<Loader2 className="h-4 w-4 animate-spin" />
+									Deleting...
+								</>
+							) : (
+								<>
+									<Trash2 className="h-4 w-4" />
+									Delete All Data
+								</>
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

@@ -200,6 +200,12 @@ model Subject {
   class           Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
   maxMarks        Int           @default(100)
   passingMarks    Int           @default(33)
+  // Theory/Practical split for classes 9-12
+  theoryMaxMarks  Int?          // Theory marks (for 9-12 only)
+  practicalMaxMarks Int?        // Practical marks (for 9-12 only)
+  theoryPassingMarks Int?       // Theory passing marks (33% of theory)
+  practicalPassingMarks Int?    // Practical passing marks (33% of practical)
+  hasPractical    Boolean       @default(false) // True for subjects in classes 9-12
   isAdditional    Boolean       @default(false) // For XI/XII additional subjects not in grand total
   order           Int           @default(0)
   createdAt       DateTime      @default(now())
@@ -257,8 +263,15 @@ model SubjectMark {
   result          Result    @relation(fields: [resultId], references: [id], onDelete: Cascade)
   subjectId       Int
   subject         Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  marksObtained   Float
-  isPassed        Boolean   @default(false)
+  // For classes Nursery-8th (traditional marking)
+  marksObtained   Float     @default(0)
+  // For classes 9-12 (theory + practical)
+  theoryMarks     Float?    // Theory marks obtained
+  practicalMarks  Float?    // Practical marks obtained
+  // Pass status
+  isPassed        Boolean   @default(false) // Overall subject pass status
+  isTheoryPassed  Boolean?  // Theory component pass status (for 9-12)
+  isPracticalPassed Boolean? // Practical component pass status (for 9-12)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   

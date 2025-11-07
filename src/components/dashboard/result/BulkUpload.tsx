@@ -27,13 +27,34 @@ interface Class {
 		code?: string;
 		maxMarks: number;
 		passingMarks: number;
+		theoryMaxMarks?: number;
+		practicalMaxMarks?: number;
+		theoryPassingMarks?: number;
+		practicalPassingMarks?: number;
+		hasPractical: boolean;
 		isAdditional: boolean;
 	}>;
 }
 
+// Get current academic year in the format used by the system
+const getCurrentAcademicYear = () => {
+	const now = new Date();
+	const currentYear = now.getFullYear();
+	const currentMonth = now.getMonth(); // 0-based (0 = January)
+
+	// Academic year starts from April (month 3)
+	if (currentMonth >= 3) {
+		// April or later
+		return `${currentYear}-${(currentYear + 1).toString().slice(-2)}`;
+	} else {
+		// January to March
+		return `${currentYear - 1}-${currentYear.toString().slice(-2)}`;
+	}
+};
+
 export default function BulkUpload() {
 	const [loading, setLoading] = useState(false);
-	const [academicYear, setAcademicYear] = useState("2024-25");
+	const [academicYear, setAcademicYear] = useState(getCurrentAcademicYear());
 	const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 	const [jsonData, setJsonData] = useState("");
 	const [uploadMode, setUploadMode] = useState<"excel" | "json">("excel");
@@ -85,28 +106,97 @@ export default function BulkUpload() {
 			const data = await file.arrayBuffer();
 			const workbook = XLSX.read(data);
 			const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-			const jsonData = XLSX.utils.sheet_to_json(worksheet) as Array<Record<string, unknown>>;
+			const jsonData = XLSX.utils.sheet_to_json(worksheet) as Array<
+				Record<string, unknown>
+			>;
 
 			// Parse Excel data
 			const students = jsonData.map((row) => {
-				const marks: { [key: string]: number } = {};
+				const marks: {
+					[key: string]: {
+						subjectId: number;
+						marksObtained?: number; // For Nursery-8th
+						theoryMarks?: number; // For 9th-12th
+						practicalMarks?: number; // For 9th-12th
+					};
+				} = {};
 
 				// Extract marks for each subject
 				selectedClass.subjects.forEach((subject) => {
-					const markValue = row[subject.name];
-					if (markValue !== undefined && markValue !== null && markValue !== "") {
-						const parsedMark = parseFloat(markValue.toString());
-						if (!isNaN(parsedMark) && isFinite(parsedMark)) {
-							marks[subject.name] = parsedMark;
+					if (subject.hasPractical) {
+						// For classes 9-12 with theory+practical
+						const theoryColumnName = `${subject.name} Theory`;
+						const practicalColumnName = `${subject.name} Practical`;
+
+						const theoryValue = row[theoryColumnName];
+						const practicalValue = row[practicalColumnName];
+
+						let theoryMarks: number | undefined;
+						let practicalMarks: number | undefined;
+
+						if (
+							theoryValue !== undefined &&
+							theoryValue !== null &&
+							theoryValue !== ""
+						) {
+							const parsedTheory = parseFloat(theoryValue.toString());
+							if (!isNaN(parsedTheory) && isFinite(parsedTheory)) {
+								theoryMarks = parsedTheory;
+							}
+						}
+
+						if (
+							practicalValue !== undefined &&
+							practicalValue !== null &&
+							practicalValue !== ""
+						) {
+							const parsedPractical = parseFloat(practicalValue.toString());
+							if (!isNaN(parsedPractical) && isFinite(parsedPractical)) {
+								practicalMarks = parsedPractical;
+							}
+						}
+
+						// Include subject if at least one mark is provided
+						if (theoryMarks !== undefined || practicalMarks !== undefined) {
+							marks[subject.name] = {
+								subjectId: subject.id,
+								theoryMarks,
+								practicalMarks,
+							};
+						}
+					} else {
+						// For classes Nursery-8th (traditional marking)
+						const markValue = row[subject.name];
+						if (
+							markValue !== undefined &&
+							markValue !== null &&
+							markValue !== ""
+						) {
+							const parsedMark = parseFloat(markValue.toString());
+							if (!isNaN(parsedMark) && isFinite(parsedMark)) {
+								marks[subject.name] = {
+									subjectId: subject.id,
+									marksObtained: parsedMark,
+								};
+							}
 						}
 					}
 				});
 
 				return {
-					rollNumber: row["Roll Number"]?.toString() || row["rollNumber"]?.toString() || "",
-					enrollmentNo: row["Enrollment No"]?.toString() || row["enrollmentNo"]?.toString() || "",
+					rollNumber:
+						row["Roll Number"]?.toString() ||
+						row["rollNumber"]?.toString() ||
+						"",
+					enrollmentNo:
+						row["Enrollment No"]?.toString() ||
+						row["enrollmentNo"]?.toString() ||
+						"",
 					name: row["Name"]?.toString() || row["name"]?.toString() || "",
-					fatherName: row["Father Name"]?.toString() || row["fatherName"]?.toString() || "",
+					fatherName:
+						row["Father Name"]?.toString() ||
+						row["fatherName"]?.toString() ||
+						"",
 					dateOfBirth: row["Date of Birth"] || row["dateOfBirth"] || "",
 					marks,
 				};
@@ -114,7 +204,12 @@ export default function BulkUpload() {
 
 			// Validate parsed data
 			const invalidStudents = students.filter(
-				(s) => !s.rollNumber || !s.enrollmentNo || !s.name || !s.fatherName || !s.dateOfBirth
+				(s) =>
+					!s.rollNumber ||
+					!s.enrollmentNo ||
+					!s.name ||
+					!s.fatherName ||
+					!s.dateOfBirth
 			);
 
 			if (invalidStudents.length > 0) {
@@ -147,7 +242,14 @@ export default function BulkUpload() {
 			name: string;
 			fatherName: string;
 			dateOfBirth: string | unknown;
-			marks: { [key: string]: number };
+			marks: {
+				[key: string]: {
+					subjectId: number;
+					marksObtained?: number; // For Nursery-8th
+					theoryMarks?: number; // For 9th-12th
+					practicalMarks?: number; // For 9th-12th
+				};
+			};
 		}>
 	) => {
 		try {
@@ -235,15 +337,33 @@ export default function BulkUpload() {
 			return;
 		}
 
-		// Create template data
-		const headers = [
+		// Create template headers
+		const baseHeaders = [
 			"Roll Number",
 			"Enrollment No",
 			"Name",
 			"Father Name",
 			"Date of Birth",
-			...selectedClass.subjects.map((s) => s.name),
 		];
+
+		// Generate subject headers based on theory/practical structure
+		const subjectHeaders: string[] = [];
+		const sampleMarks: string[] = [];
+
+		selectedClass.subjects.forEach((subject) => {
+			if (subject.hasPractical) {
+				// For classes 9-12 with theory+practical
+				subjectHeaders.push(`${subject.name} Theory`);
+				subjectHeaders.push(`${subject.name} Practical`);
+				sampleMarks.push("0", "0");
+			} else {
+				// For classes Nursery-8th (traditional marking)
+				subjectHeaders.push(subject.name);
+				sampleMarks.push("0");
+			}
+		});
+
+		const headers = [...baseHeaders, ...subjectHeaders];
 
 		const sampleData = [
 			[
@@ -252,7 +372,7 @@ export default function BulkUpload() {
 				"Student Name",
 				"Father Name",
 				"2008-01-15",
-				...selectedClass.subjects.map(() => "0"),
+				...sampleMarks,
 			],
 		];
 
@@ -303,7 +423,7 @@ export default function BulkUpload() {
 					{/* Excel Upload Instructions */}
 					<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
 						<div className="flex gap-3">
-							<AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+							<AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
 							<div className="space-y-2">
 								<h4 className="font-semibold text-blue-900">
 									Excel Upload Instructions
@@ -311,8 +431,8 @@ export default function BulkUpload() {
 								<div className="text-sm text-blue-800 space-y-1">
 									<p>1. Select a class from the dropdown below</p>
 									<p>
-										2. Click &quot;Download Template&quot; to get an Excel file with
-										the correct column structure
+										2. Click &quot;Download Template&quot; to get an Excel file
+										with the correct column structure
 									</p>
 									<p>
 										3. Fill in student data with the following required columns:
@@ -322,11 +442,37 @@ export default function BulkUpload() {
 										<li>Enrollment No</li>
 										<li>Name</li>
 										<li>Father Name</li>
-										<li>Date of Birth (format: YYYY-MM-DD, e.g., 2008-01-15)</li>
-										<li>Subject columns (automatically included in template)</li>
+										<li>
+											Date of Birth (format: YYYY-MM-DD, e.g., 2008-01-15)
+										</li>
+										<li>
+											Subject columns (automatically included in template)
+										</li>
+										{selectedClass &&
+											selectedClass.subjects.some((s) => s.hasPractical) && (
+												<li className="text-orange-700 font-medium">
+													📝 For classes 9-12: Subjects will have separate
+													Theory and Practical columns
+												</li>
+											)}
 									</ul>
-									<p>4. Enter marks for each subject (leave blank if not applicable)</p>
-									<p>5. Save your Excel file and upload it using the button below</p>
+									<p>
+										4. Enter marks for each subject (leave blank if not
+										applicable)
+									</p>
+									<p>
+										5. Save your Excel file and upload it using the button below
+									</p>
+									{selectedClass &&
+										selectedClass.subjects.some((s) => s.hasPractical) && (
+											<div className="bg-orange-100 border border-orange-300 rounded p-2 mt-2">
+												<p className="font-medium text-orange-800">
+													Note for Classes 9-12: Each subject has Theory and
+													Practical components. Both components must pass
+													individually for the subject to be considered passed.
+												</p>
+											</div>
+										)}
 								</div>
 							</div>
 						</div>
@@ -403,7 +549,7 @@ export default function BulkUpload() {
 					{/* JSON Upload Instructions */}
 					<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
 						<div className="flex gap-3">
-							<AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+							<AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
 							<div className="space-y-2">
 								<h4 className="font-semibold text-blue-900">
 									JSON Upload Instructions

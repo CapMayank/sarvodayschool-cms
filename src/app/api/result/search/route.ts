@@ -48,7 +48,11 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Find student
-		const where: { rollNumber: string; academicYear: string; enrollmentNo?: string } = {
+		const where: {
+			rollNumber: string;
+			academicYear: string;
+			enrollmentNo?: string;
+		} = {
 			rollNumber,
 			academicYear,
 		};
@@ -135,14 +139,40 @@ export async function POST(request: NextRequest) {
 				maxTotalMarks: result.maxTotalMarks,
 				percentage: result.percentage,
 				isPassed: result.isPassed,
-				subjectMarks: result.subjectMarks.map((sm) => ({
-					subject: sm.subject.name,
-					marksObtained: sm.marksObtained,
-					maxMarks: sm.subject.maxMarks,
-					passingMarks: sm.subject.passingMarks,
-					isPassed: sm.isPassed,
-					isAdditional: sm.subject.isAdditional,
-				})),
+				subjectMarks: result.subjectMarks.map((sm) => {
+					// Handle both traditional and theory/practical marking systems
+					if (sm.subject.hasPractical) {
+						// For classes 9-12 with theory+practical
+						return {
+							subject: sm.subject.name,
+							marksObtained: (sm.theoryMarks || 0) + (sm.practicalMarks || 0),
+							theoryMarks: sm.theoryMarks || 0,
+							practicalMarks: sm.practicalMarks || 0,
+							theoryMaxMarks: sm.subject.theoryMaxMarks || 0,
+							practicalMaxMarks: sm.subject.practicalMaxMarks || 0,
+							maxMarks: sm.subject.maxMarks,
+							passingMarks: sm.subject.passingMarks,
+							theoryPassingMarks: sm.subject.theoryPassingMarks || 0,
+							practicalPassingMarks: sm.subject.practicalPassingMarks || 0,
+							isPassed: sm.isPassed,
+							isTheoryPassed: sm.isTheoryPassed || false,
+							isPracticalPassed: sm.isPracticalPassed || false,
+							isAdditional: sm.subject.isAdditional,
+							hasPractical: true,
+						};
+					} else {
+						// For classes Nursery-8th (traditional marking)
+						return {
+							subject: sm.subject.name,
+							marksObtained: sm.marksObtained,
+							maxMarks: sm.subject.maxMarks,
+							passingMarks: sm.subject.passingMarks,
+							isPassed: sm.isPassed,
+							isAdditional: sm.subject.isAdditional,
+							hasPractical: false,
+						};
+					}
+				}),
 			},
 		});
 	} catch (error) {

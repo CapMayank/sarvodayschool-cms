@@ -34,7 +34,7 @@ export default function CreateUserDialog() {
 		email: "",
 		password: "",
 		name: "",
-		role: "user",
+		role: "user" as "user" | "admin",
 	});
 	const router = useRouter();
 
@@ -57,9 +57,14 @@ export default function CreateUserDialog() {
 
 			toast.success("User created successfully");
 			setOpen(false);
-			setFormData({ email: "", password: "", name: "", role: "user" });
+			setFormData({
+				email: "",
+				password: "",
+				name: "",
+				role: "user" as "user" | "admin",
+			});
 			router.refresh();
-		} catch (error) {
+		} catch {
 			toast.error("An error occurred");
 		} finally {
 			setIsLoading(false);
@@ -130,7 +135,7 @@ export default function CreateUserDialog() {
 							<Label htmlFor="role">Role</Label>
 							<Select
 								value={formData.role}
-								onValueChange={(value) =>
+								onValueChange={(value: "user" | "admin") =>
 									setFormData({ ...formData, role: value })
 								}
 								disabled={isLoading}

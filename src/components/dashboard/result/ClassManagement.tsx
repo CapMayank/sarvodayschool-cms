@@ -7,13 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-	Plus,
-	Trash2,
-	Loader2,
-	GraduationCap,
-	BookOpen,
-} from "lucide-react";
+import DeleteResultsComponent from "./DeleteResults";
+import { Plus, Trash2, Loader2, GraduationCap, BookOpen } from "lucide-react";
 
 interface Class {
 	id: number;
@@ -30,6 +25,11 @@ interface Subject {
 	code?: string;
 	maxMarks: number;
 	passingMarks: number;
+	theoryMaxMarks?: number;
+	practicalMaxMarks?: number;
+	theoryPassingMarks?: number;
+	practicalPassingMarks?: number;
+	hasPractical: boolean;
 	isAdditional: boolean;
 	order: number;
 }
@@ -39,6 +39,9 @@ export default function ClassManagement() {
 	const [loading, setLoading] = useState(true);
 	const [showClassForm, setShowClassForm] = useState(false);
 	const [showSubjectForm, setShowSubjectForm] = useState(false);
+	const [editingClass, setEditingClass] = useState<Class | null>(null);
+	const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+	const [showDeleteResults, setShowDeleteResults] = useState(false);
 	const [selectedClass, setSelectedClass] = useState<number | null>(null);
 	const [classForm, setClassForm] = useState({
 		name: "",
@@ -50,6 +53,8 @@ export default function ClassManagement() {
 		code: "",
 		maxMarks: 100,
 		passingMarks: 33,
+		theoryMaxMarks: 80,
+		practicalMaxMarks: 20,
 		isAdditional: false,
 		order: 0,
 	});
@@ -122,6 +127,8 @@ export default function ClassManagement() {
 				code: "",
 				maxMarks: 100,
 				passingMarks: 33,
+				theoryMaxMarks: 80,
+				practicalMaxMarks: 20,
 				isAdditional: false,
 				order: 0,
 			});
@@ -171,6 +178,117 @@ export default function ClassManagement() {
 		}
 	};
 
+	const handleEditClass = (classData: Class) => {
+		setEditingClass(classData);
+		setClassForm({
+			name: classData.name,
+			displayName: classData.displayName,
+			order: classData.order,
+		});
+		setShowClassForm(true);
+	};
+
+	const handleUpdateClass = async () => {
+		if (!editingClass || !classForm.name || !classForm.displayName) {
+			toast.error("Please fill all required fields");
+			return;
+		}
+
+		try {
+			const response = await fetch(`/api/result/classes/${editingClass.id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(classForm),
+			});
+
+			if (!response.ok) throw new Error("Failed to update class");
+
+			toast.success("Class updated successfully");
+			setShowClassForm(false);
+			setEditingClass(null);
+			setClassForm({ name: "", displayName: "", order: 0 });
+			await loadClasses();
+		} catch (error) {
+			console.error("Error updating class:", error);
+			toast.error("Failed to update class");
+		}
+	};
+
+	const handleEditSubject = (subject: Subject, classId: number) => {
+		setEditingSubject(subject);
+		setSelectedClass(classId);
+		setSubjectForm({
+			name: subject.name,
+			code: subject.code || "",
+			maxMarks: subject.maxMarks,
+			passingMarks: subject.passingMarks,
+			theoryMaxMarks: subject.theoryMaxMarks || 80,
+			practicalMaxMarks: subject.practicalMaxMarks || 20,
+			isAdditional: subject.isAdditional,
+			order: subject.order,
+		});
+		setShowSubjectForm(true);
+	};
+
+	const handleUpdateSubject = async () => {
+		if (!editingSubject || !subjectForm.name || !selectedClass) {
+			toast.error("Please fill all required fields");
+			return;
+		}
+
+		try {
+			const response = await fetch(
+				`/api/result/classes/${selectedClass}/subjects`,
+				{
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						id: editingSubject.id,
+						...subjectForm,
+					}),
+				}
+			);
+
+			if (!response.ok) throw new Error("Failed to update subject");
+
+			toast.success("Subject updated successfully");
+			setShowSubjectForm(false);
+			setEditingSubject(null);
+			setSubjectForm({
+				name: "",
+				code: "",
+				maxMarks: 100,
+				passingMarks: 33,
+				theoryMaxMarks: 80,
+				practicalMaxMarks: 20,
+				isAdditional: false,
+				order: 0,
+			});
+			await loadClasses();
+		} catch (error) {
+			console.error("Error updating subject:", error);
+			toast.error("Failed to update subject");
+		}
+	};
+
+	const cancelEdit = () => {
+		setShowClassForm(false);
+		setShowSubjectForm(false);
+		setEditingClass(null);
+		setEditingSubject(null);
+		setClassForm({ name: "", displayName: "", order: 0 });
+		setSubjectForm({
+			name: "",
+			code: "",
+			maxMarks: 100,
+			passingMarks: 33,
+			theoryMaxMarks: 80,
+			practicalMaxMarks: 20,
+			isAdditional: false,
+			order: 0,
+		});
+	};
+
 	if (loading) {
 		return (
 			<div className="flex justify-center items-center h-64">
@@ -186,7 +304,7 @@ export default function ClassManagement() {
 				<div className="border rounded-lg p-4 bg-gray-50 space-y-4">
 					<h3 className="font-semibold text-lg flex items-center gap-2">
 						<GraduationCap className="h-5 w-5" />
-						Add New Class
+						{editingClass ? "Edit Class" : "Add New Class"}
 					</h3>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div>
@@ -224,14 +342,12 @@ export default function ClassManagement() {
 						</div>
 					</div>
 					<div className="flex gap-2">
-						<Button onClick={handleCreateClass}>Create Class</Button>
 						<Button
-							variant="outline"
-							onClick={() => {
-								setShowClassForm(false);
-								setClassForm({ name: "", displayName: "", order: 0 });
-							}}
+							onClick={editingClass ? handleUpdateClass : handleCreateClass}
 						>
+							{editingClass ? "Update Class" : "Create Class"}
+						</Button>
+						<Button variant="outline" onClick={cancelEdit}>
 							Cancel
 						</Button>
 					</div>
@@ -243,9 +359,25 @@ export default function ClassManagement() {
 				<div className="border rounded-lg p-4 bg-blue-50 space-y-4">
 					<h3 className="font-semibold text-lg flex items-center gap-2">
 						<BookOpen className="h-5 w-5" />
-						Add Subject to{" "}
+						{editingSubject ? "Edit Subject" : "Add Subject to"}{" "}
 						{classes.find((c) => c.id === selectedClass)?.displayName}
 					</h3>
+					{/* Show info about theory/practical for classes 9-12 */}
+					{classes.find((c) => c.id === selectedClass)?.name &&
+						["9th", "10th", "11th", "12th", "9", "10", "11", "12"].includes(
+							classes.find((c) => c.id === selectedClass)?.name || ""
+						) && (
+							<div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm">
+								<p className="font-medium text-yellow-800">
+									📚 Theory + Practical Structure
+								</p>
+								<p className="text-yellow-700">
+									For classes 9-12, each subject has theory and practical
+									components. Students must pass both theory (33%) and practical
+									(33%) separately, plus achieve 33% in the total marks.
+								</p>
+							</div>
+						)}
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 						<div>
 							<Label>Subject Name</Label>
@@ -267,32 +399,91 @@ export default function ClassManagement() {
 								placeholder="MATH101"
 							/>
 						</div>
-						<div>
-							<Label>Max Marks</Label>
-							<Input
-								type="number"
-								value={subjectForm.maxMarks}
-								onChange={(e) =>
-									setSubjectForm({
-										...subjectForm,
-										maxMarks: parseInt(e.target.value) || 100,
-									})
-								}
-							/>
-						</div>
-						<div>
-							<Label>Passing Marks</Label>
-							<Input
-								type="number"
-								value={subjectForm.passingMarks}
-								onChange={(e) =>
-									setSubjectForm({
-										...subjectForm,
-										passingMarks: parseInt(e.target.value) || 33,
-									})
-								}
-							/>
-						</div>
+						{/* Show theory/practical fields for classes 9-12 */}
+						{classes.find((c) => c.id === selectedClass)?.name &&
+						["9th", "10th", "11th", "12th", "9", "10", "11", "12"].includes(
+							classes.find((c) => c.id === selectedClass)?.name || ""
+						) ? (
+							<>
+								<div>
+									<Label>Theory Max Marks</Label>
+									<Input
+										type="number"
+										value={subjectForm.theoryMaxMarks}
+										onChange={(e) => {
+											const theoryMarks = parseInt(e.target.value) || 80;
+											setSubjectForm({
+												...subjectForm,
+												theoryMaxMarks: theoryMarks,
+												maxMarks: theoryMarks + subjectForm.practicalMaxMarks,
+												passingMarks: Math.ceil(
+													(theoryMarks + subjectForm.practicalMaxMarks) * 0.33
+												),
+											});
+										}}
+									/>
+								</div>
+								<div>
+									<Label>Practical Max Marks</Label>
+									<Input
+										type="number"
+										value={subjectForm.practicalMaxMarks}
+										onChange={(e) => {
+											const practicalMarks = parseInt(e.target.value) || 20;
+											setSubjectForm({
+												...subjectForm,
+												practicalMaxMarks: practicalMarks,
+												maxMarks: subjectForm.theoryMaxMarks + practicalMarks,
+												passingMarks: Math.ceil(
+													(subjectForm.theoryMaxMarks + practicalMarks) * 0.33
+												),
+											});
+										}}
+									/>
+								</div>
+								<div>
+									<Label>Total Max Marks</Label>
+									<Input
+										type="number"
+										value={subjectForm.maxMarks}
+										disabled
+										className="bg-gray-100"
+									/>
+									<p className="text-xs text-gray-500 mt-1">
+										Auto-calculated: Theory + Practical
+									</p>
+								</div>
+							</>
+						) : (
+							<>
+								<div>
+									<Label>Max Marks</Label>
+									<Input
+										type="number"
+										value={subjectForm.maxMarks}
+										onChange={(e) =>
+											setSubjectForm({
+												...subjectForm,
+												maxMarks: parseInt(e.target.value) || 100,
+											})
+										}
+									/>
+								</div>
+								<div>
+									<Label>Passing Marks</Label>
+									<Input
+										type="number"
+										value={subjectForm.passingMarks}
+										onChange={(e) =>
+											setSubjectForm({
+												...subjectForm,
+												passingMarks: parseInt(e.target.value) || 33,
+											})
+										}
+									/>
+								</div>
+							</>
+						)}
 						<div>
 							<Label>Order</Label>
 							<Input
@@ -325,21 +516,14 @@ export default function ClassManagement() {
 						</div>
 					</div>
 					<div className="flex gap-2">
-						<Button onClick={handleCreateSubject}>Add Subject</Button>
 						<Button
-							variant="outline"
-							onClick={() => {
-								setShowSubjectForm(false);
-								setSubjectForm({
-									name: "",
-									code: "",
-									maxMarks: 100,
-									passingMarks: 33,
-									isAdditional: false,
-									order: 0,
-								});
-							}}
+							onClick={
+								editingSubject ? handleUpdateSubject : handleCreateSubject
+							}
 						>
+							{editingSubject ? "Update Subject" : "Add Subject"}
+						</Button>
+						<Button variant="outline" onClick={cancelEdit}>
 							Cancel
 						</Button>
 					</div>
@@ -380,6 +564,13 @@ export default function ClassManagement() {
 								<Button
 									size="sm"
 									variant="outline"
+									onClick={() => handleEditClass(cls)}
+								>
+									Edit Class
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
 									onClick={() => handleDeleteClass(cls.id)}
 								>
 									<Trash2 className="h-4 w-4" />
@@ -398,21 +589,55 @@ export default function ClassManagement() {
 										>
 											<div className="flex-1">
 												<p className="font-medium text-sm">{subject.name}</p>
-												<p className="text-xs text-gray-500">
-													Max: {subject.maxMarks}, Pass: {subject.passingMarks}
-													{subject.isAdditional && " (Additional)"}
-												</p>
+												{subject.hasPractical ? (
+													<div className="text-xs text-gray-500">
+														<p>
+															Theory: {subject.theoryMaxMarks} (Pass:{" "}
+															{subject.theoryPassingMarks})
+														</p>
+														<p>
+															Practical: {subject.practicalMaxMarks} (Pass:{" "}
+															{subject.practicalPassingMarks})
+														</p>
+														<p>
+															Total: {subject.maxMarks} (Pass:{" "}
+															{subject.passingMarks})
+														</p>
+														{subject.isAdditional && (
+															<span className="text-orange-600">
+																(Additional)
+															</span>
+														)}
+													</div>
+												) : (
+													<p className="text-xs text-gray-500">
+														Max: {subject.maxMarks}, Pass:{" "}
+														{subject.passingMarks}
+														{subject.isAdditional && " (Additional)"}
+													</p>
+												)}
 											</div>
-											<Button
-												size="sm"
-												variant="ghost"
-												onClick={() => {
-													setSelectedClass(cls.id);
-													handleDeleteSubject(subject.id);
-												}}
-											>
-												<Trash2 className="h-3 w-3" />
-											</Button>
+											<div className="flex gap-1">
+												<Button
+													size="sm"
+													variant="ghost"
+													onClick={() => handleEditSubject(subject, cls.id)}
+													title="Edit Subject"
+												>
+													✏️
+												</Button>
+												<Button
+													size="sm"
+													variant="ghost"
+													onClick={() => {
+														setSelectedClass(cls.id);
+														handleDeleteSubject(subject.id);
+													}}
+													title="Delete Subject"
+												>
+													<Trash2 className="h-3 w-3" />
+												</Button>
+											</div>
 										</div>
 									))}
 								</div>
@@ -427,6 +652,29 @@ export default function ClassManagement() {
 					<GraduationCap className="h-12 w-12 mx-auto mb-4 text-gray-400" />
 					<p>No classes found. Create your first class to get started.</p>
 				</div>
+			)}
+
+			{/* Result Deletion Section */}
+			{classes.length > 0 && (
+				<>
+					<hr className="my-8" />
+					<div className="space-y-4">
+						<div className="flex justify-between items-center">
+							<h3 className="font-semibold text-lg text-red-600">
+								Result Management
+							</h3>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowDeleteResults(!showDeleteResults)}
+							>
+								{showDeleteResults ? "Hide" : "Show"} Delete Options
+							</Button>
+						</div>
+
+						{showDeleteResults && <DeleteResultsComponent classes={classes} />}
+					</div>
+				</>
 			)}
 		</div>
 	);

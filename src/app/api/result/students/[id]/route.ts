@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // GET - Get student by ID
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -14,7 +14,8 @@ export async function GET(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const studentId = parseInt(params.id);
+		const { id } = await params;
+		const studentId = parseInt(id);
 		const student = await prisma.student.findUnique({
 			where: { id: studentId },
 			include: {
@@ -32,10 +33,7 @@ export async function GET(
 		});
 
 		if (!student) {
-			return NextResponse.json(
-				{ error: "Student not found" },
-				{ status: 404 }
-			);
+			return NextResponse.json({ error: "Student not found" }, { status: 404 });
 		}
 
 		return NextResponse.json({ student });
@@ -51,7 +49,7 @@ export async function GET(
 // PUT - Update student
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -59,7 +57,8 @@ export async function PUT(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const studentId = parseInt(params.id);
+		const { id } = await params;
+		const studentId = parseInt(id);
 		const body = await request.json();
 		const { rollNumber, enrollmentNo, name, fatherName, dateOfBirth, classId } =
 			body;
@@ -92,7 +91,7 @@ export async function PUT(
 // DELETE - Delete student
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = request.cookies.get("better-auth.session_token");
@@ -100,7 +99,8 @@ export async function DELETE(
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const studentId = parseInt(params.id);
+		const { id } = await params;
+		const studentId = parseInt(id);
 		await prisma.student.delete({
 			where: { id: studentId },
 		});

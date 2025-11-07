@@ -44,7 +44,10 @@ export default function UsersTable({ users, currentUserId }: UsersTableProps) {
 	const router = useRouter();
 	const [loading, setLoading] = useState<string | null>(null);
 
-	const handleRoleChange = async (userId: string, newRole: string) => {
+	const handleRoleChange = async (
+		userId: string,
+		newRole: "user" | "admin"
+	) => {
 		setLoading(userId);
 		try {
 			const response = await authClient.admin.setRole({
@@ -59,7 +62,7 @@ export default function UsersTable({ users, currentUserId }: UsersTableProps) {
 
 			toast.success("User role updated successfully");
 			router.refresh();
-		} catch (error) {
+		} catch {
 			toast.error("An error occurred");
 		} finally {
 			setLoading(null);
@@ -80,7 +83,7 @@ export default function UsersTable({ users, currentUserId }: UsersTableProps) {
 
 			toast.success("User banned successfully");
 			router.refresh();
-		} catch (error) {
+		} catch {
 			toast.error("An error occurred");
 		} finally {
 			setLoading(null);
@@ -101,7 +104,7 @@ export default function UsersTable({ users, currentUserId }: UsersTableProps) {
 
 			toast.success("User unbanned successfully");
 			router.refresh();
-		} catch (error) {
+		} catch {
 			toast.error("An error occurred");
 		} finally {
 			setLoading(null);

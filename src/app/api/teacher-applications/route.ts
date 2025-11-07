@@ -1,8 +1,5 @@
 /** @format */
 
-import { NextRequest } from "next/server";
-/** @format */
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

@@ -4,7 +4,6 @@
 import React, { useState } from "react";
 import Footer from "@/components/public/footer";
 import Header from "@/components/public/header";
-import Modal from "@/components/public/Modal";
 import { motion } from "framer-motion";
 import { FileCheck, Upload, Phone } from "lucide-react";
 
@@ -158,8 +157,6 @@ export default function Admission() {
 		previousSchool: "",
 	});
 
-	const [showModal, setShowModal] = useState(false);
-	// const [selectedImage, setSelectedImage] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [submitMessage, setSubmitMessage] = useState<{
 		type: "success" | "error";
@@ -253,11 +250,6 @@ export default function Admission() {
 			setSubmitting(false);
 		}
 	};
-
-	// const openModal = (imageUrl: string) => {
-	// 	setSelectedImage(imageUrl);
-	// 	setShowModal(true);
-	// };
 
 	return (
 		<>
@@ -667,14 +659,6 @@ export default function Admission() {
 					</motion.div>
 				</div>
 			</div>
-
-			{showModal && selectedImage && (
-				<Modal
-					showModal={showModal}
-					setShowModal={setShowModal}
-					imageUrl={selectedImage}
-				/>
-			)}
 
 			<Footer />
 		</>
