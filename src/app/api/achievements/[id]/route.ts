@@ -78,9 +78,6 @@ export async function DELETE(
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
 		const { id } = await params; // ← AWAIT params
 
 		await prisma.achievement.delete({
