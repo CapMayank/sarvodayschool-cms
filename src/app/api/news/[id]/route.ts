@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 export async function GET(
 	request: NextRequest,
@@ -33,13 +34,13 @@ export async function PUT(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { id } = await params;
 		const body = await request.json();
-
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
 
 		const news = await prisma.news.update({
 			where: { id: parseInt(id) },
@@ -67,10 +68,11 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { id } = await params;
 
 		await prisma.news.delete({

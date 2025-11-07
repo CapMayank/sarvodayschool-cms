@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-
 		const classes = await prisma.class.findMany({
 			include: {
 				subjects: {
@@ -36,11 +35,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new class
 export async function POST(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const body = await request.json();
 		const { name, displayName, order } = body;
 
@@ -61,7 +60,12 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ class: classData }, { status: 201 });
 	} catch (error) {
-		if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+		if (
+			error &&
+			typeof error === "object" &&
+			"code" in error &&
+			error.code === "P2002"
+		) {
 			return NextResponse.json(
 				{ error: "Class already exists" },
 				{ status: 400 }

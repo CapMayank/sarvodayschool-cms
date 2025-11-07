@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 // Helper function to calculate result
 async function calculateResult(resultId: number) {
@@ -59,11 +60,11 @@ async function calculateResult(resultId: number) {
 // GET - Get marks for a student
 export async function GET(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { searchParams } = new URL(request.url);
 		const studentId = searchParams.get("studentId");
 		const academicYear = searchParams.get("academicYear");
@@ -114,11 +115,11 @@ export async function GET(request: NextRequest) {
 // POST - Create or update marks for a student
 export async function POST(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const body = await request.json();
 		const { studentId, academicYear, marks } = body;
 
@@ -255,11 +256,11 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete marks for a student
 export async function DELETE(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { searchParams } = new URL(request.url);
 		const studentId = searchParams.get("studentId");
 		const academicYear = searchParams.get("academicYear");

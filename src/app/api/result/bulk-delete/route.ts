@@ -2,15 +2,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 // DELETE - Bulk delete results
 export async function DELETE(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { searchParams } = new URL(request.url);
 		const deleteType = searchParams.get("type"); // "all" or "class"
 		const classId = searchParams.get("classId");
@@ -191,11 +192,11 @@ export async function DELETE(request: NextRequest) {
 // GET - Get stats for deletion preview
 export async function GET(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { searchParams } = new URL(request.url);
 		const type = searchParams.get("type");
 		const classId = searchParams.get("classId");

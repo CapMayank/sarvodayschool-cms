@@ -8,7 +8,7 @@ export async function validateSession(request: NextRequest) {
 		const session = await auth.api.getSession({
 			headers: request.headers,
 		});
-		
+
 		return session;
 	} catch (error) {
 		console.error("Session validation error:", error);

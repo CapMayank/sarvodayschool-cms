@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-
 		const categories = await prisma.galleryCategory.findMany({
 			orderBy: { order: "asc" },
 		});
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-
 		const body = await request.json();
 		const { name, title, description } = body;
 
@@ -82,11 +80,11 @@ export async function POST(request: NextRequest) {
 // PUT - Reorder categories
 export async function PUT(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const body = await request.json();
 		const { categories } = body;
 

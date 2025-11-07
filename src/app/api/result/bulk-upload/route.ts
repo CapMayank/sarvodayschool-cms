@@ -62,11 +62,11 @@ async function calculateResult(resultId: number) {
 // POST - Bulk upload results from JSON data (processed from Excel)
 export async function POST(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const body = await request.json();
 		const { academicYear, classId, students, clearExisting } = body;
 

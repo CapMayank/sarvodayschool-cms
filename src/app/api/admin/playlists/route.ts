@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-
 		const playlists = await prisma.playlistVideo.findMany({
 			orderBy: { order: "asc" },
 		});
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-
 		const body = await request.json();
 		const { youtubeId, title } = body;
 
@@ -86,7 +84,6 @@ export async function PUT(request: NextRequest) {
 	}
 
 	try {
-
 		const body = await request.json();
 		const { playlists } = body;
 

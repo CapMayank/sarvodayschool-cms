@@ -2,15 +2,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
 
 // GET all students with filters
 export async function GET(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const { searchParams } = new URL(request.url);
 		const classId = searchParams.get("classId");
 		const academicYear = searchParams.get("academicYear");
@@ -40,11 +41,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new student
 export async function POST(request: NextRequest) {
 	try {
-		const session = request.cookies.get("better-auth.session_token");
-		if (!session) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
 		const body = await request.json();
 		const {
 			rollNumber,
@@ -88,7 +89,12 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ student }, { status: 201 });
 	} catch (error) {
-		if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+		if (
+			error &&
+			typeof error === "object" &&
+			"code" in error &&
+			error.code === "P2002"
+		) {
 			return NextResponse.json(
 				{
 					error:
