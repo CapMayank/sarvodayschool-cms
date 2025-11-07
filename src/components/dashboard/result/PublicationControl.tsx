@@ -24,6 +24,7 @@ import {
 	Database,
 	Users,
 	FileSpreadsheet,
+	Edit3,
 } from "lucide-react";
 
 interface Publication {
@@ -39,10 +40,18 @@ export default function PublicationControl() {
 	const [saving, setSaving] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [selectedYearForDeletion, setSelectedYearForDeletion] = useState("");
 	const [confirmationText, setConfirmationText] = useState("");
+	const [editingPublication, setEditingPublication] =
+		useState<Publication | null>(null);
 	const [formData, setFormData] = useState({
 		academicYear: "2024-25",
+		publishDate: "",
+		isPublished: false,
+	});
+	const [editFormData, setEditFormData] = useState({
+		academicYear: "",
 		publishDate: "",
 		isPublished: false,
 	});
@@ -166,6 +175,49 @@ export default function PublicationControl() {
 		setShowDeleteDialog(true);
 	};
 
+	const openEditDialog = (publication: Publication) => {
+		setEditingPublication(publication);
+		// Convert ISO string to datetime-local format
+		const publishDate = new Date(publication.publishDate);
+		const formattedDate = publishDate.toISOString().slice(0, 16);
+
+		setEditFormData({
+			academicYear: publication.academicYear,
+			publishDate: formattedDate,
+			isPublished: publication.isPublished,
+		});
+		setShowEditDialog(true);
+	};
+
+	const handleEditSave = async () => {
+		if (!editFormData.academicYear || !editFormData.publishDate) {
+			toast.error("Please fill all required fields");
+			return;
+		}
+
+		try {
+			setSaving(true);
+			const response = await fetch("/api/result/publication", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(editFormData),
+			});
+
+			if (!response.ok)
+				throw new Error("Failed to update publication settings");
+
+			toast.success("Publication settings updated successfully");
+			setShowEditDialog(false);
+			setEditingPublication(null);
+			await loadPublications();
+		} catch (error) {
+			console.error("Error updating publication settings:", error);
+			toast.error("Failed to update publication settings");
+		} finally {
+			setSaving(false);
+		}
+	};
+
 	if (loading) {
 		return (
 			<div className="flex justify-center items-center h-64">
@@ -265,6 +317,15 @@ export default function PublicationControl() {
 										</p>
 									</div>
 									<div className="flex gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => openEditDialog(pub)}
+											className="flex items-center gap-1"
+										>
+											<Edit3 className="h-4 w-4" />
+											Edit
+										</Button>
 										<Button
 											variant={pub.isPublished ? "outline" : "default"}
 											onClick={() =>
@@ -390,6 +451,91 @@ export default function PublicationControl() {
 									<Trash2 className="h-4 w-4" />
 									Delete All Data
 								</>
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Edit Publication Dialog */}
+			<Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<Edit3 className="h-5 w-5" />
+							Edit Publication Settings
+							{editingPublication && (
+								<span className="text-sm text-gray-500 font-normal">
+									- {editingPublication.academicYear}
+								</span>
+							)}
+						</DialogTitle>
+					</DialogHeader>
+
+					<div className="space-y-4">
+						<div>
+							<Label>Academic Year</Label>
+							<Input
+								value={editFormData.academicYear}
+								onChange={(e) =>
+									setEditFormData({
+										...editFormData,
+										academicYear: e.target.value,
+									})
+								}
+								placeholder="2024-25"
+							/>
+						</div>
+
+						<div>
+							<Label>Publish Date & Time</Label>
+							<Input
+								type="datetime-local"
+								value={editFormData.publishDate}
+								onChange={(e) =>
+									setEditFormData({
+										...editFormData,
+										publishDate: e.target.value,
+									})
+								}
+							/>
+						</div>
+
+						<div className="flex items-center gap-2">
+							<input
+								type="checkbox"
+								id="editIsPublished"
+								checked={editFormData.isPublished}
+								onChange={(e) =>
+									setEditFormData({
+										...editFormData,
+										isPublished: e.target.checked,
+									})
+								}
+								className="h-4 w-4"
+							/>
+							<Label htmlFor="editIsPublished" className="cursor-pointer">
+								Publish immediately (override date/time)
+							</Label>
+						</div>
+					</div>
+
+					<DialogFooter className="gap-2">
+						<Button
+							variant="outline"
+							onClick={() => setShowEditDialog(false)}
+							disabled={saving}
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleEditSave} disabled={saving}>
+							{saving ? (
+								<>
+									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+									Saving...
+								</>
+							) : (
+								"Update Publication"
 							)}
 						</Button>
 					</DialogFooter>

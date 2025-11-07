@@ -30,14 +30,49 @@ const getOrdinalSuffix = (number: number): string => {
 	return "th";
 };
 
+const formatDate = (dateString: string): string => {
+	const date = new Date(dateString);
+	const day = date.getDate();
+	const month = date.getMonth() + 1;
+	const year = date.getFullYear();
+	return `${day.toString().padStart(2, "0")}/${month
+		.toString()
+		.padStart(2, "0")}/${year}`;
+};
+
 const Result = () => {
 	const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 	const [timeLeft, setTimeLeft] = useState("");
 	const [selectedYear, setSelectedYear] =
 		useState<keyof typeof sessionConfig>("2024-25");
+	const [publishedResult, setPublishedResult] = useState<{
+		academicYear: string;
+		publishDate: string;
+		isPublished: boolean;
+	} | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+
+	// Fetch published result data
+	useEffect(() => {
+		const fetchPublishedResult = async () => {
+			try {
+				const response = await fetch("/api/result/publication/public");
+				const data = await response.json();
+				setPublishedResult(data.publication);
+			} catch (error) {
+				console.error("Error fetching published result:", error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchPublishedResult();
+	}, []);
 
 	useEffect(() => {
-		const targetDate = new Date("2025-03-15T05:30:00Z"); // 11 AM IST is 5:30 AM UTC
+		if (!publishedResult?.isPublished || !publishedResult?.publishDate) return;
+
+		const targetDate = new Date(publishedResult.publishDate);
 
 		const updateTimer = () => {
 			const currentDate = new Date();
@@ -45,8 +80,9 @@ const Result = () => {
 
 			if (difference <= 0) {
 				setIsButtonEnabled(true);
-				setTimeLeft("00:00:00:00");
+				setTimeLeft("");
 			} else {
+				setIsButtonEnabled(false);
 				const days = Math.floor(difference / (1000 * 60 * 60 * 24));
 				const hours = Math.floor(
 					(difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
@@ -60,10 +96,11 @@ const Result = () => {
 			}
 		};
 
+		updateTimer(); // Call immediately
 		const timerInterval = setInterval(updateTimer, 1000);
 
 		return () => clearInterval(timerInterval);
-	}, []);
+	}, [publishedResult?.isPublished, publishedResult?.publishDate]);
 
 	// Update your toppers data to include session
 
@@ -903,33 +940,59 @@ const Result = () => {
 						Stay updated with the latest results for your academic session.
 					</p>
 
-					{/* Session Details */}
-					<div className="flex flex-col gap-2 text-gray-700 text-xl font-semibold">
-						<div className="flex items-center justify-center gap-2">
-							<FaCheckCircle className="text-green-600 text-2xl" />
-							<span>Session: 2024-25</span>
+					{isLoading ? (
+						<div className="text-gray-600 text-xl">
+							Loading result information...
 						</div>
-						<div className="flex items-center justify-center gap-2">
-							<FaCheckCircle className="text-green-600 text-2xl" />
-							<span>Date: 15/03/2025</span>
+					) : !publishedResult ? (
+						<div className="text-center">
+							<div className="text-gray-700 text-2xl font-semibold mb-4">
+								No results to display
+							</div>
+							<p className="text-gray-600">
+								No results have been published yet. Please check back later.
+							</p>
 						</div>
-					</div>
+					) : (
+						<>
+							{/* Session Details */}
+							<div className="flex flex-col gap-2 text-gray-700 text-xl font-semibold">
+								<div className="flex items-center justify-center gap-2">
+									<FaCheckCircle className="text-green-600 text-2xl" />
+									<span>Session: {publishedResult.academicYear}</span>
+								</div>
+								<div className="flex items-center justify-center gap-2">
+									<FaCheckCircle className="text-green-600 text-2xl" />
+									<span>Date: {formatDate(publishedResult.publishDate)}</span>
+								</div>
+							</div>
 
-					{/* Countdown Timer */}
-					<div className="text-gray-700 text-2xl font-semibold">
-						{isButtonEnabled
-							? "Results are now available!"
-							: `Time left: ${timeLeft}`}
-					</div>
+							{/* Countdown Timer or Status */}
+							<div className="text-gray-700 text-2xl font-semibold">
+								{isButtonEnabled
+									? "Results are now available!"
+									: timeLeft
+									? `Time left: ${timeLeft}`
+									: "Loading..."}
+							</div>
 
-					{/* Button */}
-					<a href="/result/search">
-						<button
-							className="bg-linear-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-red-300"
-						>
-							Search Your Result
-						</button>
-					</a>
+							{/* Button */}
+							{isButtonEnabled ? (
+								<a href="/result/search">
+									<button className="bg-linear-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-red-300">
+										Check Result From Here
+									</button>
+								</a>
+							) : (
+								<button
+									disabled
+									className="bg-gray-400 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg cursor-not-allowed"
+								>
+									Results Available Soon
+								</button>
+							)}
+						</>
+					)}
 				</div>
 			</div>
 
