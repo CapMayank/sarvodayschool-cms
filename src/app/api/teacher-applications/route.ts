@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { EmailService } from "@/lib/email-service";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -53,10 +54,39 @@ export async function POST(request: NextRequest) {
 				subject: body.subject,
 				class: body.class,
 				experience: parseInt(body.experience),
-				resumeUrl: body.resumeUrl, // ← NOW INCLUDED
+				resumeUrl: body.resumeUrl,
 				status: body.status || "New",
 			},
 		});
+
+		// Send email notification to admins
+		try {
+			console.log("Sending email notification for new teacher application:", {
+				applicationId: application.id,
+				applicantName: application.name,
+			});
+
+			const emailResult = await EmailService.sendTeacherApplicationNotification(
+				{
+					id: application.id.toString(),
+					name: application.name,
+					subject: application.subject,
+					class: application.class,
+					experience: application.experience,
+					mobileNumber: application.mobileNumber || undefined,
+					resumeUrl: application.resumeUrl || "",
+				}
+			);
+
+			if (emailResult.success) {
+				console.log("Email notification sent successfully");
+			} else {
+				console.error("Email notification failed:", emailResult.error);
+			}
+		} catch (emailError) {
+			console.error("Failed to send email notification:", emailError);
+			// Continue with the response even if email fails
+		}
 
 		return NextResponse.json(application, { status: 201 });
 	} catch (error) {
