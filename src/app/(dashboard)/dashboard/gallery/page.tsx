@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Plus,
@@ -13,6 +13,7 @@ import {
 	AlertCircle,
 	ImageIcon,
 	Youtube,
+	GripVertical,
 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import ReorderableList from "@/components/ReorderableList";
@@ -56,6 +57,7 @@ export default function GalleryTab() {
 		useState<GalleryCategory | null>(null);
 	const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 	const [imageCounts, setImageCounts] = useState<Record<number, number>>({});
+	const [isReorderingCategories, setIsReorderingCategories] = useState(false);
 	const [categoryFormData, setCategoryFormData] = useState({
 		title: "",
 		description: "",
@@ -68,13 +70,14 @@ export default function GalleryTab() {
 		null
 	);
 	const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+	const [isReorderingPlaylists, setIsReorderingPlaylists] = useState(false);
 	const [playlistFormData, setPlaylistFormData] = useState({
 		title: "",
 		youtubeId: "",
 	});
 
 	// Fetch Categories
-	const fetchCategories = async () => {
+	const fetchCategories = useCallback(async () => {
 		try {
 			const res = await fetch("/api/admin/gallery");
 			if (!res.ok) throw new Error("Failed to fetch categories");
@@ -83,17 +86,17 @@ export default function GalleryTab() {
 
 			// Fetch image counts
 			data.categories.forEach((cat: GalleryCategory) => {
-				fetchImageCount(cat.id, cat.name);
+				fetchImageCount(cat.id);
 			});
 		} catch {
 			toast.error("Failed to load categories");
 		} finally {
 			setLoadingCategories(false);
 		}
-	};
+	}, []);
 
 	// Fetch Playlists
-	const fetchPlaylists = async () => {
+	const fetchPlaylists = useCallback(async () => {
 		try {
 			const res = await fetch("/api/admin/playlists");
 			if (!res.ok) throw new Error("Failed to fetch playlists");
@@ -104,15 +107,15 @@ export default function GalleryTab() {
 		} finally {
 			setLoadingPlaylists(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		fetchCategories();
 		fetchPlaylists();
-	}, []);
+	}, [fetchCategories, fetchPlaylists]);
 
 	// Fetch Image Count
-	const fetchImageCount = async (id: number, name: string) => {
+	const fetchImageCount = async (id: number) => {
 		try {
 			const res = await fetch(`/api/admin/gallery/${id}`);
 			if (res.ok) {
@@ -146,10 +149,18 @@ export default function GalleryTab() {
 				);
 				toast.success("Category updated successfully");
 			} else {
+				const name = categoryFormData.title
+					.toLowerCase()
+					.replace(/\s+/g, "_")
+					.replace(/[^a-z0-9_]/g, "");
+
 				const res = await fetch("/api/admin/gallery", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(categoryFormData),
+					body: JSON.stringify({
+						...categoryFormData,
+						name,
+					}),
 				});
 				if (!res.ok) throw new Error();
 
@@ -252,6 +263,49 @@ export default function GalleryTab() {
 		setEditingPlaylist(null);
 	};
 
+	// Reorder handlers
+	const handleCategoryReorder = async (
+		reorderedCategories: GalleryCategory[]
+	) => {
+		setIsReorderingCategories(true);
+		try {
+			const res = await fetch("/api/admin/gallery", {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ categories: reorderedCategories }),
+			});
+			if (!res.ok) throw new Error();
+
+			setCategories(reorderedCategories);
+			toast.success("Category order updated successfully");
+		} catch {
+			toast.error("Failed to update category order");
+			fetchCategories(); // Reload to reset order
+		} finally {
+			setIsReorderingCategories(false);
+		}
+	};
+
+	const handlePlaylistReorder = async (reorderedPlaylists: PlaylistVideo[]) => {
+		setIsReorderingPlaylists(true);
+		try {
+			const res = await fetch("/api/admin/playlists", {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ playlists: reorderedPlaylists }),
+			});
+			if (!res.ok) throw new Error();
+
+			setPlaylists(reorderedPlaylists);
+			toast.success("Playlist order updated successfully");
+		} catch {
+			toast.error("Failed to update playlist order");
+			fetchPlaylists(); // Reload to reset order
+		} finally {
+			setIsReorderingPlaylists(false);
+		}
+	};
+
 	return (
 		<div className="space-y-4 sm:space-y-6">
 			<Tabs defaultValue="images" className="space-y-4 sm:space-y-6">
@@ -351,76 +405,112 @@ export default function GalleryTab() {
 							</CardContent>
 						</Card>
 					) : (
-						<div className="grid gap-3 sm:gap-4">
-							{categories.map((category) => (
-								<Card key={category.id}>
-									<CardContent className="flex flex-col sm:flex-row items-start justify-between p-4 sm:p-6 gap-4">
-										<div className="space-y-2">
-											<h3 className="font-semibold text-lg">
-												{category.title}
-											</h3>
-											<p className="text-sm text-gray-500">
-												{category.description}
-											</p>
-											<div className="flex gap-2">
-												<Badge variant="secondary">
-													{imageCounts[category.id] || 0} images
-												</Badge>
-												<Badge variant="outline">{category.name}</Badge>
+						<div className="space-y-4">
+							{categories.length > 0 && (
+								<div className="mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+									<div className="flex items-center gap-2">
+										<GripVertical className="w-4 h-4 text-blue-600 shrink-0" />
+										<p className="text-xs sm:text-sm text-blue-800">
+											<strong>Tip:</strong> Drag categories using the grip
+											handle or{" "}
+											<span className="sm:hidden">
+												long-press and drag on mobile
+											</span>
+											<span className="hidden sm:inline">
+												drag to reorder them
+											</span>
+											. Changes are saved automatically.
+										</p>
+									</div>
+								</div>
+							)}
+
+							<ReorderableList
+								items={categories}
+								onReorder={handleCategoryReorder}
+							>
+								{(category, index) => (
+									<Card>
+										<CardContent className="flex flex-col sm:flex-row items-start justify-between p-4 sm:p-6 gap-4">
+											<div className="space-y-2 grow">
+												<h3 className="font-semibold text-lg">
+													{category.title}
+												</h3>
+												<p className="text-sm text-gray-500">
+													{category.description}
+												</p>
+												<div className="flex gap-2">
+													<Badge variant="secondary">
+														{imageCounts[category.id] || 0} images
+													</Badge>
+													<Badge variant="outline">{category.name}</Badge>
+													<Badge variant="outline">Position #{index + 1}</Badge>
+												</div>
 											</div>
-										</div>
 
-										<div className="flex gap-2">
-											<CldUploadWidget
-												uploadPreset={
-													process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
-													"ml_default"
-												}
-												options={{
-													folder: `sarvodayaGallery/${category.name}`,
-													multiple: true,
-													maxFiles: 50,
-													resourceType: "image",
-													clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
-													maxFileSize: 10000000,
-												}}
-												onSuccess={() => {
-													fetchImageCount(category.id, category.name);
-													toast.success("Images uploaded successfully");
-												}}
-												onError={() => toast.error("Upload failed")}
-											>
-												{({ open }) => (
-													<Button variant="outline" onClick={() => open()}>
-														<Upload className="mr-2 h-4 w-4" /> Upload
-													</Button>
-												)}
-											</CldUploadWidget>
+											<div className="flex gap-2 shrink-0">
+												<CldUploadWidget
+													uploadPreset={
+														process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+														"ml_default"
+													}
+													options={{
+														folder: `sarvodayaGallery/${category.name}`,
+														multiple: true,
+														maxFiles: 50,
+														resourceType: "image",
+														clientAllowedFormats: [
+															"jpg",
+															"jpeg",
+															"png",
+															"webp",
+														],
+														maxFileSize: 10000000,
+													}}
+													onSuccess={() => {
+														fetchImageCount(category.id);
+														toast.success("Images uploaded successfully");
+													}}
+													onError={() => toast.error("Upload failed")}
+												>
+													{({ open }) => (
+														<Button
+															variant="outline"
+															onClick={() => open()}
+															disabled={isReorderingCategories}
+														>
+															<Upload className="mr-2 h-4 w-4" /> Upload
+														</Button>
+													)}
+												</CldUploadWidget>
 
-											<Button
-												variant="outline"
-												onClick={() => {
-													setEditingCategory(category);
-													setCategoryFormData({
-														title: category.title,
-														description: category.description,
-													});
-													setCategoryDialogOpen(true);
-												}}
-											>
-												<Edit2 className="h-4 w-4" />
-											</Button>
+												<Button
+													variant="outline"
+													disabled={isReorderingCategories}
+													onClick={() => {
+														setEditingCategory(category);
+														setCategoryFormData({
+															title: category.title,
+															description: category.description,
+														});
+														setCategoryDialogOpen(true);
+													}}
+												>
+													<Edit2 className="h-4 w-4" />
+												</Button>
 
-											<Button
-												variant="destructive"
-												onClick={() => handleDeleteCategory(category.id)}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
-									</CardContent>
-								</Card>
-							))}
+												<Button
+													variant="destructive"
+													disabled={isReorderingCategories}
+													onClick={() => handleDeleteCategory(category.id)}
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</div>
+										</CardContent>
+									</Card>
+								)}
+							</ReorderableList>
 						</div>
 					)}
 				</TabsContent>
@@ -507,42 +597,71 @@ export default function GalleryTab() {
 							</CardContent>
 						</Card>
 					) : (
-						<div className="grid gap-3 sm:gap-4">
-							{playlists.map((playlist) => (
-								<Card key={playlist.id}>
-									<CardContent className="flex items-start justify-between p-6">
-										<div className="space-y-2">
-											<h3 className="font-semibold text-lg">
-												{playlist.title}
-											</h3>
-											<Badge variant="outline">{playlist.youtubeId}</Badge>
-										</div>
+						<div className="space-y-4">
+							{playlists.length > 0 && (
+								<div className="mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+									<div className="flex items-center gap-2">
+										<GripVertical className="w-4 h-4 text-blue-600 shrink-0" />
+										<p className="text-xs sm:text-sm text-blue-800">
+											<strong>Tip:</strong> Drag playlists using the grip handle
+											or{" "}
+											<span className="sm:hidden">
+												long-press and drag on mobile
+											</span>
+											<span className="hidden sm:inline">
+												drag to reorder them
+											</span>
+											. Changes are saved automatically.
+										</p>
+									</div>
+								</div>
+							)}
 
-										<div className="flex gap-2">
-											<Button
-												variant="outline"
-												onClick={() => {
-													setEditingPlaylist(playlist);
-													setPlaylistFormData({
-														title: playlist.title,
-														youtubeId: playlist.youtubeId,
-													});
-													setPlaylistDialogOpen(true);
-												}}
-											>
-												<Edit2 className="h-4 w-4" />
-											</Button>
+							<ReorderableList
+								items={playlists}
+								onReorder={handlePlaylistReorder}
+							>
+								{(playlist, index) => (
+									<Card>
+										<CardContent className="flex flex-col sm:flex-row items-start justify-between p-4 sm:p-6 gap-4">
+											<div className="space-y-2 grow">
+												<h3 className="font-semibold text-lg">
+													{playlist.title}
+												</h3>
+												<div className="flex gap-2">
+													<Badge variant="outline">{playlist.youtubeId}</Badge>
+													<Badge variant="outline">Position #{index + 1}</Badge>
+												</div>
+											</div>
 
-											<Button
-												variant="destructive"
-												onClick={() => handleDeletePlaylist(playlist.id)}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
-									</CardContent>
-								</Card>
-							))}
+											<div className="flex gap-2 shrink-0">
+												<Button
+													variant="outline"
+													disabled={isReorderingPlaylists}
+													onClick={() => {
+														setEditingPlaylist(playlist);
+														setPlaylistFormData({
+															title: playlist.title,
+															youtubeId: playlist.youtubeId,
+														});
+														setPlaylistDialogOpen(true);
+													}}
+												>
+													<Edit2 className="h-4 w-4" />
+												</Button>
+
+												<Button
+													variant="destructive"
+													disabled={isReorderingPlaylists}
+													onClick={() => handleDeletePlaylist(playlist.id)}
+												>
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</div>
+										</CardContent>
+									</Card>
+								)}
+							</ReorderableList>
 						</div>
 					)}
 				</TabsContent>

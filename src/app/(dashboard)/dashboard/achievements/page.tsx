@@ -214,8 +214,14 @@ export default function AchievementsTab() {
 								<div className="flex items-center gap-2">
 									<GripVertical className="w-4 h-4 text-orange-600 shrink-0" />
 									<p className="text-xs sm:text-sm text-orange-800">
-										<strong>Tip:</strong> Drag items to reorder them. Changes
-										are saved automatically.
+										<strong>Tip:</strong> Drag items using the grip handle or{" "}
+										<span className="sm:hidden">
+											long-press and drag on mobile
+										</span>
+										<span className="hidden sm:inline">
+											drag to reorder them
+										</span>
+										. Changes are saved automatically.
 									</p>
 								</div>
 							</div>

@@ -1,199 +1,4 @@
 /** @format */
-
-// /** @format */
-
-// "use client";
-
-// import { useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { authClient } from "@/lib/auth-client";
-// import { Button } from "@/components/ui/button";
-// import {
-// 	DropdownMenu,
-// 	DropdownMenuContent,
-// 	DropdownMenuItem,
-// 	DropdownMenuLabel,
-// 	DropdownMenuSeparator,
-// 	DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-// import {
-// 	Sheet,
-// 	SheetContent,
-// 	SheetTrigger,
-// 	SheetClose,
-// } from "@/components/ui/sheet";
-// import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-// import { Badge } from "@/components/ui/badge";
-// import Link from "next/link";
-// import { toast } from "sonner";
-// import { Menu, X } from "lucide-react";
-
-// interface User {
-// 	id: string;
-// 	email: string;
-// 	name: string | null;
-// 	role: string;
-// }
-
-// interface Session {
-// 	session: {
-// 		userId: string;
-// 		expiresAt: Date;
-// 	};
-// 	user: User;
-// }
-
-// interface DashboardNavProps {
-// 	session: Session;
-// }
-
-// const navigationItems = [
-// 	{ href: "/dashboard", label: "Dashboard" },
-// 	{ href: "/dashboard/news", label: "News" },
-// 	{ href: "/dashboard/slideshow", label: "Slideshow" },
-// 	{ href: "/dashboard/gallery", label: "Gallery" },
-// 	{ href: "/dashboard/achievements", label: "Achievements" },
-// 	{ href: "/dashboard/result", label: "Result" },
-// 	{ href: "/dashboard/admission-form", label: "Admission Form" },
-// 	{ href: "/dashboard/teacher-recruitment", label: "Teacher Recruitment" },
-// ];
-
-// export default function DashboardNav({ session }: DashboardNavProps) {
-// 	const router = useRouter();
-// 	const [isOpen, setIsOpen] = useState(false);
-
-// 	const handleLogout = async () => {
-// 		try {
-// 			await authClient.signOut();
-// 			toast.success("Logged out successfully");
-// 			router.push("/login");
-// 			router.refresh();
-// 		} catch (error) {
-// 			toast.error("Failed to logout");
-// 		}
-// 	};
-
-// 	const isAdmin = session.user.role === "admin";
-
-// 	return (
-// 		<nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-// 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-// 				<div className="flex justify-between h-16">
-// 					{/* Left side - Logo and Desktop Nav */}
-// 					<div className="flex items-center space-x-8">
-// 						<h1 className="text-xl font-bold whitespace-nowrap">
-// 							Admin Dashboard
-// 						</h1>
-
-// 						{/* Desktop Navigation */}
-// 						<div className="hidden lg:flex space-x-1">
-// 							{navigationItems.map((item) => (
-// 								<Link key={item.href} href={item.href}>
-// 									<Button variant="ghost" className="text-sm font-medium">
-// 										{item.label}
-// 									</Button>
-// 								</Link>
-// 							))}
-// 							{isAdmin && (
-// 								<Link href="/dashboard/users">
-// 									<Button variant="ghost" className="text-sm font-medium">
-// 										Users
-// 									</Button>
-// 								</Link>
-// 							)}
-// 						</div>
-// 					</div>
-
-// 					{/* Right side - User Menu and Mobile Toggle */}
-// 					<div className="flex items-center space-x-2">
-// 						{/* User Dropdown - Always visible */}
-// 						<DropdownMenu>
-// 							<DropdownMenuTrigger asChild>
-// 								<Button variant="ghost" className="flex items-center gap-2">
-// 									<Avatar className="h-8 w-8">
-// 										<AvatarFallback className="text-xs">
-// 											{session.user.name?.[0]?.toUpperCase() ||
-// 												session.user.email[0].toUpperCase()}
-// 										</AvatarFallback>
-// 									</Avatar>
-// 									<div className="hidden md:flex flex-col items-start">
-// 										<span className="text-sm font-medium">
-// 											{session.user.name || session.user.email}
-// 										</span>
-// 										<Badge variant="secondary" className="text-xs">
-// 											{session.user.role}
-// 										</Badge>
-// 									</div>
-// 								</Button>
-// 							</DropdownMenuTrigger>
-// 							<DropdownMenuContent align="end" className="w-56">
-// 								<DropdownMenuLabel>My Account</DropdownMenuLabel>
-// 								<DropdownMenuSeparator />
-// 								<DropdownMenuItem disabled>
-// 									{session.user.email}
-// 								</DropdownMenuItem>
-// 								<DropdownMenuSeparator />
-// 								<DropdownMenuItem onClick={handleLogout}>
-// 									Logout
-// 								</DropdownMenuItem>
-// 							</DropdownMenuContent>
-// 						</DropdownMenu>
-
-// 						{/* Mobile Menu Toggle */}
-// 						<Sheet open={isOpen} onOpenChange={setIsOpen}>
-// 							<SheetTrigger asChild className="lg:hidden">
-// 								<Button variant="ghost" size="icon" aria-label="Toggle menu">
-// 									<Menu className="h-6 w-6" />
-// 								</Button>
-// 							</SheetTrigger>
-// 							<SheetContent side="right" className="w-[300px] sm:w-[350px]">
-// 								<div className="flex flex-col space-y-4 mt-8">
-// 									<div className="mb-4">
-// 										<h2 className="text-lg font-bold">Navigation</h2>
-// 										<p className="text-sm text-slate-500">
-// 											{session.user.name || session.user.email}
-// 										</p>
-// 									</div>
-
-// 									{navigationItems.map((item) => (
-// 										<SheetClose asChild key={item.href}>
-// 											<Link
-// 												href={item.href}
-// 												className="flex items-center py-3 px-4 text-base font-medium text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-// 											>
-// 												{item.label}
-// 											</Link>
-// 										</SheetClose>
-// 									))}
-
-// 									{isAdmin && (
-// 										<>
-// 											<div className="border-t pt-4">
-// 												<p className="px-4 text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">
-// 													Admin Only
-// 												</p>
-// 												<SheetClose asChild>
-// 													<Link
-// 														href="/dashboard/users"
-// 														className="flex items-center py-3 px-4 text-base font-medium text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-// 													>
-// 														Users
-// 													</Link>
-// 												</SheetClose>
-// 											</div>
-// 										</>
-// 									)}
-// 								</div>
-// 							</SheetContent>
-// 						</Sheet>
-// 					</div>
-// 				</div>
-// 			</div>
-// 		</nav>
-// 	);
-// }
-
-/** @format */
 "use client";
 
 import { useState } from "react";
@@ -219,25 +24,65 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import {
+	Menu,
+	ChevronDown,
+	Home,
+	LayoutDashboard,
+	User,
+	Trophy,
+	Newspaper,
+	Image,
+	Presentation,
+	Award,
+	FileText,
+	Users,
+	LogOut,
+	GraduationCap,
+} from "lucide-react";
 import { toast } from "sonner";
 
-export default function DashboardNav({ session }: any) {
+export default function DashboardNav({ session }: { session: any }) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 
-	const links = [
-		{ href: "/", label: "Home" },
-		{ href: "/dashboard", label: "Dashboard" },
-		{ href: "/dashboard/news", label: "News" },
-		{ href: "/dashboard/gallery", label: "Gallery" },
-		{ href: "/dashboard/slideshow", label: "Slideshow" },
-		{ href: "/dashboard/achievements", label: "Achievements" },
-		{ href: "/dashboard/result", label: "Result" },
-		{ href: "/dashboard/admission-form", label: "Admission Form" },
-		{ href: "/dashboard/teacher-recruitment", label: "Recruitment" },
-	];
+	const navigationGroups = {
+		single: [
+			{ href: "/", label: "Home", icon: Home },
+			{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+			{ href: "/dashboard/user", label: "User", icon: User },
+			{ href: "/dashboard/result", label: "Result", icon: GraduationCap },
+		],
+		contentManagement: {
+			label: "Content Management",
+			items: [
+				{ href: "/dashboard/news", label: "News", icon: Newspaper },
+				{ href: "/dashboard/gallery", label: "Gallery", icon: Image },
+				{
+					href: "/dashboard/slideshow",
+					label: "Slideshow",
+					icon: Presentation,
+				},
+				{ href: "/dashboard/achievements", label: "Achievements", icon: Award },
+			],
+		},
+		forms: {
+			label: "Forms & Applications",
+			items: [
+				{
+					href: "/dashboard/admission-form",
+					label: "Admission Form",
+					icon: FileText,
+				},
+				{
+					href: "/dashboard/teacher-recruitment",
+					label: "Recruitment",
+					icon: Users,
+				},
+			],
+		},
+	};
 
 	const handleLogout = async () => {
 		try {
@@ -249,22 +94,8 @@ export default function DashboardNav({ session }: any) {
 		}
 	};
 
-	const NavItem = ({ href, label }: any) => {
-		const active = pathname === href;
-		return (
-			<Link href={href}>
-				<Button
-					variant="ghost"
-					className={`text-sm font-medium rounded-lg px-4 py-2 transition ${
-						active
-							? "bg-slate-100 text-primary font-semibold"
-							: "text-slate-700 hover:bg-slate-100"
-					}`}
-				>
-					{label}
-				</Button>
-			</Link>
-		);
+	const isGroupActive = (items: { href: string; label: string }[]) => {
+		return items.some((item) => pathname === item.href);
 	};
 
 	return (
@@ -278,12 +109,106 @@ export default function DashboardNav({ session }: any) {
 
 					{/* Desktop Nav */}
 					<div className="hidden lg:flex gap-1">
-						{links.map((link) => (
-							<NavItem key={link.href} {...link} />
-						))}
-						{session.user.role === "admin" && (
-							<NavItem href="/dashboard/users" label="Users" />
-						)}
+						{/* Single Navigation Items */}
+						{navigationGroups.single.map((link) => {
+							const active = pathname === link.href;
+							return (
+								<Link key={link.href} href={link.href}>
+									<Button
+										variant="ghost"
+										className={`text-sm font-medium rounded-lg px-4 py-2 transition ${
+											active
+												? "bg-slate-100 text-primary font-semibold"
+												: "text-slate-700 hover:bg-slate-100"
+										}`}
+									>
+										{link.label}
+									</Button>
+								</Link>
+							);
+						})}
+
+						{/* Content Management Dropdown */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									className={`text-sm font-medium rounded-lg px-4 py-2 transition flex items-center gap-1 ${
+										isGroupActive(navigationGroups.contentManagement.items)
+											? "bg-slate-100 text-primary font-semibold"
+											: "text-slate-700 hover:bg-slate-100"
+									}`}
+								>
+									{navigationGroups.contentManagement.label}
+									<ChevronDown className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								{navigationGroups.contentManagement.items.map((item) => (
+									<DropdownMenuItem key={item.href} asChild>
+										<Link
+											href={item.href}
+											className={`w-full ${
+												pathname === item.href ? "font-semibold" : ""
+											}`}
+										>
+											{item.label}
+										</Link>
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						{/* Forms & Applications Dropdown */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									className={`text-sm font-medium rounded-lg px-4 py-2 transition flex items-center gap-1 ${
+										isGroupActive([
+											...navigationGroups.forms.items,
+											...(session.user.role === "admin"
+												? [{ href: "/dashboard/users", label: "Users" }]
+												: []),
+										])
+											? "bg-slate-100 text-primary font-semibold"
+											: "text-slate-700 hover:bg-slate-100"
+									}`}
+								>
+									{navigationGroups.forms.label}
+									<ChevronDown className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								{navigationGroups.forms.items.map((item) => (
+									<DropdownMenuItem key={item.href} asChild>
+										<Link
+											href={item.href}
+											className={`w-full ${
+												pathname === item.href ? "font-semibold" : ""
+											}`}
+										>
+											{item.label}
+										</Link>
+									</DropdownMenuItem>
+								))}
+								{session.user.role === "admin" && (
+									<>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem asChild>
+											<Link
+												href="/dashboard/users"
+												className={`w-full ${
+													pathname === "/dashboard/users" ? "font-semibold" : ""
+												}`}
+											>
+												Users Management
+											</Link>
+										</DropdownMenuItem>
+									</>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 
 					{/* Right Side */}
@@ -321,52 +246,123 @@ export default function DashboardNav({ session }: any) {
 									<Menu className="h-6 w-6" />
 								</Button>
 							</SheetTrigger>
-							<SheetContent side="left" className="w-[260px]">
-								<SheetHeader>
-									<SheetTitle>Navigation Menu</SheetTitle>
-									<SheetDescription>
-										Access dashboard pages and admin functions
+							<SheetContent side="left" className="w-[280px] p-0">
+								<SheetHeader className="px-6 py-4 border-b bg-slate-50">
+									<SheetTitle className="text-left text-lg font-bold text-slate-900">
+										Navigation Menu
+									</SheetTitle>
+									<SheetDescription className="text-left text-sm text-slate-600">
+										{session.user.name || session.user.email}
 									</SheetDescription>
 								</SheetHeader>
-								<div className="mt-6 space-y-2">
-									<p className="font-semibold mb-3">
-										{session.user.name || session.user.email}
-									</p>
 
-									{links.map((item) => (
-										<SheetClose asChild key={item.href}>
-											<Link
-												href={item.href}
-												className={`block px-3 py-2 rounded-md ${
-													pathname === item.href
-														? "bg-slate-200 font-semibold"
-														: "hover:bg-slate-100"
-												}`}
-											>
-												{item.label}
-											</Link>
-										</SheetClose>
-									))}
+								<div className="px-4 py-6 space-y-6">
+									{/* Quick Actions */}
+									<div className="space-y-1">
+										<h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+											Quick Access
+										</h3>
+										{navigationGroups.single.map((item) => {
+											const Icon = item.icon;
+											return (
+												<SheetClose asChild key={item.href}>
+													<Link
+														href={item.href}
+														className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+															pathname === item.href
+																? "bg-slate-100 text-slate-900 font-semibold"
+																: "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+														}`}
+													>
+														<Icon className="h-5 w-5" />
+														{item.label}
+													</Link>
+												</SheetClose>
+											);
+										})}
+									</div>
 
+									{/* Content Management */}
+									<div className="space-y-1">
+										<h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+											{navigationGroups.contentManagement.label}
+										</h3>
+										{navigationGroups.contentManagement.items.map((item) => {
+											const Icon = item.icon;
+											return (
+												<SheetClose asChild key={item.href}>
+													<Link
+														href={item.href}
+														className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+															pathname === item.href
+																? "bg-slate-100 text-slate-900 font-semibold"
+																: "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+														}`}
+													>
+														<Icon className="h-5 w-5" />
+														{item.label}
+													</Link>
+												</SheetClose>
+											);
+										})}
+									</div>
+
+									{/* Forms & Applications */}
+									<div className="space-y-1">
+										<h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+											{navigationGroups.forms.label}
+										</h3>
+										{navigationGroups.forms.items.map((item) => {
+											const Icon = item.icon;
+											return (
+												<SheetClose asChild key={item.href}>
+													<Link
+														href={item.href}
+														className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+															pathname === item.href
+																? "bg-slate-100 text-slate-900 font-semibold"
+																: "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+														}`}
+													>
+														<Icon className="h-5 w-5" />
+														{item.label}
+													</Link>
+												</SheetClose>
+											);
+										})}
+									</div>
+
+									{/* Admin Section */}
 									{session.user.role === "admin" && (
-										<SheetClose asChild>
-											<Link
-												href="/dashboard/users"
-												className={`block px-3 py-2 rounded-md ${
-													pathname === "/dashboard/users"
-														? "bg-slate-200 font-semibold"
-														: "hover:bg-slate-100"
-												}`}
-											>
-												Users
-											</Link>
-										</SheetClose>
+										<div className="space-y-1">
+											<h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+												Administration
+											</h3>
+											<SheetClose asChild>
+												<Link
+													href="/dashboard/users"
+													className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+														pathname === "/dashboard/users"
+															? "bg-slate-100 text-slate-900 font-semibold"
+															: "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+													}`}
+												>
+													<Users className="h-5 w-5" />
+													Users
+												</Link>
+											</SheetClose>
+										</div>
 									)}
+								</div>
 
+								{/* Logout Button */}
+								<div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-slate-50">
 									<Button
 										onClick={handleLogout}
-										className="w-full mt-4 bg-red-500 hover:bg-red-600"
+										variant="outline"
+										className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
 									>
+										<LogOut className="h-4 w-4" />
 										Logout
 									</Button>
 								</div>

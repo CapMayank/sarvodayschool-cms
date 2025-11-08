@@ -7,7 +7,8 @@ import {
 	DndContext,
 	closestCenter,
 	KeyboardSensor,
-	PointerSensor,
+	TouchSensor,
+	MouseSensor,
 	useSensor,
 	useSensors,
 	DragEndEvent,
@@ -42,7 +43,6 @@ interface SortableItemProps<T extends ReorderableItemBase> {
 // Sortable Item Component
 function SortableItem<T extends ReorderableItemBase>({
 	id,
-	index,
 	children,
 }: SortableItemProps<T>) {
 	const {
@@ -64,9 +64,9 @@ function SortableItem<T extends ReorderableItemBase>({
 		<div
 			ref={setNodeRef}
 			style={style}
-			className={`bg-white border-2 rounded-lg p-4 transition-all ${
+			className={`bg-white border-2 rounded-lg p-4 transition-all select-none ${
 				isDragging
-					? "border-blue-500 shadow-lg bg-blue-50"
+					? "border-blue-500 shadow-lg bg-blue-50 scale-105 rotate-2"
 					: "border-gray-200 hover:border-gray-300"
 			}`}
 		>
@@ -75,7 +75,7 @@ function SortableItem<T extends ReorderableItemBase>({
 				<div
 					{...attributes}
 					{...listeners}
-					className="flex-shrink-0 cursor-grab active:cursor-grabbing pt-1 hover:text-gray-600"
+					className="shrink-0 cursor-grab active:cursor-grabbing pt-1 hover:text-gray-600 touch-manipulation p-1 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors"
 					title="Drag to reorder"
 				>
 					<svg
@@ -88,7 +88,7 @@ function SortableItem<T extends ReorderableItemBase>({
 				</div>
 
 				{/* Content */}
-				<div className="flex-grow">{children}</div>
+				<div className="grow">{children}</div>
 			</div>
 		</div>
 	);
@@ -102,9 +102,15 @@ function ReorderableListComponent<T extends ReorderableItemBase>(
 	const [isLoading, setIsLoading] = useState(false);
 
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
+		useSensor(MouseSensor, {
 			activationConstraint: {
-				distance: 8,
+				distance: 10,
+			},
+		}),
+		useSensor(TouchSensor, {
+			activationConstraint: {
+				delay: 250,
+				tolerance: 5,
 			},
 		}),
 		useSensor(KeyboardSensor, {
