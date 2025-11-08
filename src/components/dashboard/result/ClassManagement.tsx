@@ -364,7 +364,20 @@ export default function ClassManagement() {
 					</h3>
 					{/* Show info about theory/practical for classes 9-12 */}
 					{classes.find((c) => c.id === selectedClass)?.name &&
-						["9th", "10th", "11th", "12th", "9", "10", "11", "12"].includes(
+						[
+							"9th",
+							"10th",
+							"11th",
+							"12th",
+							"9",
+							"10",
+							"11",
+							"12",
+							"11th Maths",
+							"12th Maths",
+							"11th Bio",
+							"12th Bio",
+						].includes(
 							classes.find((c) => c.id === selectedClass)?.name || ""
 						) && (
 							<div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm">
@@ -401,7 +414,20 @@ export default function ClassManagement() {
 						</div>
 						{/* Show theory/practical fields for classes 9-12 */}
 						{classes.find((c) => c.id === selectedClass)?.name &&
-						["9th", "10th", "11th", "12th", "9", "10", "11", "12"].includes(
+						[
+							"9th",
+							"10th",
+							"11th",
+							"12th",
+							"9",
+							"10",
+							"11",
+							"12",
+							"11th Maths",
+							"12th Maths",
+							"11th Bio",
+							"12th Bio",
+						].includes(
 							classes.find((c) => c.id === selectedClass)?.name || ""
 						) ? (
 							<>

@@ -83,10 +83,10 @@ export async function POST(
 			"10",
 			"11",
 			"12",
-			"12th Bio",
-			"11th Bio",
-			"12th Maths",
 			"11th Maths",
+			"12th Maths",
+			"11th Bio",
+			"12th Bio",
 		].includes(classData.name);
 
 		let subjectData = {
@@ -194,6 +194,10 @@ export async function PUT(request: NextRequest) {
 			"10",
 			"11",
 			"12",
+			"11th Maths",
+			"12th Maths",
+			"11th Bio",
+			"12th Bio",
 		].includes(currentSubject.class.name);
 
 		let updateData = {
