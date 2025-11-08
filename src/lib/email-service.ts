@@ -44,7 +44,7 @@ export class EmailService {
 		resumeUrl: string;
 	}) {
 		const dashboardUrl =
-			process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+			process.env.NEXT_PUBLIC_APP_URL || "https://sarvodayaschool.co.in";
 		const applicationUrl = `${dashboardUrl}/dashboard/teacher-recruitment`;
 
 		const html = `
