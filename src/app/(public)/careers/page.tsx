@@ -111,13 +111,16 @@ const Careers: React.FC = () => {
 		resumeUrl: "",
 	});
 
-	const [showModal, setShowModal] = useState(false);
-	const [selectedImage, setSelectedImage] = useState<string | null>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [blocks, setBlocks] = useState<string[]>([]);
 	const [submitting, setSubmitting] = useState(false);
+	const [uploadProgress, setUploadProgress] = useState(0);
 	const [submitMessage, setSubmitMessage] = useState<{
 		type: "success" | "error";
 		text: string;
 	} | null>(null);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
 	const handleChange = (
 		e: React.ChangeEvent<
@@ -140,30 +143,75 @@ const Careers: React.FC = () => {
 		}
 	};
 
-	// Memoize the resume upload handler to prevent unnecessary re-renders
-	const handleResumeUpload = useCallback((url: string) => {
-		setFormData((prevData) => ({
-			...prevData,
-			resumeUrl: url,
-		}));
+	// Handle file selection (doesn't upload yet)
+	const handleFileSelect = useCallback((file: File | null) => {
+		setSelectedFile(file);
 	}, []);
+
+	// Upload file to Cloudinary
+	const uploadResumeToCloudinary = async (file: File): Promise<string> => {
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append(
+			"upload_preset",
+			process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+		);
+		formData.append("folder", "sarvodaya/resumes");
+
+		const response = await fetch(
+			`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+			{
+				method: "POST",
+				body: formData,
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error("Failed to upload resume to Cloudinary");
+		}
+
+		const data = await response.json();
+		return data.secure_url;
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 
 		// Validate resume
-		if (!formData.resumeUrl) {
+		if (!selectedFile && !formData.resumeUrl) {
 			setSubmitMessage({
 				type: "error",
-				text: "Please upload your resume before submitting.",
+				text: "Please upload your resume to proceed. Cannot submit until resume is uploaded.",
 			});
 			setTimeout(() => setSubmitMessage(null), 5000);
 			return;
 		}
 
 		setSubmitting(true);
+		setUploadProgress(0);
+
 		try {
+			let resumeUrl = formData.resumeUrl; // Use existing URL if available
+
+			// Upload resume if a new file was selected
+			if (selectedFile) {
+				setUploadProgress(10);
+				setSubmitMessage({
+					type: "success",
+					text: "Uploading resume...",
+				});
+
+				resumeUrl = await uploadResumeToCloudinary(selectedFile);
+				setUploadProgress(40);
+			}
+
+			setUploadProgress(50);
+			setSubmitMessage({
+				type: "success",
+				text: "Submitting application...",
+			});
+
 			const response = await fetch("/api/teacher-applications", {
 				method: "POST",
 				headers: {
@@ -184,14 +232,18 @@ const Careers: React.FC = () => {
 					subject: formData.subject,
 					class: formData.class,
 					experience: parseInt(formData.experience),
-					resumeUrl: formData.resumeUrl,
+					resumeUrl: resumeUrl, // Use the uploaded URL
 					status: "New",
 				}),
 			});
 
+			setUploadProgress(80);
+
 			if (!response.ok) {
 				throw new Error("Failed to submit form");
 			}
+
+			setUploadProgress(100);
 
 			// const data = await response.json();
 			setSubmitMessage({
@@ -200,6 +252,7 @@ const Careers: React.FC = () => {
 			});
 
 			// Reset form ONLY after successful submission
+			setSelectedFile(null);
 			setFormData({
 				name: "",
 				gender: "",
@@ -248,7 +301,17 @@ const Careers: React.FC = () => {
 							submitMessage.type === "success" ? "bg-green-600" : "bg-red-600"
 						}`}
 					>
-						{submitMessage.text}
+						<div className="flex flex-col gap-2">
+							{submitMessage.text}
+							{submitting && uploadProgress > 0 && (
+								<div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
+									<div
+										className="bg-white h-full transition-all duration-300"
+										style={{ width: `${uploadProgress}%` }}
+									/>
+								</div>
+							)}
+						</div>
 					</motion.div>
 				)}
 
@@ -383,16 +446,10 @@ const Careers: React.FC = () => {
 										Your resume is <span className="font-bold">required</span>{" "}
 										to submit your application.
 									</p>
-									<div
-										key={`resume-upload-${
-											formData.resumeUrl ? "uploaded" : "empty"
-										}`}
-									>
-										<ResumeUpload
-											currentResume={formData.resumeUrl}
-											onUploadSuccess={handleResumeUpload}
-										/>
-									</div>
+									<ResumeUpload
+										currentResume={formData.resumeUrl}
+										onFileSelect={handleFileSelect}
+									/>
 								</div>
 								{/* Personal Information */}
 								<div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -680,9 +737,11 @@ const Careers: React.FC = () => {
 								{/* Submit Button */}
 								<button
 									type="submit"
-									disabled={submitting || !formData.resumeUrl}
+									disabled={
+										submitting || (!selectedFile && !formData.resumeUrl)
+									}
 									className={`w-full p-3 rounded-lg flex items-center justify-center space-x-2 font-semibold transition ${
-										!submitting && formData.resumeUrl
+										!submitting && (selectedFile || formData.resumeUrl)
 											? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
 											: "bg-gray-300 cursor-not-allowed text-gray-500"
 									}`}
@@ -691,14 +750,14 @@ const Careers: React.FC = () => {
 									<span>
 										{submitting
 											? "Submitting..."
-											: !formData.resumeUrl
+											: !selectedFile && !formData.resumeUrl
 											? "Upload Resume First"
 											: "Submit Application"}
 									</span>
 								</button>
 
 								{/* Resume Required Notice */}
-								{!formData.resumeUrl && (
+								{!selectedFile && !formData.resumeUrl && (
 									<div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
 										<p className="text-sm text-amber-800 flex items-center">
 											<span className="mr-2">⚠️</span>
