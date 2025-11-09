@@ -53,6 +53,7 @@ interface Subject {
 	theoryMaxMarks?: number;
 	practicalMaxMarks?: number;
 	hasPractical?: boolean;
+	isAdditional?: boolean;
 }
 
 interface Student {
@@ -102,6 +103,7 @@ export default function MarksManagement() {
 	const [isMarksDialogOpen, setIsMarksDialogOpen] = useState(false);
 	const [marksData, setMarksData] = useState<MarksFormData>({});
 	const [saving, setSaving] = useState(false);
+	const [dialogSubjects, setDialogSubjects] = useState<Subject[]>([]); // Filtered subjects for current student
 
 	// Available academic years (current and past 5 years)
 	const academicYears = Array.from({ length: 6 }, (_, i) => {
@@ -216,9 +218,38 @@ export default function MarksManagement() {
 				existingResult = data.result;
 			}
 
+			// Fetch student's opted-in subjects
+			const optInParams = new URLSearchParams({
+				studentId: student.id.toString(),
+			});
+			const optInResponse = await fetch(
+				`/api/result/subject-opt-ins?${optInParams}`
+			);
+			let optedInSubjectIds: number[] = [];
+
+			if (optInResponse.ok) {
+				const optInData = await optInResponse.json();
+				optedInSubjectIds = optInData.optIns.map(
+					(opt: { subjectId: number }) => opt.subjectId
+				);
+			}
+
+			// Filter subjects: include all non-additional subjects + opted-in additional subjects
+			const filteredSubjects = subjects.filter((subject) => {
+				if (!subject.isAdditional) {
+					// Regular subject - always include
+					return true;
+				}
+				// Additional subject - only include if student has opted in
+				return optedInSubjectIds.includes(subject.id);
+			});
+
+			// Store filtered subjects for dialog rendering
+			setDialogSubjects(filteredSubjects);
+
 			// Initialize marks data
 			const initialMarksData: MarksFormData = {};
-			subjects.forEach((subject) => {
+			filteredSubjects.forEach((subject) => {
 				const existingMark = existingResult?.subjectMarks.find(
 					(sm: {
 						subjectId: number;
@@ -253,32 +284,7 @@ export default function MarksManagement() {
 			setIsMarksDialogOpen(true);
 		} catch (error) {
 			console.error("Error fetching student result:", error);
-			// Still open dialog with empty marks
-			const initialMarksData: MarksFormData = {};
-			subjects.forEach((subject) => {
-				const selectedClass_obj = classes.find(
-					(c) => c.id.toString() === selectedClass
-				);
-				const isTheoryPractical =
-					selectedClass_obj && isTheoryPracticalClass(selectedClass_obj.name);
-
-				if (isTheoryPractical && subject.hasPractical) {
-					initialMarksData[subject.id] = {
-						marks: "",
-						theoryMarks: "",
-						practicalMarks: "",
-					};
-				} else {
-					initialMarksData[subject.id] = {
-						marks: "",
-						theoryMarks: "",
-						practicalMarks: "",
-					};
-				}
-			});
-
-			setMarksData(initialMarksData);
-			setIsMarksDialogOpen(true);
+			toast.error("Failed to load student data");
 		}
 	};
 
@@ -294,8 +300,8 @@ export default function MarksManagement() {
 			const isTheoryPractical =
 				selectedClass_obj && isTheoryPracticalClass(selectedClass_obj.name);
 
-			// Prepare marks data
-			const subjectMarks = subjects.map((subject) => {
+			// Prepare marks data - only for subjects in the dialog (filtered by opt-in)
+			const subjectMarks = dialogSubjects.map((subject) => {
 				const marks = marksData[subject.id];
 
 				if (isTheoryPractical && subject.hasPractical) {
@@ -334,6 +340,7 @@ export default function MarksManagement() {
 				setIsMarksDialogOpen(false);
 				setSelectedStudent(null);
 				setMarksData({});
+				setDialogSubjects([]);
 			} else {
 				const error = await response.json();
 				toast.error(error.error || "Failed to save marks");
@@ -536,7 +543,7 @@ export default function MarksManagement() {
 											</TableRow>
 										</TableHeader>
 										<TableBody>
-											{subjects.map((subject) => (
+											{dialogSubjects.map((subject) => (
 												<TableRow key={subject.id}>
 													<TableCell className="font-medium">
 														{subject.name}
@@ -629,7 +636,7 @@ export default function MarksManagement() {
 									Traditional Marking System
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-									{subjects.map((subject) => (
+									{dialogSubjects.map((subject) => (
 										<div key={subject.id} className="space-y-2">
 											<Label htmlFor={`marks-${subject.id}`}>
 												{subject.name} (Max: {subject.maxMarks})
@@ -666,6 +673,7 @@ export default function MarksManagement() {
 								setIsMarksDialogOpen(false);
 								setSelectedStudent(null);
 								setMarksData({});
+								setDialogSubjects([]);
 							}}
 						>
 							Cancel

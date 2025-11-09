@@ -174,6 +174,13 @@ export async function POST(request: NextRequest) {
 					where: { classId },
 				});
 
+				// Get student's opted-in additional subjects
+				const optedInSubjects = await prisma.studentSubjectOptIn.findMany({
+					where: { studentId: student.id },
+					select: { subjectId: true },
+				});
+				const optedInSubjectIds = optedInSubjects.map((opt) => opt.subjectId);
+
 				// Create subject marks
 				if (marks && typeof marks === "object") {
 					for (const [subjectName, markData] of Object.entries(marks)) {
@@ -184,6 +191,15 @@ export async function POST(request: NextRequest) {
 								rollNumber,
 								error: `Subject "${subjectName}" not found for this class`,
 							});
+							continue;
+						}
+
+						// Check if subject is additional and student has opted in
+						if (
+							subject.isAdditional &&
+							!optedInSubjectIds.includes(subject.id)
+						) {
+							// Skip this subject - student hasn't opted in
 							continue;
 						}
 

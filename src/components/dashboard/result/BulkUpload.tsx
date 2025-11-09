@@ -118,15 +118,23 @@ export default function BulkUpload() {
 						marksObtained?: number; // For Nursery-8th
 						theoryMarks?: number; // For 9th-12th
 						practicalMarks?: number; // For 9th-12th
+						isAdditional?: boolean; // Track if subject is additional
 					};
 				} = {};
 
 				// Extract marks for each subject
 				selectedClass.subjects.forEach((subject) => {
+					// Remove "(Optional)" suffix for matching if present
+					const subjectBaseName = subject.name;
+
 					if (subject.hasPractical) {
 						// For classes 9-12 with theory+practical
-						const theoryColumnName = `${subject.name} Theory`;
-						const practicalColumnName = `${subject.name} Practical`;
+						const theoryColumnName = subject.isAdditional
+							? `${subjectBaseName} (Optional) Theory`
+							: `${subjectBaseName} Theory`;
+						const practicalColumnName = subject.isAdditional
+							? `${subjectBaseName} (Optional) Practical`
+							: `${subjectBaseName} Practical`;
 
 						const theoryValue = row[theoryColumnName];
 						const practicalValue = row[practicalColumnName];
@@ -157,16 +165,22 @@ export default function BulkUpload() {
 						}
 
 						// Include subject if at least one mark is provided
+						// For additional subjects, marks will only be created if student has opted in (handled in API)
 						if (theoryMarks !== undefined || practicalMarks !== undefined) {
 							marks[subject.name] = {
 								subjectId: subject.id,
 								theoryMarks,
 								practicalMarks,
+								isAdditional: subject.isAdditional,
 							};
 						}
 					} else {
 						// For classes Nursery-8th (traditional marking)
-						const markValue = row[subject.name];
+						const columnName = subject.isAdditional
+							? `${subjectBaseName} (Optional)`
+							: subjectBaseName;
+						const markValue = row[columnName];
+
 						if (
 							markValue !== undefined &&
 							markValue !== null &&
@@ -177,6 +191,7 @@ export default function BulkUpload() {
 								marks[subject.name] = {
 									subjectId: subject.id,
 									marksObtained: parsedMark,
+									isAdditional: subject.isAdditional,
 								};
 							}
 						}
@@ -349,16 +364,23 @@ export default function BulkUpload() {
 		// Generate subject headers based on theory/practical structure
 		const subjectHeaders: string[] = [];
 		const sampleMarks: string[] = [];
+		const hasAdditionalSubjects = selectedClass.subjects.some(
+			(s) => s.isAdditional
+		);
 
 		selectedClass.subjects.forEach((subject) => {
+			const subjectLabel = subject.isAdditional
+				? `${subject.name} (Optional)`
+				: subject.name;
+
 			if (subject.hasPractical) {
 				// For classes 9-12 with theory+practical
-				subjectHeaders.push(`${subject.name} Theory`);
-				subjectHeaders.push(`${subject.name} Practical`);
+				subjectHeaders.push(`${subjectLabel} Theory`);
+				subjectHeaders.push(`${subjectLabel} Practical`);
 				sampleMarks.push("0", "0");
 			} else {
 				// For classes Nursery-8th (traditional marking)
-				subjectHeaders.push(subject.name);
+				subjectHeaders.push(subjectLabel);
 				sampleMarks.push("0");
 			}
 		});
@@ -375,6 +397,19 @@ export default function BulkUpload() {
 				...sampleMarks,
 			],
 		];
+
+		// Add instructions row if there are additional subjects
+		if (hasAdditionalSubjects) {
+			const instructionRow = [
+				"INSTRUCTIONS:",
+				"For optional subjects,",
+				"leave blank if student",
+				"has not opted for that",
+				"subject",
+				...Array(subjectHeaders.length).fill(""),
+			];
+			sampleData.unshift(instructionRow);
+		}
 
 		const worksheetData = [headers, ...sampleData];
 		const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);

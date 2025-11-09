@@ -86,6 +86,11 @@ export async function POST(request: NextRequest) {
 						},
 					},
 				},
+				optedInSubjects: {
+					include: {
+						subject: true,
+					},
+				},
 			},
 		});
 

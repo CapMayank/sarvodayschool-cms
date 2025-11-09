@@ -213,6 +213,7 @@ model Subject {
   updatedAt       DateTime      @updatedAt
   
   subjectMarks    SubjectMark[]
+  optedInStudents StudentSubjectOptIn[]
   
   @@unique([classId, name])
 }
@@ -232,6 +233,7 @@ model Student {
   updatedAt      DateTime  @updatedAt
   
   results        Result[]
+  optedInSubjects StudentSubjectOptIn[]
   
   @@unique([rollNumber, academicYear])
   @@unique([enrollmentNo, academicYear])
@@ -288,4 +290,19 @@ model ResultPublication {
   publishedBy     String?   // User who published
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+// Student-Subject Opt-In (for additional subjects in classes 11-12)
+model StudentSubjectOptIn {
+  id         Int      @id @default(autoincrement())
+  studentId  Int
+  subjectId  Int
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@unique([studentId, subjectId])
+  @@index([studentId])
+  @@index([subjectId])
 }

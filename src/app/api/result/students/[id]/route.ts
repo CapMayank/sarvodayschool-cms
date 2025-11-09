@@ -30,6 +30,11 @@ export async function GET(
 						},
 					},
 				},
+				optedInSubjects: {
+					include: {
+						subject: true,
+					},
+				},
 			},
 		});
 

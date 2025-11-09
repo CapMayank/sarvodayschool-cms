@@ -149,6 +149,13 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
+		// Get student's opted-in additional subjects
+		const optedInSubjects = await prisma.studentSubjectOptIn.findMany({
+			where: { studentId },
+			select: { subjectId: true },
+		});
+		const optedInSubjectIds = optedInSubjects.map((opt) => opt.subjectId);
+
 		// Create or update subject marks
 		for (const mark of marks) {
 			const { subjectId, marksObtained, theoryMarks, practicalMarks } = mark;
@@ -159,6 +166,12 @@ export async function POST(request: NextRequest) {
 			});
 
 			if (!subject) continue;
+
+			// Validate opt-in for additional subjects
+			if (subject.isAdditional && !optedInSubjectIds.includes(subjectId)) {
+				// Skip this subject - student hasn't opted in
+				continue;
+			}
 
 			let isPassed = false;
 			let isTheoryPassed = null;

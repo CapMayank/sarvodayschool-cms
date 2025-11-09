@@ -30,6 +30,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Search, Edit, Trash2, Plus, Filter } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +38,11 @@ interface Class {
 	id: number;
 	name: string;
 	hasPractical: boolean;
+	subjects?: Array<{
+		id: number;
+		name: string;
+		isAdditional: boolean;
+	}>;
 }
 
 interface Student {
@@ -59,6 +65,7 @@ interface StudentFormData {
 	dateOfBirth: string;
 	classId: string;
 	academicYear: string;
+	optedSubjectIds: number[]; // Track opted-in additional subjects
 }
 
 // Get current academic year in the format used by the system
@@ -97,6 +104,7 @@ export default function StudentManagement() {
 		dateOfBirth: "",
 		classId: "",
 		academicYear: currentAcademicYear,
+		optedSubjectIds: [],
 	});
 
 	// Available academic years (current and past 5 years)
@@ -122,7 +130,23 @@ export default function StudentManagement() {
 			const response = await fetch("/api/result/classes");
 			if (response.ok) {
 				const data = await response.json();
-				setClasses(data.classes);
+				// Fetch subjects for each class
+				const classesWithSubjects = await Promise.all(
+					data.classes.map(async (cls: Class) => {
+						const subjectsResponse = await fetch(
+							`/api/result/classes/${cls.id}/subjects`
+						);
+						if (subjectsResponse.ok) {
+							const subjectsData = await subjectsResponse.json();
+							return {
+								...cls,
+								subjects: subjectsData.subjects,
+							};
+						}
+						return cls;
+					})
+				);
+				setClasses(classesWithSubjects);
 			}
 		} catch (error) {
 			console.error("Error fetching classes:", error);
@@ -183,6 +207,7 @@ export default function StudentManagement() {
 			dateOfBirth: "",
 			classId: "",
 			academicYear: currentAcademicYear,
+			optedSubjectIds: [],
 		});
 	};
 
@@ -198,6 +223,23 @@ export default function StudentManagement() {
 			});
 
 			if (response.ok) {
+				const data = await response.json();
+				const newStudent = data.student;
+
+				// Save opted-in additional subjects
+				if (formData.optedSubjectIds.length > 0) {
+					for (const subjectId of formData.optedSubjectIds) {
+						await fetch("/api/result/subject-opt-ins", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								studentId: newStudent.id,
+								subjectId,
+							}),
+						});
+					}
+				}
+
 				toast.success("Student added successfully");
 				setIsAddDialogOpen(false);
 				resetForm();
@@ -229,6 +271,54 @@ export default function StudentManagement() {
 			);
 
 			if (response.ok) {
+				// First, fetch current opt-ins
+				const optInParams = new URLSearchParams({
+					studentId: editingStudent.id.toString(),
+				});
+				const currentOptIns = await fetch(
+					`/api/result/subject-opt-ins?${optInParams}`
+				);
+				let currentOptInIds: number[] = [];
+
+				if (currentOptIns.ok) {
+					const data = await currentOptIns.json();
+					currentOptInIds = data.optIns.map(
+						(opt: { subjectId: number }) => opt.subjectId
+					);
+				}
+
+				// Find subjects to add
+				const toAdd = formData.optedSubjectIds.filter(
+					(id) => !currentOptInIds.includes(id)
+				);
+				// Find subjects to remove
+				const toRemove = currentOptInIds.filter(
+					(id) => !formData.optedSubjectIds.includes(id)
+				);
+
+				// Add new opt-ins
+				for (const subjectId of toAdd) {
+					await fetch("/api/result/subject-opt-ins", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							studentId: editingStudent.id,
+							subjectId,
+						}),
+					});
+				}
+
+				// Remove opt-ins
+				for (const subjectId of toRemove) {
+					const deleteParams = new URLSearchParams({
+						studentId: editingStudent.id.toString(),
+						subjectId: subjectId.toString(),
+					});
+					await fetch(`/api/result/subject-opt-ins?${deleteParams}`, {
+						method: "DELETE",
+					});
+				}
+
 				toast.success("Student updated successfully");
 				setIsEditDialogOpen(false);
 				setEditingStudent(null);
@@ -271,20 +361,43 @@ export default function StudentManagement() {
 		}
 	};
 
-	const openEditDialog = (student: Student) => {
+	const openEditDialog = async (student: Student) => {
 		setEditingStudent(student);
-		setFormData({
-			rollNumber: student.rollNumber,
-			enrollmentNo: student.enrollmentNo || "",
-			name: student.name,
-			fatherName: student.fatherName,
-			dateOfBirth: student.dateOfBirth
-				? new Date(student.dateOfBirth).toISOString().split("T")[0]
-				: "",
-			classId: student.classId.toString(),
-			academicYear: student.academicYear,
-		});
-		setIsEditDialogOpen(true);
+
+		// Fetch student's opted-in subjects
+		try {
+			const optInParams = new URLSearchParams({
+				studentId: student.id.toString(),
+			});
+			const optInResponse = await fetch(
+				`/api/result/subject-opt-ins?${optInParams}`
+			);
+			let optedSubjectIds: number[] = [];
+
+			if (optInResponse.ok) {
+				const optInData = await optInResponse.json();
+				optedSubjectIds = optInData.optIns.map(
+					(opt: { subjectId: number }) => opt.subjectId
+				);
+			}
+
+			setFormData({
+				rollNumber: student.rollNumber,
+				enrollmentNo: student.enrollmentNo || "",
+				name: student.name,
+				fatherName: student.fatherName,
+				dateOfBirth: student.dateOfBirth
+					? new Date(student.dateOfBirth).toISOString().split("T")[0]
+					: "",
+				classId: student.classId.toString(),
+				academicYear: student.academicYear,
+				optedSubjectIds,
+			});
+			setIsEditDialogOpen(true);
+		} catch (error) {
+			console.error("Error loading student data:", error);
+			toast.error("Failed to load student data");
+		}
 	};
 
 	const formatDate = (dateString: string) => {
@@ -546,6 +659,70 @@ export default function StudentManagement() {
 								</SelectContent>
 							</Select>
 						</div>
+
+						{/* Additional Subjects Selection (for classes 11-12 only) */}
+						{formData.classId &&
+							(() => {
+								const selectedClass = classes.find(
+									(c) => c.id.toString() === formData.classId
+								);
+								const additionalSubjects =
+									selectedClass?.subjects?.filter((s) => s.isAdditional) || [];
+
+								if (additionalSubjects.length > 0) {
+									return (
+										<div className="space-y-2 border-t pt-4">
+											<Label className="text-base">
+												Optional/Additional Subjects
+											</Label>
+											<p className="text-sm text-muted-foreground">
+												Select the additional subjects this student will take:
+											</p>
+											<div className="space-y-2">
+												{additionalSubjects.map((subject) => (
+													<div
+														key={subject.id}
+														className="flex items-center space-x-2"
+													>
+														<Checkbox
+															id={`add-subject-${subject.id}`}
+															checked={formData.optedSubjectIds.includes(
+																subject.id
+															)}
+															onCheckedChange={(checked) => {
+																if (checked) {
+																	setFormData({
+																		...formData,
+																		optedSubjectIds: [
+																			...formData.optedSubjectIds,
+																			subject.id,
+																		],
+																	});
+																} else {
+																	setFormData({
+																		...formData,
+																		optedSubjectIds:
+																			formData.optedSubjectIds.filter(
+																				(id) => id !== subject.id
+																			),
+																	});
+																}
+															}}
+														/>
+														<label
+															htmlFor={`add-subject-${subject.id}`}
+															className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+														>
+															{subject.name}
+														</label>
+													</div>
+												))}
+											</div>
+										</div>
+									);
+								}
+								return null;
+							})()}
 					</div>
 					<DialogFooter>
 						<Button
@@ -675,6 +852,70 @@ export default function StudentManagement() {
 								</SelectContent>
 							</Select>
 						</div>
+
+						{/* Additional Subjects Selection (for classes 11-12 only) */}
+						{formData.classId &&
+							(() => {
+								const selectedClass = classes.find(
+									(c) => c.id.toString() === formData.classId
+								);
+								const additionalSubjects =
+									selectedClass?.subjects?.filter((s) => s.isAdditional) || [];
+
+								if (additionalSubjects.length > 0) {
+									return (
+										<div className="space-y-2 border-t pt-4">
+											<Label className="text-base">
+												Optional/Additional Subjects
+											</Label>
+											<p className="text-sm text-muted-foreground">
+												Select the additional subjects this student will take:
+											</p>
+											<div className="space-y-2">
+												{additionalSubjects.map((subject) => (
+													<div
+														key={subject.id}
+														className="flex items-center space-x-2"
+													>
+														<Checkbox
+															id={`edit-subject-${subject.id}`}
+															checked={formData.optedSubjectIds.includes(
+																subject.id
+															)}
+															onCheckedChange={(checked) => {
+																if (checked) {
+																	setFormData({
+																		...formData,
+																		optedSubjectIds: [
+																			...formData.optedSubjectIds,
+																			subject.id,
+																		],
+																	});
+																} else {
+																	setFormData({
+																		...formData,
+																		optedSubjectIds:
+																			formData.optedSubjectIds.filter(
+																				(id) => id !== subject.id
+																			),
+																	});
+																}
+															}}
+														/>
+														<label
+															htmlFor={`edit-subject-${subject.id}`}
+															className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+														>
+															{subject.name}
+														</label>
+													</div>
+												))}
+											</div>
+										</div>
+									);
+								}
+								return null;
+							})()}
 					</div>
 					<DialogFooter>
 						<Button
