@@ -18,8 +18,8 @@ export const revalidate = 0;
 
 // Helper to get base URL
 function getBaseUrl() {
-	if (process.env.NEXT_PUBLIC_BASE_URL) {
-		return process.env.NEXT_PUBLIC_BASE_URL;
+	if (process.env.NEXT_PUBLIC_APP_URL) {
+		return process.env.NEXT_PUBLIC_APP_URL;
 	}
 	if (process.env.VERCEL_URL) {
 		return `https://${process.env.VERCEL_URL}`;
@@ -50,14 +50,11 @@ interface NewsItem {
 async function getNewsItem(slug: string): Promise<NewsItem | null> {
 	try {
 		const baseUrl = getBaseUrl();
-		
-		const res = await fetch(
-			`${baseUrl}/api/news/slug/${slug}`,
-			{
-				cache: "no-store",
-				next: { revalidate: 0 }
-			}
-		);
+
+		const res = await fetch(`${baseUrl}/api/news/slug/${slug}`, {
+			cache: "no-store",
+			next: { revalidate: 0 },
+		});
 
 		if (!res.ok) {
 			console.error(`Failed to fetch news: ${res.status} ${res.statusText}`);
@@ -76,17 +73,19 @@ async function getRelatedNews(
 ): Promise<NewsItem[]> {
 	try {
 		const baseUrl = getBaseUrl();
-		
+
 		const res = await fetch(
 			`${baseUrl}/api/news?category=${category}&limit=3`,
 			{
 				cache: "no-store",
-				next: { revalidate: 0 }
+				next: { revalidate: 0 },
 			}
 		);
 
 		if (!res.ok) {
-			console.error(`Failed to fetch related news: ${res.status} ${res.statusText}`);
+			console.error(
+				`Failed to fetch related news: ${res.status} ${res.statusText}`
+			);
 			return [];
 		}
 		const allNews = await res.json();
