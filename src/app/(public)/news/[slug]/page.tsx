@@ -12,6 +12,21 @@ import Header from "@/components/public/header";
 import Footer from "@/components/public/footer";
 import { Metadata } from "next";
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+// Helper to get base URL
+function getBaseUrl() {
+	if (process.env.NEXT_PUBLIC_BASE_URL) {
+		return process.env.NEXT_PUBLIC_BASE_URL;
+	}
+	if (process.env.VERCEL_URL) {
+		return `https://${process.env.VERCEL_URL}`;
+	}
+	return "http://localhost:3000";
+}
+
 interface NewsItem {
 	id: number;
 	slug: string;
@@ -34,16 +49,20 @@ interface NewsItem {
 
 async function getNewsItem(slug: string): Promise<NewsItem | null> {
 	try {
+		const baseUrl = getBaseUrl();
+		
 		const res = await fetch(
-			`${
-				process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-			}/api/news/slug/${slug}`,
+			`${baseUrl}/api/news/slug/${slug}`,
 			{
 				cache: "no-store",
+				next: { revalidate: 0 }
 			}
 		);
 
-		if (!res.ok) return null;
+		if (!res.ok) {
+			console.error(`Failed to fetch news: ${res.status} ${res.statusText}`);
+			return null;
+		}
 		return res.json();
 	} catch (error) {
 		console.error("Error fetching news:", error);
@@ -56,16 +75,20 @@ async function getRelatedNews(
 	currentId: number
 ): Promise<NewsItem[]> {
 	try {
+		const baseUrl = getBaseUrl();
+		
 		const res = await fetch(
-			`${
-				process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-			}/api/news?category=${category}&limit=3`,
+			`${baseUrl}/api/news?category=${category}&limit=3`,
 			{
 				cache: "no-store",
+				next: { revalidate: 0 }
 			}
 		);
 
-		if (!res.ok) return [];
+		if (!res.ok) {
+			console.error(`Failed to fetch related news: ${res.status} ${res.statusText}`);
+			return [];
+		}
 		const allNews = await res.json();
 		return allNews.filter((item: NewsItem) => item.id !== currentId);
 	} catch (error) {

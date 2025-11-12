@@ -724,7 +724,9 @@ export default function NewsTab() {
 														className="col-span-3 p-2 border border-gray-300 rounded text-sm"
 													>
 														<option value="youtube">YouTube Video</option>
-														<option value="youtube-playlist">YouTube Playlist</option>
+														<option value="youtube-playlist">
+															YouTube Playlist
+														</option>
 														<option value="facebook">Facebook</option>
 														<option value="instagram">Instagram</option>
 														<option value="twitter">Twitter</option>
@@ -771,7 +773,9 @@ export default function NewsTab() {
 												+ Add Link
 											</button>
 											<p className="text-xs text-gray-500 mt-2">
-												<strong>YouTube Playlists:</strong> Use the full playlist URL (e.g., https://www.youtube.com/playlist?list=PLxxxxxx)
+												<strong>YouTube Playlists:</strong> Use the full
+												playlist URL (e.g.,
+												https://www.youtube.com/playlist?list=PLxxxxxx)
 											</p>
 										</div>
 									</div>
