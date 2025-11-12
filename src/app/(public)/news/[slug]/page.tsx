@@ -11,21 +11,11 @@ import SocialLinks from "@/components/public/news-detail/SocialLinks";
 import Header from "@/components/public/header";
 import Footer from "@/components/public/footer";
 import { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-// Helper to get base URL
-function getBaseUrl() {
-	if (process.env.NEXT_PUBLIC_APP_URL) {
-		return process.env.NEXT_PUBLIC_APP_URL;
-	}
-	if (process.env.VERCEL_URL) {
-		return `https://${process.env.VERCEL_URL}`;
-	}
-	return "http://localhost:3000";
-}
 
 interface NewsItem {
 	id: number;
@@ -49,18 +39,26 @@ interface NewsItem {
 
 async function getNewsItem(slug: string): Promise<NewsItem | null> {
 	try {
-		const baseUrl = getBaseUrl();
-
-		const res = await fetch(`${baseUrl}/api/news/slug/${slug}`, {
-			cache: "no-store",
-			next: { revalidate: 0 },
+		const news = await prisma.news.findUnique({
+			where: { 
+				slug,
+				isPublished: true // Only get published news
+			},
 		});
 
-		if (!res.ok) {
-			console.error(`Failed to fetch news: ${res.status} ${res.statusText}`);
+		if (!news) {
 			return null;
 		}
-		return res.json();
+
+		// Convert Prisma types to NewsItem interface
+		return {
+			...news,
+			imageUrl: news.imageUrl || undefined,
+			links: news.links as Array<{ type: string; url: string; title: string }> | undefined,
+			publishDate: news.publishDate.toISOString(),
+			createdAt: news.createdAt.toISOString(),
+			updatedAt: news.updatedAt.toISOString(),
+		};
 	} catch (error) {
 		console.error("Error fetching news:", error);
 		return null;
@@ -72,24 +70,27 @@ async function getRelatedNews(
 	currentId: number
 ): Promise<NewsItem[]> {
 	try {
-		const baseUrl = getBaseUrl();
+		const relatedNews = await prisma.news.findMany({
+			where: {
+				category,
+				isPublished: true,
+				id: { not: currentId },
+			},
+			take: 3,
+			orderBy: {
+				publishDate: 'desc',
+			},
+		});
 
-		const res = await fetch(
-			`${baseUrl}/api/news?category=${category}&limit=3`,
-			{
-				cache: "no-store",
-				next: { revalidate: 0 },
-			}
-		);
-
-		if (!res.ok) {
-			console.error(
-				`Failed to fetch related news: ${res.status} ${res.statusText}`
-			);
-			return [];
-		}
-		const allNews = await res.json();
-		return allNews.filter((item: NewsItem) => item.id !== currentId);
+		// Convert Prisma types to NewsItem interface
+		return relatedNews.map(news => ({
+			...news,
+			imageUrl: news.imageUrl || undefined,
+			links: news.links as Array<{ type: string; url: string; title: string }> | undefined,
+			publishDate: news.publishDate.toISOString(),
+			createdAt: news.createdAt.toISOString(),
+			updatedAt: news.updatedAt.toISOString(),
+		}));
 	} catch (error) {
 		console.error("Error fetching related news:", error);
 		return [];
