@@ -55,3 +55,39 @@ export async function deleteCloudinaryFile(fileUrl: string): Promise<boolean> {
 
 // Keep the old function name for backward compatibility
 export const deleteCloudinaryImage = deleteCloudinaryFile;
+
+/**
+ * Upload file to Cloudinary
+ */
+export async function uploadToCloudinary(
+	file: File,
+	folder: string = "sarvodaya"
+): Promise<string> {
+	const formData = new FormData();
+	formData.append("file", file);
+	formData.append(
+		"upload_preset",
+		process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+	);
+	formData.append("folder", folder);
+
+	const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+	if (!cloudName) {
+		throw new Error("Cloudinary cloud name not configured");
+	}
+
+	const response = await fetch(
+		`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+		{
+			method: "POST",
+			body: formData,
+		}
+	);
+
+	if (!response.ok) {
+		throw new Error("Failed to upload image to Cloudinary");
+	}
+
+	const data = await response.json();
+	return data.secure_url;
+}

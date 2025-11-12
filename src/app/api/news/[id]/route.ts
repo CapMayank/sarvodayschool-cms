@@ -42,15 +42,34 @@ export async function PUT(
 		const { id } = await params;
 		const body = await request.json();
 
+		// Generate slug from title if title is changed
+		const updateData: any = {
+			title: body.title,
+			excerpt: body.excerpt,
+			detailedArticle: body.detailedArticle,
+			imageUrl: body.imageUrl,
+			images: body.images,
+			links: body.links,
+			category: body.category,
+			publishDate: body.publishDate ? new Date(body.publishDate) : undefined,
+			isPublished: body.isPublished,
+		};
+
+		// Update slug if title changed and slug not manually set
+		if (body.title && !body.slug) {
+			updateData.slug = body.title
+				.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, "")
+				.replace(/\s+/g, "-")
+				.replace(/-+/g, "-")
+				.trim();
+		} else if (body.slug) {
+			updateData.slug = body.slug;
+		}
+
 		const news = await prisma.news.update({
 			where: { id: parseInt(id) },
-			data: {
-				title: body.title,
-				content: body.content,
-				imageUrl: body.imageUrl,
-				category: body.category,
-				publishDate: body.publishDate ? new Date(body.publishDate) : undefined,
-			},
+			data: updateData,
 		});
 
 		return NextResponse.json(news);

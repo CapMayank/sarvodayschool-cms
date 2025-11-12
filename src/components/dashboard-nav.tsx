@@ -51,7 +51,7 @@ export default function DashboardNav({ session }: { session: any }) {
 		single: [
 			{ href: "/", label: "Home", icon: Home },
 			{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-			{ href: "/dashboard/user", label: "User", icon: User },
+			{ href: "/dashboard/users", label: "Users", icon: User },
 			{ href: "/dashboard/result", label: "Result", icon: GraduationCap },
 		],
 		contentManagement: {

@@ -101,14 +101,19 @@ model SlideShow {
 
 // News Model
 model News {
-  id          Int     @id @default(autoincrement())
-  title       String
-  content     String
-  imageUrl    String?
-  category    String  @default("General")
-  publishDate DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique
+  title           String
+  excerpt         String   // Short summary for carousel and preview
+  detailedArticle String   @db.Text // Rich content for full article page
+  imageUrl        String?  // Primary image for carousel
+  images          String[] // Additional images (optional)
+  links           Json?    // Array of links with type and URL (optional)
+  category        String   @default("General")
+  publishDate     DateTime
+  isPublished     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // Admission Form Submission

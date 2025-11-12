@@ -5,11 +5,13 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { FaCalendarAlt } from "react-icons/fa";
+import Link from "next/link";
 
 interface NewsItem {
 	id: number;
+	slug: string;
 	title: string;
-	content: string;
+	excerpt: string;
 	imageUrl?: string;
 	category: string;
 	publishDate: string;
@@ -64,7 +66,7 @@ const News = () => {
 	useEffect(() => {
 		if (news.length === 0) return;
 
-		const timer = setInterval(nextSlide, 5000);
+		const timer = setInterval(nextSlide, 10000);
 		return () => clearInterval(timer);
 	}, [nextSlide, news.length]);
 
@@ -186,7 +188,7 @@ const News = () => {
 								initial={{ y: 20, opacity: 0 }}
 								animate={{ y: 0, opacity: 1 }}
 								transition={{ delay: 0.2 }}
-								className="absolute bottom-0 left-0 right-0 px-16 pb-8 pt-16"
+								className="absolute bottom-0 left-0 right-0 px-6 md:px-16 pb-8 pt-16"
 							>
 								<div className="max-w-3xl mx-auto">
 									<div className="flex items-center gap-2 text-red-500 mb-4">
@@ -202,9 +204,17 @@ const News = () => {
 									<h3 className="text-2xl md:text-4xl font-bold text-white mb-4">
 										{news[currentIndex].title}
 									</h3>
-									<p className="text-white/90 text-base md:text-lg leading-relaxed line-clamp-3 md:line-clamp-none">
-										{news[currentIndex].content}
+									<p className="text-white/90 text-base md:text-lg leading-relaxed line-clamp-3">
+										{news[currentIndex].excerpt}
 									</p>
+
+									{/* Read More Button */}
+									<Link
+										href={`/news/${news[currentIndex].slug}`}
+										className="inline-block mt-6 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+									>
+										Read Full Article →
+									</Link>
 								</div>
 							</motion.div>
 						</motion.div>

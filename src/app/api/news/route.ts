@@ -9,10 +9,14 @@ export async function GET(request: NextRequest) {
 		const searchParams = request.nextUrl.searchParams;
 		const limit = parseInt(searchParams.get("limit") || "10");
 		const category = searchParams.get("category");
+		const publishedOnly = searchParams.get("published") !== "false"; // Default to true
 
 		let where: any = {};
 		if (category) {
 			where.category = category;
+		}
+		if (publishedOnly) {
+			where.isPublished = true;
 		}
 
 		const news = await prisma.news.findMany({
@@ -39,13 +43,28 @@ export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
 
+		// Generate slug from title if not provided
+		const slug =
+			body.slug ||
+			body.title
+				.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, "")
+				.replace(/\s+/g, "-")
+				.replace(/-+/g, "-")
+				.trim();
+
 		const news = await prisma.news.create({
 			data: {
+				slug,
 				title: body.title,
-				content: body.content,
-				imageUrl: body.imageUrl || "",
+				excerpt: body.excerpt,
+				detailedArticle: body.detailedArticle || body.excerpt,
+				imageUrl: body.imageUrl || null,
+				images: body.images || [],
+				links: body.links || null,
 				category: body.category || "General",
 				publishDate: new Date(body.publishDate),
+				isPublished: body.isPublished !== undefined ? body.isPublished : true,
 			},
 		});
 

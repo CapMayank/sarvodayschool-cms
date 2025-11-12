@@ -4,10 +4,14 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
-import CloudinaryUpload from "@/components/CloudinaryUpload";
-import { deleteCloudinaryImage } from "@/lib/cloudinary-helper";
+import DeferredImageUpload from "@/components/DeferredImageUpload";
+import {
+	deleteCloudinaryImage,
+	uploadToCloudinary,
+} from "@/lib/cloudinary-helper";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import Image from "next/image";
 import {
 	Plus,
 	Loader2,
@@ -16,6 +20,11 @@ import {
 	Calendar,
 	Tag,
 	Newspaper,
+	Image as ImageIcon,
+	X,
+	Eye,
+	EyeOff,
+	Upload,
 } from "lucide-react";
 
 export default function NewsTab() {
@@ -25,12 +34,26 @@ export default function NewsTab() {
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
 	const [deleting, setDeleting] = useState<number | null>(null);
+
+	// Separate state for pending file uploads
+	const [pendingPrimaryImage, setPendingPrimaryImage] = useState<File | null>(
+		null
+	);
+	const [pendingAdditionalImages, setPendingAdditionalImages] = useState<
+		File[]
+	>([]);
+
 	const [formData, setFormData] = useState({
 		title: "",
-		content: "",
+		slug: "",
+		excerpt: "",
+		detailedArticle: "",
 		imageUrl: "",
+		images: [] as string[],
+		links: [] as Array<{ type: string; url: string; title: string }>,
 		category: "General",
 		publishDate: new Date().toISOString().split("T")[0],
+		isPublished: true,
 	});
 
 	const loadNews = async () => {
@@ -57,12 +80,62 @@ export default function NewsTab() {
 	const resetForm = () => {
 		setFormData({
 			title: "",
-			content: "",
+			slug: "",
+			excerpt: "",
+			detailedArticle: "",
 			imageUrl: "",
+			images: [],
+			links: [],
 			category: "General",
 			publishDate: new Date().toISOString().split("T")[0],
+			isPublished: true,
 		});
+		setPendingPrimaryImage(null);
+		setPendingAdditionalImages([]);
 		setEditingId(null);
+	};
+
+	// Auto-generate slug from title
+	const generateSlug = (title: string) => {
+		return title
+			.toLowerCase()
+			.replace(/[^a-z0-9\s-]/g, "")
+			.replace(/\s+/g, "-")
+			.replace(/-+/g, "-")
+			.trim();
+	};
+
+	// Link management helpers
+	const addLink = () => {
+		setFormData({
+			...formData,
+			links: [...formData.links, { type: "custom", url: "", title: "" }],
+		});
+	};
+
+	const updateLink = (
+		index: number,
+		field: "type" | "url" | "title",
+		value: string
+	) => {
+		const newLinks = [...formData.links];
+		newLinks[index][field] = value;
+		setFormData({ ...formData, links: newLinks });
+	};
+
+	const removeLink = (index: number) => {
+		setFormData({
+			...formData,
+			links: formData.links.filter((_, i) => i !== index),
+		});
+	};
+
+	// Image management helpers
+	const removeImage = (index: number) => {
+		setFormData({
+			...formData,
+			images: formData.images.filter((_, i) => i !== index),
+		});
 	};
 
 	const handleSubmit = async () => {
@@ -71,19 +144,76 @@ export default function NewsTab() {
 			return;
 		}
 
-		if (!formData.content.trim()) {
-			toast.error("Please enter content");
+		if (!formData.excerpt.trim()) {
+			toast.error("Please enter an excerpt");
 			return;
 		}
 
 		try {
 			setSubmitting(true);
 
+			let uploadedPrimaryImageUrl = formData.imageUrl;
+			let uploadedAdditionalImages = [...formData.images];
+
+			// Upload primary image if a new file is selected
+			if (pendingPrimaryImage) {
+				toast.info("Uploading primary image...");
+				try {
+					uploadedPrimaryImageUrl = await uploadToCloudinary(
+						pendingPrimaryImage,
+						"sarvodaya/news"
+					);
+				} catch (error) {
+					console.error("Error uploading primary image:", error);
+					toast.error("Failed to upload primary image");
+					setSubmitting(false);
+					return;
+				}
+			}
+
+			// Upload additional images if any
+			if (pendingAdditionalImages.length > 0) {
+				toast.info(
+					`Uploading ${pendingAdditionalImages.length} additional image(s)...`
+				);
+				try {
+					const uploadPromises = pendingAdditionalImages.map((file) =>
+						uploadToCloudinary(file, "sarvodaya/news/gallery")
+					);
+					const newImageUrls = await Promise.all(uploadPromises);
+					uploadedAdditionalImages = [
+						...uploadedAdditionalImages,
+						...newImageUrls,
+					];
+				} catch (error) {
+					console.error("Error uploading additional images:", error);
+					toast.error("Failed to upload some images");
+					setSubmitting(false);
+					return;
+				}
+			}
+
+			// Auto-generate slug if not provided
+			const slug = formData.slug || generateSlug(formData.title);
+
+			const submitData = {
+				title: formData.title,
+				slug,
+				excerpt: formData.excerpt,
+				detailedArticle: formData.detailedArticle || formData.excerpt,
+				imageUrl: uploadedPrimaryImageUrl,
+				images: uploadedAdditionalImages,
+				links: formData.links,
+				category: formData.category,
+				publishDate: formData.publishDate,
+				isPublished: formData.isPublished,
+			};
+
 			if (editingId) {
-				await apiClient.updateNews(editingId, formData);
+				await apiClient.updateNews(editingId, submitData);
 				toast.success("News updated successfully");
 			} else {
-				await apiClient.createNews(formData);
+				await apiClient.createNews(submitData);
 				toast.success("News created successfully");
 			}
 
@@ -101,11 +231,19 @@ export default function NewsTab() {
 	const handleEdit = (item: any) => {
 		setFormData({
 			title: item.title,
-			content: item.content,
+			slug: item.slug || "",
+			excerpt: item.excerpt || "",
+			detailedArticle: item.detailedArticle || item.excerpt || "",
 			imageUrl: item.imageUrl || "",
+			images: item.images || [],
+			links: item.links || [],
 			category: item.category,
 			publishDate: new Date(item.publishDate).toISOString().split("T")[0],
+			isPublished: item.isPublished !== undefined ? item.isPublished : true,
 		});
+		// Clear pending images when editing
+		setPendingPrimaryImage(null);
+		setPendingAdditionalImages([]);
 		setEditingId(item.id);
 		setShowModal(true);
 	};
@@ -233,19 +371,21 @@ export default function NewsTab() {
 									<div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
 										{/* Image */}
 										{item.imageUrl ? (
-											<img
+											<Image
 												src={item.imageUrl}
 												alt={item.title}
-												className="h-20 w-28 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+												width={112}
+												height={80}
+												className="h-20 w-28 object-cover rounded-lg border border-gray-200 shrink-0"
 											/>
 										) : (
-											<div className="h-20 w-28 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+											<div className="h-20 w-28 bg-gray-200 rounded-lg flex items-center justify-center shrink-0">
 												<Newspaper className="w-8 h-8 text-gray-400" />
 											</div>
 										)}
 
 										{/* Content */}
-										<div className="flex-grow min-w-0">
+										<div className="grow min-w-0">
 											<h3 className="font-semibold text-gray-900 text-lg line-clamp-1">
 												{item.title}
 											</h3>
@@ -281,7 +421,7 @@ export default function NewsTab() {
 										</div>
 
 										{/* Actions */}
-										<div className="flex gap-2 flex-shrink-0">
+										<div className="flex gap-2 shrink-0">
 											<motion.button
 												whileHover={{ scale: 1.05 }}
 												whileTap={{ scale: 0.95 }}
@@ -327,7 +467,7 @@ export default function NewsTab() {
 							initial={{ scale: 0.95, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							exit={{ scale: 0.95, opacity: 0 }}
-							className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col mx-2"
+							className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col mx-2"
 						>
 							{/* Modal Header */}
 							<div className="bg-linear-to-r from-green-600 to-green-700 px-4 sm:px-6 py-4 shrink-0">
@@ -344,19 +484,7 @@ export default function NewsTab() {
 										onClick={() => setShowModal(false)}
 										className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
 									>
-										<svg
-											className="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
+										<X className="w-5 h-5" />
 									</button>
 								</div>
 							</div>
@@ -364,50 +492,292 @@ export default function NewsTab() {
 							{/* Modal Content */}
 							<div className="flex-1 overflow-y-auto p-4 sm:p-6">
 								<div className="space-y-4 sm:space-y-6">
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Title <span className="text-red-500">*</span>
-										</label>
-										<input
-											type="text"
-											placeholder="Enter news title"
-											value={formData.title}
-											onChange={(e) =>
-												setFormData({ ...formData, title: e.target.value })
-											}
-											className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-										/>
+									{/* Title & Slug */}
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-2">
+												Title <span className="text-red-500">*</span>
+											</label>
+											<input
+												type="text"
+												placeholder="Enter news title"
+												value={formData.title}
+												onChange={(e) => {
+													const newTitle = e.target.value;
+													setFormData({
+														...formData,
+														title: newTitle,
+														slug:
+															!editingId && !formData.slug
+																? generateSlug(newTitle)
+																: formData.slug,
+													});
+												}}
+												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-2">
+												URL Slug
+											</label>
+											<input
+												type="text"
+												placeholder="auto-generated-from-title"
+												value={formData.slug}
+												onChange={(e) =>
+													setFormData({ ...formData, slug: e.target.value })
+												}
+												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+											/>
+											<p className="text-xs text-gray-500 mt-1">
+												Leave empty to auto-generate
+											</p>
+										</div>
 									</div>
 
+									{/* Excerpt */}
 									<div>
 										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Content <span className="text-red-500">*</span>
+											Excerpt / Summary <span className="text-red-500">*</span>
 										</label>
 										<textarea
-											rows={6}
-											placeholder="Write news content..."
-											value={formData.content}
+											rows={3}
+											placeholder="Brief summary for carousel and preview (200 characters recommended)"
+											value={formData.excerpt}
 											onChange={(e) =>
-												setFormData({ ...formData, content: e.target.value })
+												setFormData({ ...formData, excerpt: e.target.value })
 											}
-											className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+											className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
 										/>
 									</div>
 
+									{/* Detailed Article */}
 									<div>
 										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Image (Optional)
+											Detailed Article
 										</label>
-										<CloudinaryUpload
-											currentImage={formData.imageUrl}
-											folder="sarvodaya/news"
-											onUploadSuccess={(url) =>
-												setFormData({ ...formData, imageUrl: url })
+										<textarea
+											rows={8}
+											placeholder="Full detailed article content (supports HTML)"
+											value={formData.detailedArticle}
+											onChange={(e) =>
+												setFormData({
+													...formData,
+													detailedArticle: e.target.value,
+												})
 											}
+											className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono text-sm"
 										/>
+										<p className="text-xs text-gray-500 mt-1">
+											You can use HTML tags for formatting
+										</p>
 									</div>
 
-									<div className="grid grid-cols-2 gap-4">
+									{/* Primary Image */}
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Primary Image (for carousel)
+										</label>
+										<DeferredImageUpload
+											previewUrl={formData.imageUrl}
+											label="Upload Primary Image"
+											onImageSelect={(file) => setPendingPrimaryImage(file)}
+											onImageRemove={() => {
+												setPendingPrimaryImage(null);
+												setFormData({ ...formData, imageUrl: "" });
+											}}
+										/>
+										{formData.imageUrl && !pendingPrimaryImage && (
+											<p className="text-xs text-gray-600 mt-2">
+												Current image will be kept unless you upload a new one
+											</p>
+										)}
+									</div>
+
+									{/* Additional Images */}
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Additional Images (Optional)
+										</label>
+										<div className="space-y-3">
+											{/* Display already uploaded images */}
+											{formData.images.map((img, index) => (
+												<div
+													key={`uploaded-${index}`}
+													className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50"
+												>
+													<Image
+														src={img}
+														alt={`Additional ${index + 1}`}
+														width={64}
+														height={64}
+														className="w-16 h-16 object-cover rounded"
+													/>
+													<input
+														type="text"
+														value={img}
+														readOnly
+														className="flex-1 p-2 border border-gray-300 rounded text-sm bg-white"
+													/>
+													<span className="text-xs text-green-600 px-2">
+														Uploaded
+													</span>
+													<button
+														type="button"
+														onClick={() => removeImage(index)}
+														className="p-2 text-red-600 hover:bg-red-50 rounded"
+													>
+														<X className="w-4 h-4" />
+													</button>
+												</div>
+											))}
+
+											{/* Display pending images to upload */}
+											{pendingAdditionalImages.map((file, index) => (
+												<div
+													key={`pending-${index}`}
+													className="flex items-center gap-2 p-2 border border-blue-200 rounded-lg bg-blue-50"
+												>
+													<div className="w-16 h-16 bg-blue-100 rounded flex items-center justify-center">
+														<ImageIcon className="w-8 h-8 text-blue-600" />
+													</div>
+													<input
+														type="text"
+														value={file.name}
+														readOnly
+														className="flex-1 p-2 border border-gray-300 rounded text-sm bg-white"
+													/>
+													<span className="text-xs text-blue-600 px-2">
+														Pending
+													</span>
+													<button
+														type="button"
+														onClick={() => {
+															setPendingAdditionalImages(
+																pendingAdditionalImages.filter(
+																	(_, i) => i !== index
+																)
+															);
+														}}
+														className="p-2 text-red-600 hover:bg-red-50 rounded"
+													>
+														<X className="w-4 h-4" />
+													</button>
+												</div>
+											))}
+
+											{/* Add new image button */}
+											<label className="cursor-pointer">
+												<input
+													type="file"
+													accept="image/*"
+													onChange={(e) => {
+														const file = e.target.files?.[0];
+														if (file) {
+															// Validate file
+															if (!file.type.startsWith("image/")) {
+																toast.error("Please select an image file");
+																return;
+															}
+															if (file.size > 10 * 1024 * 1024) {
+																toast.error("File size must be less than 10MB");
+																return;
+															}
+															setPendingAdditionalImages([
+																...pendingAdditionalImages,
+																file,
+															]);
+															// Reset input
+															e.target.value = "";
+														}
+													}}
+													className="hidden"
+												/>
+												<div className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors text-center cursor-pointer">
+													<Upload className="w-5 h-5 inline-block mr-2" />
+													Add Image
+												</div>
+											</label>
+											<p className="text-xs text-gray-500 mt-1">
+												Images will be uploaded when you click &quot;
+												{editingId ? "Update News" : "Create News"}&quot;
+											</p>
+										</div>
+									</div>
+
+									{/* Links */}
+									<div>
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Links (Optional)
+										</label>
+										<div className="space-y-3">
+											{formData.links.map((link, index) => (
+												<div
+													key={index}
+													className="grid grid-cols-12 gap-2 p-3 border border-gray-200 rounded-lg"
+												>
+													<select
+														value={link.type}
+														onChange={(e) =>
+															updateLink(index, "type", e.target.value)
+														}
+														className="col-span-3 p-2 border border-gray-300 rounded text-sm"
+													>
+														<option value="youtube">YouTube Video</option>
+														<option value="youtube-playlist">YouTube Playlist</option>
+														<option value="facebook">Facebook</option>
+														<option value="instagram">Instagram</option>
+														<option value="twitter">Twitter</option>
+														<option value="custom">Custom</option>
+													</select>
+													<input
+														type="text"
+														placeholder={
+															link.type === "youtube-playlist"
+																? "https://www.youtube.com/playlist?list=..."
+																: link.type === "youtube"
+																? "https://www.youtube.com/watch?v=..."
+																: "URL"
+														}
+														value={link.url}
+														onChange={(e) =>
+															updateLink(index, "url", e.target.value)
+														}
+														className="col-span-5 p-2 border border-gray-300 rounded text-sm"
+													/>
+													<input
+														type="text"
+														placeholder="Title"
+														value={link.title}
+														onChange={(e) =>
+															updateLink(index, "title", e.target.value)
+														}
+														className="col-span-3 p-2 border border-gray-300 rounded text-sm"
+													/>
+													<button
+														type="button"
+														onClick={() => removeLink(index)}
+														className="col-span-1 p-2 text-red-600 hover:bg-red-50 rounded"
+													>
+														<X className="w-4 h-4" />
+													</button>
+												</div>
+											))}
+											<button
+												type="button"
+												onClick={addLink}
+												className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-green-500 hover:text-green-600 transition-colors"
+											>
+												+ Add Link
+											</button>
+											<p className="text-xs text-gray-500 mt-2">
+												<strong>YouTube Playlists:</strong> Use the full playlist URL (e.g., https://www.youtube.com/playlist?list=PLxxxxxx)
+											</p>
+										</div>
+									</div>
+
+									{/* Category, Date, Published */}
+									<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 										<div>
 											<label className="block text-sm font-medium text-gray-700 mb-2">
 												Category
@@ -417,7 +787,7 @@ export default function NewsTab() {
 												onChange={(e) =>
 													setFormData({ ...formData, category: e.target.value })
 												}
-												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
 											>
 												<option value="General">General</option>
 												<option value="Announcement">Announcement</option>
@@ -439,16 +809,45 @@ export default function NewsTab() {
 														publishDate: e.target.value,
 													})
 												}
-												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+												className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
 											/>
 										</div>
-									</div>
 
-									<div className="bg-gray-50 rounded-lg p-4">
-										<p className="text-xs text-gray-600">
-											<strong>Note:</strong> News articles are sorted by publish
-											date with the most recent appearing first.
-										</p>
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-2">
+												Status
+											</label>
+											<div className="flex items-center gap-4 p-3">
+												<label className="flex items-center gap-2 cursor-pointer">
+													<input
+														type="radio"
+														checked={formData.isPublished}
+														onChange={() =>
+															setFormData({ ...formData, isPublished: true })
+														}
+														className="w-4 h-4 text-green-600"
+													/>
+													<span className="text-sm flex items-center gap-1">
+														<Eye className="w-4 h-4" />
+														Published
+													</span>
+												</label>
+												<label className="flex items-center gap-2 cursor-pointer">
+													<input
+														type="radio"
+														checked={!formData.isPublished}
+														onChange={() =>
+															setFormData({ ...formData, isPublished: false })
+														}
+														className="w-4 h-4 text-gray-600"
+													/>
+													<span className="text-sm flex items-center gap-1">
+														<EyeOff className="w-4 h-4" />
+														Draft
+													</span>
+												</label>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -467,7 +866,7 @@ export default function NewsTab() {
 										disabled={
 											submitting ||
 											!formData.title.trim() ||
-											!formData.content.trim()
+											!formData.excerpt.trim()
 										}
 										className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center"
 									>
