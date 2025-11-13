@@ -40,9 +40,9 @@ interface NewsItem {
 async function getNewsItem(slug: string): Promise<NewsItem | null> {
 	try {
 		const news = await prisma.news.findUnique({
-			where: { 
+			where: {
 				slug,
-				isPublished: true // Only get published news
+				isPublished: true, // Only get published news
 			},
 		});
 
@@ -54,7 +54,9 @@ async function getNewsItem(slug: string): Promise<NewsItem | null> {
 		return {
 			...news,
 			imageUrl: news.imageUrl || undefined,
-			links: news.links as Array<{ type: string; url: string; title: string }> | undefined,
+			links: news.links as
+				| Array<{ type: string; url: string; title: string }>
+				| undefined,
 			publishDate: news.publishDate.toISOString(),
 			createdAt: news.createdAt.toISOString(),
 			updatedAt: news.updatedAt.toISOString(),
@@ -78,15 +80,17 @@ async function getRelatedNews(
 			},
 			take: 3,
 			orderBy: {
-				publishDate: 'desc',
+				publishDate: "desc",
 			},
 		});
 
 		// Convert Prisma types to NewsItem interface
-		return relatedNews.map(news => ({
+		return relatedNews.map((news) => ({
 			...news,
 			imageUrl: news.imageUrl || undefined,
-			links: news.links as Array<{ type: string; url: string; title: string }> | undefined,
+			links: news.links as
+				| Array<{ type: string; url: string; title: string }>
+				| undefined,
 			publishDate: news.publishDate.toISOString(),
 			createdAt: news.createdAt.toISOString(),
 			updatedAt: news.updatedAt.toISOString(),

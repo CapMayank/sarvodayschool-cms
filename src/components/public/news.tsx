@@ -62,17 +62,16 @@ const News = () => {
 		setCurrentIndex((prev) => (prev === news.length - 1 ? 0 : prev + 1));
 	}, [news.length]);
 
-	// Auto-play functionality
-	useEffect(() => {
-		if (news.length === 0) return;
-
-		const timer = setInterval(nextSlide, 10000);
-		return () => clearInterval(timer);
-	}, [nextSlide, news.length]);
-
 	const prevSlide = () => {
 		setCurrentIndex((prev) => (prev === 0 ? news.length - 1 : prev - 1));
 	};
+
+	// Auto-play functionality, restarts on manual navigation
+	useEffect(() => {
+		if (news.length === 0) return;
+		const timer = setInterval(nextSlide, 10000);
+		return () => clearInterval(timer);
+	}, [nextSlide, news.length, currentIndex]); // Reset timer when currentIndex changes
 
 	// Format date
 	const formatDate = (dateString: string) => {
