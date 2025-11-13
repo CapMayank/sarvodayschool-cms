@@ -13,9 +13,13 @@ import Footer from "@/components/public/footer";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
-// Force dynamic rendering
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+//export const dynamic = "force-dynamic";
+
+// ISR: Re-check for new content every 10 minutes (600 seconds)
+export const revalidate = 600;
+
+// Allow Next.js to generate pages for new slugs on-demand
+export const dynamicParams = true;
 
 interface NewsItem {
 	id: number;
