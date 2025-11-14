@@ -46,6 +46,20 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// Check if category already exists
+		const existing = await prisma.galleryCategory.findUnique({
+			where: { name },
+		});
+
+		if (existing) {
+			return NextResponse.json(
+				{
+					error: `Category with name '${name}' already exists (ID: ${existing.id}, Title: '${existing.title}'). Please delete it first or use a different name.`,
+				},
+				{ status: 400 }
+			);
+		}
+
 		// Get max order
 		const maxOrder = await prisma.galleryCategory.findFirst({
 			orderBy: { order: "desc" },

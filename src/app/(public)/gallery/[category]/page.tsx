@@ -51,7 +51,7 @@ export default function CategoryGallery() {
 				const resolvedParams = await params;
 				const category = resolvedParams.category as string;
 
-				const res = await fetch("/api/gallery/category");
+				const res = await fetch("/api/gallery/categories");
 				if (!res.ok) throw new Error("Failed to fetch categories");
 
 				const data = await res.json();

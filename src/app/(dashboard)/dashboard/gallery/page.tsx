@@ -162,7 +162,11 @@ export default function GalleryTab() {
 						name,
 					}),
 				});
-				if (!res.ok) throw new Error();
+
+				if (!res.ok) {
+					const errorData = await res.json();
+					throw new Error(errorData.error || "Failed to create category");
+				}
 
 				const data = await res.json();
 				setCategories([...categories, data.category]);
@@ -170,11 +174,12 @@ export default function GalleryTab() {
 			}
 			setCategoryDialogOpen(false);
 			resetCategoryForm();
-		} catch {
+		} catch (error: any) {
 			toast.error(
-				editingCategory
-					? "Failed to update category"
-					: "Failed to create category"
+				error.message ||
+					(editingCategory
+						? "Failed to update category"
+						: "Failed to create category")
 			);
 		}
 	};
