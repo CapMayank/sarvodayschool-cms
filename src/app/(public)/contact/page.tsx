@@ -309,7 +309,7 @@ export default function ContactPage() {
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										850+
+										900+
 									</div>
 									<div className="text-sm text-gray-600">Happy Students</div>
 								</div>
