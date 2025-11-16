@@ -108,6 +108,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		}));
 	}
 
+	// Dynamic news pages from database
+	let newsRoutes: MetadataRoute.Sitemap = [];
+	try {
+		const newsItems = await prisma.news.findMany({
+			where: { isPublished: true },
+			select: { slug: true, updatedAt: true },
+			orderBy: { publishDate: "desc" },
+		});
+
+		newsRoutes = newsItems.map((news) => ({
+			url: `${baseUrl}/news/${news.slug}`,
+			lastModified: news.updatedAt || new Date(),
+			changeFrequency: "weekly" as const,
+			priority: 0.8,
+		}));
+	} catch (error) {
+		console.error("Error fetching news for sitemap:", error);
+	}
+
+	// News listing page
+	const newsListingRoute: MetadataRoute.Sitemap = [
+		{
+			url: `${baseUrl}/news`,
+			lastModified: new Date(),
+			changeFrequency: "daily",
+			priority: 0.9,
+		},
+	];
+
 	// Authentication pages (lower priority as they're not for SEO)
 	const authRoutes: MetadataRoute.Sitemap = [
 		{
@@ -130,5 +159,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		},
 	];
 
-	return [...staticRoutes, ...facilityRoutes, ...galleryRoutes, ...authRoutes];
+	return [
+		...staticRoutes,
+		...facilityRoutes,
+		...galleryRoutes,
+		...newsListingRoute,
+		...newsRoutes,
+		...authRoutes,
+	];
 }

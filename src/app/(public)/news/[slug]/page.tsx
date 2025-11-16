@@ -21,6 +21,23 @@ export const revalidate = 600;
 // Allow Next.js to generate pages for new slugs on-demand
 export const dynamicParams = true;
 
+// Generate static params for all published news at build time for SEO
+export async function generateStaticParams() {
+	try {
+		const newsItems = await prisma.news.findMany({
+			where: { isPublished: true },
+			select: { slug: true },
+		});
+
+		return newsItems.map((news) => ({
+			slug: news.slug,
+		}));
+	} catch (error) {
+		console.error("Error generating static params for news:", error);
+		return [];
+	}
+}
+
 interface NewsItem {
 	id: number;
 	slug: string;
@@ -119,15 +136,31 @@ export async function generateMetadata({
 		};
 	}
 
+	const baseUrl =
+		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
+
 	return {
-		title: `${news.title} | School News`,
+		title: `${news.title} | Sarvodaya School News`,
 		description: news.excerpt,
+		keywords: [
+			news.title,
+			news.category,
+			"Sarvodaya School",
+			"school news",
+			"education news",
+			"Lakhnadon",
+		],
+		alternates: {
+			canonical: `${baseUrl}/news/${slug}`,
+		},
 		openGraph: {
 			title: news.title,
 			description: news.excerpt,
+			url: `${baseUrl}/news/${slug}`,
 			images: news.imageUrl ? [news.imageUrl] : [],
 			type: "article",
 			publishedTime: news.publishDate,
+			siteName: "Sarvodaya School",
 		},
 		twitter: {
 			card: "summary_large_image",
@@ -176,9 +209,45 @@ export default async function NewsDetailPage({
 		}
 	};
 
+	// Generate structured data for SEO (Schema.org NewsArticle)
+	const baseUrl =
+		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
+	const structuredData = {
+		"@context": "https://schema.org",
+		"@type": "NewsArticle",
+		headline: news.title,
+		description: news.excerpt,
+		image: news.imageUrl || `${baseUrl}/default-news-image.jpg`,
+		datePublished: news.publishDate,
+		dateModified: news.updatedAt,
+		author: {
+			"@type": "Organization",
+			name: "Sarvodaya School",
+			url: baseUrl,
+		},
+		publisher: {
+			"@type": "EducationalOrganization",
+			name: "Sarvodaya School",
+			logo: {
+				"@type": "ImageObject",
+				url: `${baseUrl}/logo.png`,
+			},
+		},
+		mainEntityOfPage: {
+			"@type": "WebPage",
+			"@id": `${baseUrl}/news/${news.slug}`,
+		},
+		articleSection: news.category,
+	};
+
 	return (
 		<>
 			<Header title={news.title} />
+			{/* Add JSON-LD structured data for SEO */}
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+			/>
 			<div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
 				{/* Header Component */}
 

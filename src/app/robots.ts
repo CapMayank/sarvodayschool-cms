@@ -22,6 +22,8 @@ export default function robots(): MetadataRoute.Robots {
 					"/gallery/*",
 					"/facilities",
 					"/facilities/*",
+					"/news",
+					"/news/*",
 				],
 				disallow: [
 					"/dashboard/*",
@@ -49,6 +51,8 @@ export default function robots(): MetadataRoute.Robots {
 					"/gallery/*",
 					"/facilities",
 					"/facilities/*",
+					"/news",
+					"/news/*",
 				],
 				disallow: ["/dashboard/*", "/api/*", "/login", "/admin/*"],
 			},
