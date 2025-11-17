@@ -1,10 +1,11 @@
 /** @format */
 
-export const metadata = {
-	title: "Results",
-	description:
-		"Check latest MP Board examination results and academic achievers at Sarvodaya English Higher Secondary School Lakhnadon. View Class 10th, 12th, and other class results with toppers list.",
-	keywords: [
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata(
+	"Results",
+	"Check latest MP Board examination results and academic achievers at Sarvodaya English Higher Secondary School Lakhnadon. View Class 10th, 12th, and other class results with toppers list.",
+	[
 		"School results Lakhnadon",
 		"Sarvodaya School results",
 		"Annual Examination results",
@@ -17,18 +18,10 @@ export const metadata = {
 		"Toppers list",
 		"Examination results Lakhnadon",
 	],
-	openGraph: {
-		title: "Results | Sarvodaya English Higher Secondary School Lakhnadon",
-		description:
-			"Check latest MP Board examination results and academic achievers. View Class 10th, 12th, and other class results with toppers list.",
-		type: "website",
-	},
-	alternates: {
-		canonical: "/result",
-	},
-};
+	"/result"
+);
 
-export default function AdmissionLayout({
+export default function ResultLayout({
 	children,
 }: {
 	children: React.ReactNode;

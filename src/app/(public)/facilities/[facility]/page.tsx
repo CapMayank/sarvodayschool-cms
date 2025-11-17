@@ -1,8 +1,12 @@
 /** @format */
-import facilities from "@/lib/facilities/facilities";
-import FacilityPage from "@/components/public/faciltyPage";
+
+import React from "react";
+import Image from "next/image";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { createDynamicMetadata, BASE_URL } from "@/lib/seo";
+import facilities from "@/lib/facilities/facilities";
+import FacilityPage from "@/components/public/faciltyPage";
 
 interface PageProps {
 	params: Promise<{
@@ -30,58 +34,24 @@ export async function generateMetadata({
 		};
 	}
 
-	const baseUrl =
-		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
-
-	return {
-		title: facility.title,
-		description: `${facility.description} Explore ${facility.title} at Sarvodaya English Higher Secondary School Lakhnadon.`,
-		keywords: [
-			facility.title,
-			"School facilities Lakhnadon",
-			"School infrastructure",
-			"Educational facilities",
-			"Modern classrooms",
-			"School amenities Lakhnadon",
-			"Best school facilities Seoni",
-		],
-		alternates: {
-			canonical: `${baseUrl}/facilities/${facilityId}`,
-		},
-		openGraph: {
-			title: `${facility.title} | Sarvodaya English Higher Secondary School Lakhnadon`,
-			description: `${facility.description} Explore our world-class ${facility.title}.`,
-			url: `${baseUrl}/facilities/${facilityId}`,
-			images: facility.imageUrl
-				? [
-						{
-							url: `${baseUrl}${facility.imageUrl}`,
-							width: 1200,
-							height: 630,
-							alt: facility.title,
-						},
-				  ]
-				: [
-						{
-							url: `${baseUrl}/bg.jpg`,
-							width: 1200,
-							height: 630,
-							alt: "Sarvodaya School Lakhnadon",
-						},
-				  ],
-			type: "website",
-			siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
-			locale: "en_IN",
-		},
-		twitter: {
-			card: "summary_large_image",
-			title: `${facility.title} | Sarvodaya School Lakhnadon`,
-			description: facility.description,
-			images: facility.imageUrl
-				? [`${baseUrl}${facility.imageUrl}`]
-				: [`${baseUrl}/bg.jpg`],
-		},
-	};
+	return createDynamicMetadata(
+		facility.title,
+		`${facility.description} Explore ${facility.title} at Sarvodaya English Higher Secondary School Lakhnadon.`,
+		`/facilities/${facilityId}`,
+		{
+			keywords: [
+				facility.title,
+				"School facilities Lakhnadon",
+				"School infrastructure",
+				"Educational facilities",
+				"Modern classrooms",
+				"School amenities Lakhnadon",
+				"Best school facilities Seoni",
+			],
+			image: facility.imageUrl ? `${BASE_URL}${facility.imageUrl}` : undefined,
+			imageAlt: facility.title,
+		}
+	);
 }
 
 export default async function Facilities({ params }: PageProps) {

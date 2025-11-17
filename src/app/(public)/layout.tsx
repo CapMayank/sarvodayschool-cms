@@ -1,13 +1,14 @@
 /** @format */
 
 import Navbar from "@/components/public/navbar";
-import Script from "next/script"; // Import next/script
+import Script from "next/script";
+import { SITE_NAME, SITE_NAME_SHORT, DEFAULT_IMAGE } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata = {
 	title: {
-		default: "Sarvodaya English Higher Secondary School Lakhnadon",
-		template: "%s | Sarvodaya English Higher Secondary School Lakhnadon",
+		default: SITE_NAME,
+		template: `%s | ${SITE_NAME}`,
 	},
 	description:
 		"Sarvodaya English Higher Secondary School Lakhnadon - Providing quality education from Nursery to Class 12 with strong discipline and moral values since 2002.",
@@ -20,18 +21,17 @@ export const metadata = {
 		"School admissions Lakhnadon",
 	],
 	openGraph: {
-		title: "Sarvodaya English Higher Secondary School Lakhnadon",
+		title: SITE_NAME,
 		description:
-			"Premier English-medium School from Nursery to Class 12. Committed to quality education, strong discipline, and moral values in Lakhnadon.",
+			"Best School in Lakhnadon from Nursery to Class 12. Committed to quality education, strong discipline, and moral values in Lakhnadon.",
 		type: "website",
 		images: [
 			{
-				url: `${
-					process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in"
-				}/bg.jpg`,
+				url: DEFAULT_IMAGE,
 				width: 1200,
 				height: 630,
-				alt: "Sarvodaya English Higher Secondary School Lakhnadon",
+				alt: SITE_NAME,
+				type: "image/jpeg",
 			},
 		],
 		locale: "en_IN",

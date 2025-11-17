@@ -1,8 +1,9 @@
 /** @format */
 
 import { Metadata } from "next";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createMetadata({
 	title: "Search Results",
 	description:
 		"Search and view student examination results at Sarvodaya English Higher Secondary School Lakhnadon. Check Annual Examination results by roll number or enrollment number.",
@@ -14,11 +15,8 @@ export const metadata: Metadata = {
 		"MP Board results Lakhnadon",
 		"Student result finder",
 	],
-	robots: {
-		index: false, // Result search pages should not be indexed
-		follow: true,
-	},
-};
+	noIndex: true,
+});
 
 export default function ResultSearchLayout({
 	children,

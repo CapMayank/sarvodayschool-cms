@@ -1,10 +1,11 @@
 /** @format */
 
-export const metadata = {
-	title: "Gallery",
-	description:
-		"View photo gallery of Sarvodaya English Higher Secondary School Lakhnadon. Explore images of school events, facilities, achievements, co-curricular activities, and student life at our campus.",
-	keywords: [
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata(
+	"Gallery",
+	"View photo gallery of Sarvodaya English Higher Secondary School Lakhnadon. Explore images of school events, facilities, achievements, co-curricular activities, and student life at our campus.",
+	[
 		"School gallery",
 		"School photos Lakhnadon",
 		"School events",
@@ -13,16 +14,8 @@ export const metadata = {
 		"Student life",
 		"School achievements",
 	],
-	openGraph: {
-		title: "Gallery | Sarvodaya English Higher Secondary School Lakhnadon",
-		description:
-			"Explore our photo gallery showcasing school events, facilities, achievements, and vibrant student life at Sarvodaya School Lakhnadon.",
-		type: "website",
-	},
-	alternates: {
-		canonical: "/gallery",
-	},
-};
+	"/gallery"
+);
 
 export default function GalleryLayout({
 	children,

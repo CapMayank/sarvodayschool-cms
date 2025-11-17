@@ -2,6 +2,7 @@
 
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { createDynamicMetadata } from "@/lib/seo";
 
 // Generate static params for all gallery categories
 export async function generateStaticParams() {
@@ -32,9 +33,6 @@ export async function generateMetadata({
 			where: { name: category },
 		});
 
-		const baseUrl =
-			process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
-
 		if (!categoryData) {
 			return {
 				title: `${category.replace(/_/g, " ")} Gallery`,
@@ -45,36 +43,23 @@ export async function generateMetadata({
 			};
 		}
 
-		return {
-			title: `${categoryData.title} Gallery`,
-			description: `${categoryData.description} View photos from ${categoryData.title} at Sarvodaya English Higher Secondary School Lakhnadon.`,
-			keywords: [
-				categoryData.title,
-				"School gallery",
-				"School photos Lakhnadon",
-				"School events",
-				"Student activities",
-				"School life Lakhnadon",
-				"Educational events",
-				"School memories",
-			],
-			alternates: {
-				canonical: `${baseUrl}/gallery/${category}`,
-			},
-			openGraph: {
-				title: `${categoryData.title} Gallery | Sarvodaya English Higher Secondary School Lakhnadon`,
-				description: `${categoryData.description} View photos from ${categoryData.title}.`,
-				url: `${baseUrl}/gallery/${category}`,
-				type: "website",
-				siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
-				locale: "en_IN",
-			},
-			twitter: {
-				card: "summary_large_image",
-				title: `${categoryData.title} Gallery | Sarvodaya School Lakhnadon`,
-				description: categoryData.description,
-			},
-		};
+		return createDynamicMetadata(
+			`${categoryData.title} Gallery`,
+			`${categoryData.description} View photos from ${categoryData.title} at Sarvodaya English Higher Secondary School Lakhnadon.`,
+			`/gallery/${category}`,
+			{
+				keywords: [
+					categoryData.title,
+					"School gallery",
+					"School photos Lakhnadon",
+					"School events",
+					"Student activities",
+					"School life Lakhnadon",
+					"Educational events",
+					"School memories",
+				],
+			}
+		);
 	} catch (error) {
 		console.error("Error generating gallery metadata:", error);
 		return {

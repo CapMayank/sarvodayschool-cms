@@ -1,10 +1,11 @@
 /** @format */
 
-export const metadata = {
-	title: "Admission",
-	description:
-		"Apply for admissions at Sarvodaya English Higher Secondary School Lakhnadon. Nursery to Class 12 admissions open. Discover our admission process, requirements, and important dates.",
-	keywords: [
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata(
+	"Admission",
+	"Apply for admissions at Sarvodaya English Higher Secondary School Lakhnadon. Nursery to Class 12 admissions open. Discover our admission process, requirements, and important dates.",
+	[
 		"School admissions Lakhnadon",
 		"Admission process",
 		"Nursery admission Lakhnadon",
@@ -14,16 +15,8 @@ export const metadata = {
 		"School enrollment Lakhnadon",
 		"Best school admissions Seoni district",
 	],
-	openGraph: {
-		title: "Admission | Sarvodaya English Higher Secondary School Lakhnadon",
-		description:
-			"Apply for admissions from Nursery to Class 12. English-medium school in Lakhnadon. Learn about our admission process and requirements.",
-		type: "website",
-	},
-	alternates: {
-		canonical: "/admission",
-	},
-};
+	"/admission"
+);
 
 export default function AdmissionLayout({
 	children,

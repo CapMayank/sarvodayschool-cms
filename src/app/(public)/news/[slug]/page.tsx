@@ -12,6 +12,7 @@ import Header from "@/components/public/header";
 import Footer from "@/components/public/footer";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { createDynamicMetadata, BASE_URL } from "@/lib/seo";
 
 //export const dynamic = "force-dynamic";
 
@@ -136,59 +137,21 @@ export async function generateMetadata({
 		};
 	}
 
-	const baseUrl =
-		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
-
-	return {
-		title: news.title,
-		description: news.excerpt,
+	return createDynamicMetadata(news.title, news.excerpt, `/news/${slug}`, {
 		keywords: [
 			news.title,
 			news.category,
-			"Sarvodaya English Higher Secondary School",
-			"Sarvodaya School Lakhnadon",
 			"school news",
 			"education news Lakhnadon",
 			"school events",
 			"school updates",
 			"Lakhnadon school news",
 		],
-		alternates: {
-			canonical: `${baseUrl}/news/${slug}`,
-		},
-		openGraph: {
-			title: `${news.title} | Sarvodaya English Higher Secondary School Lakhnadon`,
-			description: news.excerpt,
-			url: `${baseUrl}/news/${slug}`,
-			images: news.imageUrl
-				? [
-						{
-							url: news.imageUrl,
-							width: 1200,
-							height: 630,
-							alt: news.title,
-						},
-				  ]
-				: [
-						{
-							url: `${baseUrl}/bg.jpg`,
-							width: 1200,
-							height: 630,
-							alt: "Sarvodaya School Lakhnadon",
-						},
-				  ],
-			type: "article",
-			publishedTime: news.publishDate,
-			siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
-			locale: "en_IN",
-		},
-		twitter: {
-			card: "summary_large_image",
-			title: `${news.title} | Sarvodaya School Lakhnadon`,
-			description: news.excerpt,
-			images: news.imageUrl ? [news.imageUrl] : [`${baseUrl}/bg.jpg`],
-		},
-	};
+		image: news.imageUrl || undefined,
+		imageAlt: news.title,
+		type: "article",
+		publishedTime: news.publishDate,
+	});
 }
 
 export default async function NewsDetailPage({
@@ -230,32 +193,30 @@ export default async function NewsDetailPage({
 	};
 
 	// Generate structured data for SEO (Schema.org NewsArticle)
-	const baseUrl =
-		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
 	const structuredData = {
 		"@context": "https://schema.org",
 		"@type": "NewsArticle",
 		headline: news.title,
 		description: news.excerpt,
-		image: news.imageUrl || `${baseUrl}/default-news-image.jpg`,
+		image: news.imageUrl || `${BASE_URL}/default-news-image.jpg`,
 		datePublished: news.publishDate,
 		dateModified: news.updatedAt,
 		author: {
 			"@type": "Organization",
 			name: "Sarvodaya School",
-			url: baseUrl,
+			url: BASE_URL,
 		},
 		publisher: {
 			"@type": "EducationalOrganization",
 			name: "Sarvodaya School",
 			logo: {
 				"@type": "ImageObject",
-				url: `${baseUrl}/logo.png`,
+				url: `${BASE_URL}/logo.png`,
 			},
 		},
 		mainEntityOfPage: {
 			"@type": "WebPage",
-			"@id": `${baseUrl}/news/${news.slug}`,
+			"@id": `${BASE_URL}/news/${news.slug}`,
 		},
 		articleSection: news.category,
 	};
