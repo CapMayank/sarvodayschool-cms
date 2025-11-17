@@ -52,7 +52,23 @@ export async function generateMetadata({
 			title: `${facility.title} | Sarvodaya English Higher Secondary School Lakhnadon`,
 			description: `${facility.description} Explore our world-class ${facility.title}.`,
 			url: `${baseUrl}/facilities/${facilityId}`,
-			images: facility.imageUrl ? [facility.imageUrl] : [],
+			images: facility.imageUrl
+				? [
+						{
+							url: `${baseUrl}${facility.imageUrl}`,
+							width: 1200,
+							height: 630,
+							alt: facility.title,
+						},
+				  ]
+				: [
+						{
+							url: `${baseUrl}/bg.jpg`,
+							width: 1200,
+							height: 630,
+							alt: "Sarvodaya School Lakhnadon",
+						},
+				  ],
 			type: "website",
 			siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
 			locale: "en_IN",
@@ -61,7 +77,9 @@ export async function generateMetadata({
 			card: "summary_large_image",
 			title: `${facility.title} | Sarvodaya School Lakhnadon`,
 			description: facility.description,
-			images: facility.imageUrl ? [facility.imageUrl] : [],
+			images: facility.imageUrl
+				? [`${baseUrl}${facility.imageUrl}`]
+				: [`${baseUrl}/bg.jpg`],
 		},
 	};
 }

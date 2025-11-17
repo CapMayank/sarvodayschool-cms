@@ -160,7 +160,23 @@ export async function generateMetadata({
 			title: `${news.title} | Sarvodaya English Higher Secondary School Lakhnadon`,
 			description: news.excerpt,
 			url: `${baseUrl}/news/${slug}`,
-			images: news.imageUrl ? [news.imageUrl] : [],
+			images: news.imageUrl
+				? [
+						{
+							url: news.imageUrl,
+							width: 1200,
+							height: 630,
+							alt: news.title,
+						},
+				  ]
+				: [
+						{
+							url: `${baseUrl}/bg.jpg`,
+							width: 1200,
+							height: 630,
+							alt: "Sarvodaya School Lakhnadon",
+						},
+				  ],
 			type: "article",
 			publishedTime: news.publishDate,
 			siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
@@ -170,7 +186,7 @@ export async function generateMetadata({
 			card: "summary_large_image",
 			title: `${news.title} | Sarvodaya School Lakhnadon`,
 			description: news.excerpt,
-			images: news.imageUrl ? [news.imageUrl] : [],
+			images: news.imageUrl ? [news.imageUrl] : [`${baseUrl}/bg.jpg`],
 		},
 	};
 }

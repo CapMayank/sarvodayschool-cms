@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 		template: "%s | Sarvodaya English Higher Secondary School Lakhnadon",
 	},
 	description:
-		"Sarvodaya English Higher Secondary School, Lakhnadon, established in 2002. Premier English-medium institution from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
+		"Sarvodaya English Higher Secondary School, Lakhnadon, established in 2002. Premier English-medium School from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
 	keywords: [
 		"Sarvodaya English Higher Secondary School",
 		"Sarvodaya School Lakhnadon",
@@ -50,14 +50,16 @@ export const metadata: Metadata = {
 		title:
 			"Sarvodaya English Higher Secondary School Lakhnadon | Best School in Lakhnadon",
 		description:
-			"Premier English-medium institution from Nursery to Class 12. Established in 2002. Committed to quality education, strong discipline, and moral values in Lakhnadon, Madhya Pradesh.",
+			"Premier English-medium School from Nursery to Class 12. Established in 2002. Committed to quality education, strong discipline, and moral values in Lakhnadon, Madhya Pradesh.",
 		url: process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in",
 		siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
 		locale: "en_IN",
 		type: "website",
 		images: [
 			{
-				url: "/bg.jpg",
+				url: `${
+					process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in"
+				}/bg.jpg`,
 				width: 1200,
 				height: 630,
 				alt: "Sarvodaya English Higher Secondary School Lakhnadon",
@@ -69,8 +71,12 @@ export const metadata: Metadata = {
 		title:
 			"Sarvodaya English Higher Secondary School Lakhnadon | Best School in Lakhnadon",
 		description:
-			"Premier English-medium institution from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
-		images: ["/bg.jpg"],
+			"Premier English-medium School from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
+		images: [
+			`${
+				process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in"
+			}/bg.jpg`,
+		],
 	},
 };
 

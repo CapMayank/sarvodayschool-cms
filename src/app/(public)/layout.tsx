@@ -22,7 +22,7 @@ export const metadata = {
 	openGraph: {
 		title: "Sarvodaya English Higher Secondary School Lakhnadon",
 		description:
-			"Premier English-medium institution from Nursery to Class 12. Committed to quality education, strong discipline, and moral values in Lakhnadon.",
+			"Premier English-medium School from Nursery to Class 12. Committed to quality education, strong discipline, and moral values in Lakhnadon.",
 		type: "website",
 		locale: "en_IN",
 	},
