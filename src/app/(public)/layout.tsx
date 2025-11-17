@@ -24,6 +24,16 @@ export const metadata = {
 		description:
 			"Premier English-medium School from Nursery to Class 12. Committed to quality education, strong discipline, and moral values in Lakhnadon.",
 		type: "website",
+		images: [
+			{
+				url: `${
+					process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in"
+				}/bg.jpg`,
+				width: 1200,
+				height: 630,
+				alt: "Sarvodaya English Higher Secondary School Lakhnadon",
+			},
+		],
 		locale: "en_IN",
 	},
 };
