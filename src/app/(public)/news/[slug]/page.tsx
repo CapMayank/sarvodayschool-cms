@@ -140,31 +140,35 @@ export async function generateMetadata({
 		process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
 
 	return {
-		title: `${news.title} | Sarvodaya School News`,
+		title: news.title,
 		description: news.excerpt,
 		keywords: [
 			news.title,
 			news.category,
-			"Sarvodaya School",
+			"Sarvodaya English Higher Secondary School",
+			"Sarvodaya School Lakhnadon",
 			"school news",
-			"education news",
-			"Lakhnadon",
+			"education news Lakhnadon",
+			"school events",
+			"school updates",
+			"Lakhnadon school news",
 		],
 		alternates: {
 			canonical: `${baseUrl}/news/${slug}`,
 		},
 		openGraph: {
-			title: news.title,
+			title: `${news.title} | Sarvodaya English Higher Secondary School Lakhnadon`,
 			description: news.excerpt,
 			url: `${baseUrl}/news/${slug}`,
 			images: news.imageUrl ? [news.imageUrl] : [],
 			type: "article",
 			publishedTime: news.publishDate,
-			siteName: "Sarvodaya School",
+			siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
+			locale: "en_IN",
 		},
 		twitter: {
 			card: "summary_large_image",
-			title: news.title,
+			title: `${news.title} | Sarvodaya School Lakhnadon`,
 			description: news.excerpt,
 			images: news.imageUrl ? [news.imageUrl] : [],
 		},

@@ -10,24 +10,31 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
 	title: {
-		default: "Sarvodaya School - Excellence in Education",
-		template: "%s | Sarvodaya School",
+		default:
+			"Sarvodaya English Higher Secondary School Lakhnadon | Best School in Lakhnadon",
+		template: "%s | Sarvodaya English Higher Secondary School Lakhnadon",
 	},
 	description:
-		"Sarvodaya School is committed to providing quality education and disciplined environment for students. Explore our results, facilities, environment, admission process, and more.",
+		"Sarvodaya English Higher Secondary School, Lakhnadon, established in 2002. Premier English-medium institution from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
 	keywords: [
-		"Sarvodaya School",
-		"education",
-		"school admission",
-		"student results",
-		"quality education",
-		"academic excellence",
-		"school facilities",
-		"extracurricular activities",
+		"Sarvodaya English Higher Secondary School",
+		"Sarvodaya School Lakhnadon",
+		"Best school in Lakhnadon",
+		"English medium school Lakhnadon",
+		"Nursery to Class 12 school",
+		"Higher secondary school Madhya Pradesh",
+		"Value-based education India",
+		"School admissions Lakhnadon",
+		"Top schools in Seoni district",
+		"Quality education Lakhnadon",
+		"English medium school Seoni",
+		"CBSE school Lakhnadon",
+		"Academic excellence",
+		"Discipline and moral values",
 	],
-	authors: [{ name: "Sarvodaya School" }],
-	creator: "Sarvodaya School",
-	publisher: "Sarvodaya School",
+	authors: [{ name: "Sarvodaya English Higher Secondary School Lakhnadon" }],
+	creator: "Sarvodaya English Higher Secondary School Lakhnadon",
+	publisher: "Sarvodaya English Higher Secondary School Lakhnadon",
 	formatDetection: {
 		email: false,
 		address: false,
@@ -40,21 +47,30 @@ export const metadata: Metadata = {
 		canonical: "/",
 	},
 	openGraph: {
-		title: "Sarvodaya School - Excellence in Education",
+		title:
+			"Sarvodaya English Higher Secondary School Lakhnadon | Best School in Lakhnadon",
 		description:
-			"Sarvodaya School is committed to providing quality education and disciplined environment for students.",
+			"Premier English-medium institution from Nursery to Class 12. Established in 2002. Committed to quality education, strong discipline, and moral values in Lakhnadon, Madhya Pradesh.",
 		url: process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in",
-		siteName: "Sarvodaya School",
+		siteName: "Sarvodaya English Higher Secondary School Lakhnadon",
 		locale: "en_IN",
 		type: "website",
 		images: [
 			{
-				url: "/bg.jpg", // You can add this image to your public folder
+				url: "/bg.jpg",
 				width: 1200,
 				height: 630,
-				alt: "Sarvodaya School",
+				alt: "Sarvodaya English Higher Secondary School Lakhnadon",
 			},
 		],
+	},
+	twitter: {
+		card: "summary_large_image",
+		title:
+			"Sarvodaya English Higher Secondary School Lakhnadon | Best School in Lakhnadon",
+		description:
+			"Premier English-medium institution from Nursery to Class 12. Committed to quality education, strong discipline, and moral values.",
+		images: ["/bg.jpg"],
 	},
 };
 
