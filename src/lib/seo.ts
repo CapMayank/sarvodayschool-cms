@@ -22,6 +22,40 @@ const COMMON_KEYWORDS = [
 	"Lakhnadon education",
 ];
 
+/**
+ * Optimize Cloudinary image URL for Open Graph sharing
+ * Ensures proper format, size, and quality for Facebook/WhatsApp
+ *
+ * Transformations applied:
+ * - f_jpg: Force JPEG format (best compatibility)
+ * - q_auto:good: Automatic quality optimization
+ * - w_1200,h_630: Optimal size for OG images
+ * - c_fill: Crop and fill to exact dimensions
+ */
+export function optimizeImageForOG(
+	imageUrl: string | undefined
+): string | undefined {
+	if (!imageUrl) return undefined;
+
+	// If it's a Cloudinary URL, add transformations for better compatibility
+	if (imageUrl.includes("cloudinary.com")) {
+		// Check if transformations already exist
+		const hasTransformations =
+			imageUrl.includes("/upload/") &&
+			(imageUrl.includes("w_") || imageUrl.includes("f_"));
+
+		if (!hasTransformations) {
+			// Add transformations: format jpg (not auto), quality auto:good, size 1200x630
+			return imageUrl.replace(
+				"/upload/",
+				"/upload/f_jpg,q_auto:good,w_1200,h_630,c_fill/"
+			);
+		}
+	}
+
+	return imageUrl;
+}
+
 export interface PageSEO {
 	title: string;
 	description: string;
@@ -66,7 +100,7 @@ export function createMetadata({
 	noIndex = false,
 }: MetadataOptions): Metadata {
 	const fullTitle = `${title} | ${SITE_NAME}`;
-	const ogImage = image || DEFAULT_IMAGE;
+	const ogImage = optimizeImageForOG(image) || DEFAULT_IMAGE;
 	const ogImageAlt = imageAlt || SITE_NAME;
 	const allKeywords = [...COMMON_KEYWORDS, ...keywords];
 
@@ -93,10 +127,10 @@ export function createMetadata({
 			images: [
 				{
 					url: ogImage,
+					secureUrl: ogImage,
 					width: 1200,
 					height: 630,
 					alt: ogImageAlt,
-					type: "image/jpeg",
 				},
 			],
 			type,

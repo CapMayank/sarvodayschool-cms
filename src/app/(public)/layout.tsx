@@ -28,10 +28,10 @@ export const metadata = {
 		images: [
 			{
 				url: DEFAULT_IMAGE,
+				secureUrl: DEFAULT_IMAGE,
 				width: 1200,
 				height: 630,
 				alt: SITE_NAME,
-				type: "image/jpeg",
 			},
 		],
 		locale: "en_IN",
