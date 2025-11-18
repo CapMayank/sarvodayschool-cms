@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 			{
 				url: `${
 					process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in"
-				}/bg.jpg`,
+				}/bgOG.jpg`,
 				width: 1200,
 				height: 630,
 				alt: "Sarvodaya English Higher Secondary School Lakhnadon",

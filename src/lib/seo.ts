@@ -11,7 +11,7 @@ export const SITE_NAME = "Sarvodaya English Higher Secondary School Lakhnadon";
 export const SITE_NAME_SHORT = "Sarvodaya School Lakhnadon";
 export const BASE_URL =
 	process.env.NEXT_PUBLIC_SITE_URL || "https://sarvodayaschool.co.in";
-export const DEFAULT_IMAGE = `${BASE_URL}/bg.jpg`;
+export const DEFAULT_IMAGE = `${BASE_URL}/bgOG.jpg`;
 
 // Common keywords for the school
 const COMMON_KEYWORDS = [
