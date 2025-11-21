@@ -1,6 +1,7 @@
 /** @format */
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 
@@ -67,6 +68,9 @@ export async function POST(request: NextRequest) {
 				isPublished: body.isPublished !== undefined ? body.isPublished : true,
 			},
 		});
+
+		revalidatePath("/news");
+		revalidatePath("/");
 
 		return NextResponse.json(news, { status: 201 });
 	} catch (error) {

@@ -1,6 +1,7 @@
 /** @format */
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 
@@ -72,6 +73,10 @@ export async function PUT(
 			data: updateData,
 		});
 
+		revalidatePath("/news");
+		revalidatePath("/");
+		revalidatePath(`/news/${news.slug}`);
+
 		return NextResponse.json(news);
 	} catch (error) {
 		console.error("Error updating news:", error);
@@ -94,9 +99,13 @@ export async function DELETE(
 	try {
 		const { id } = await params;
 
-		await prisma.news.delete({
+		const deletedNews = await prisma.news.delete({
 			where: { id: parseInt(id) },
 		});
+
+		revalidatePath("/news");
+		revalidatePath("/");
+		revalidatePath(`/news/${deletedNews.slug}`);
 
 		return NextResponse.json({ message: "News deleted" });
 	} catch (error) {
