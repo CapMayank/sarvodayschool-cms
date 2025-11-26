@@ -1,11 +1,10 @@
 /** @format */
 
 import React from "react";
-import Image from "next/image";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createDynamicMetadata, BASE_URL } from "@/lib/seo";
-import facilities from "@/lib/facilities/facilities";
+import { prisma } from "@/lib/prisma";
 import FacilityPage from "@/components/public/faciltyPage";
 
 interface PageProps {
@@ -16,8 +15,13 @@ interface PageProps {
 
 // Generate static params for all facilities
 export async function generateStaticParams() {
+	const facilities = await prisma.facility.findMany({
+		where: { isActive: true },
+		select: { slug: true },
+	});
+
 	return facilities.map((facility) => ({
-		facility: facility.id,
+		facility: facility.slug,
 	}));
 }
 
@@ -25,8 +29,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
-	const { facility: facilityId } = await params;
-	const facility = facilities.find((f) => f.id === facilityId);
+	const { facility: facilitySlug } = await params;
+	const facility = await prisma.facility.findUnique({
+		where: { slug: facilitySlug },
+	});
 
 	if (!facility) {
 		return {
@@ -37,7 +43,7 @@ export async function generateMetadata({
 	return createDynamicMetadata(
 		facility.title,
 		`${facility.description} Explore ${facility.title} at Sarvodaya English Higher Secondary School Lakhnadon.`,
-		`/facilities/${facilityId}`,
+		`/facilities/${facilitySlug}`,
 		{
 			keywords: [
 				facility.title,
@@ -55,15 +61,28 @@ export async function generateMetadata({
 }
 
 export default async function Facilities({ params }: PageProps) {
-	const { facility: facilityId } = await params;
+	const { facility: facilitySlug } = await params;
 
 	// Retrieve the facility data using the dynamic route parameter
-	const facility = facilities.find((f) => f.id === facilityId);
+	const facility = await prisma.facility.findUnique({
+		where: { slug: facilitySlug, isActive: true },
+	});
 
 	// Pass the facility data to the component
 	if (!facility) {
 		notFound();
 	}
 
-	return <FacilityPage facility={facility} />;
+	// Transform the data to match the expected format
+	const facilityData = {
+		id: facility.slug,
+		title: facility.title,
+		imageUrl: facility.imageUrl,
+		description: facility.description,
+		highlights: facility.highlights as any,
+		facilityFeatures: facility.facilityFeatures as any,
+		mediaGallery: facility.mediaGallery as any,
+	};
+
+	return <FacilityPage facility={facilityData} />;
 }

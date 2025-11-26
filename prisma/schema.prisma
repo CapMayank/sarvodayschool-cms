@@ -88,6 +88,22 @@ model Achievement {
   updatedAt DateTime @updatedAt
 }
 
+// Facility Model
+model Facility {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  title       String
+  description String
+  imageUrl    String
+  highlights  Json     // Array of {title: string, value: string}
+  facilityFeatures Json // Array of {title: string, value: string}
+  mediaGallery Json    // Array of {type: "image"|"youtube", src: string, caption: string}
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // SlideShow Model
 model SlideShow {
   id        Int     @id @default(autoincrement())

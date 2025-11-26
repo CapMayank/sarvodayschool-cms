@@ -232,4 +232,45 @@ export const apiClient = {
 		if (!res.ok) throw new Error("Failed to delete application");
 		return res.json();
 	},
+
+	// ==================== FACILITIES ====================
+	getFacilities: async () => {
+		const url = getRequestUrl(`${API_URL}/api/facilities`);
+		const res = await fetch(url, {
+			next: { revalidate: 60 },
+		});
+		if (!res.ok) throw new Error("Failed to fetch facilities");
+		return res.json();
+	},
+
+	createFacility: async (data: any) => {
+		const url = getRequestUrl(`${API_URL}/api/facilities`);
+		const res = await fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		});
+		if (!res.ok) throw new Error("Failed to create facility");
+		return res.json();
+	},
+
+	updateFacility: async (id: number, data: any) => {
+		const url = getRequestUrl(`${API_URL}/api/facilities/${id}`);
+		const res = await fetch(url, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		});
+		if (!res.ok) throw new Error("Failed to update facility");
+		return res.json();
+	},
+
+	deleteFacility: async (id: number) => {
+		const url = getRequestUrl(`${API_URL}/api/facilities/${id}`);
+		const res = await fetch(url, {
+			method: "DELETE",
+		});
+		if (!res.ok) throw new Error("Failed to delete facility");
+		return res.json();
+	},
 };

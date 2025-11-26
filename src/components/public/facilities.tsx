@@ -1,12 +1,27 @@
 /** @format */
 
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import facilities from "@/lib/facilities/facilities";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+
+interface Highlight {
+	title: string;
+	value: string;
+}
+
+interface Facility {
+	id: number;
+	slug: string;
+	title: string;
+	description: string;
+	imageUrl: string;
+	highlights: Highlight[];
+	order: number;
+	isActive: boolean;
+}
 
 export default function FacilitiesSection() {
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -14,6 +29,24 @@ export default function FacilitiesSection() {
 	const [isDragging, setIsDragging] = useState(false);
 	const [startX, setStartX] = useState(0);
 	const [scrollLeftStart, setScrollLeftStart] = useState(0);
+	const [facilities, setFacilities] = useState<Facility[]>([]);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const loadFacilities = async () => {
+			try {
+				const response = await fetch("/api/facilities?activeOnly=true");
+				const data = await response.json();
+				setFacilities(data);
+			} catch (error) {
+				console.error("Error loading facilities:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadFacilities();
+	}, []);
 
 	const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
 		setIsDragging(true);
@@ -45,9 +78,23 @@ export default function FacilitiesSection() {
 		}
 	};
 
-	const openFacilityPage = (id: string) => {
-		router.push(`/facilities/${id}`);
+	const openFacilityPage = (slug: string) => {
+		router.push(`/facilities/${slug}`);
 	};
+
+	if (loading) {
+		return (
+			<div className="relative w-full bg-linear-to-b from-white to-gray-50 py-24 px-6 sm:px-6 lg:px-8 overflow-hidden">
+				<div className="flex justify-center items-center h-64">
+					<Loader2 className="h-8 w-8 animate-spin text-red-600" />
+				</div>
+			</div>
+		);
+	}
+
+	if (facilities.length === 0) {
+		return null;
+	}
 
 	return (
 		<div className="relative w-full bg-linear-to-b from-white to-gray-50 py-24 px-6 sm:px-6 lg:px-8 overflow-hidden">
@@ -98,7 +145,7 @@ export default function FacilitiesSection() {
 						whileInView={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: index * 0.1 }}
 						viewport={{ once: true }}
-						onClick={() => openFacilityPage(facility.id)}
+						onClick={() => openFacilityPage(facility.slug)}
 					>
 						{/* Image Container */}
 						<div className="relative h-72 overflow-hidden">

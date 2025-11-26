@@ -39,6 +39,7 @@ import {
 	Users,
 	LogOut,
 	GraduationCap,
+	Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -65,6 +66,7 @@ export default function DashboardNav({ session }: { session: any }) {
 					icon: Presentation,
 				},
 				{ href: "/dashboard/achievements", label: "Achievements", icon: Award },
+				{ href: "/dashboard/facilities", label: "Facilities", icon: Building2 },
 			],
 		},
 		forms: {
