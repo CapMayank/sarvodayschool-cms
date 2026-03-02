@@ -35,15 +35,45 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-	const session = request.cookies.get("better-auth.session_token");
 	const { pathname } = request.nextUrl;
-
-	// Skip auth check for API routes and static files
-	if (
-		pathname.startsWith("/api/") ||
+	const session = request.cookies.get("better-auth.session_token");
+	const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
+	const isMaintenanceRoute = pathname.startsWith("/maintenance");
+	const isStaticAsset =
 		pathname.startsWith("/_next/") ||
-		pathname.includes(".")
-	) {
+		pathname === "/favicon.ico" ||
+		pathname.includes(".");
+
+	if (isStaticAsset) {
+		return NextResponse.next();
+	}
+
+	if (isMaintenanceMode) {
+		if (isMaintenanceRoute) {
+			return NextResponse.next();
+		}
+
+		if (pathname.startsWith("/api/")) {
+			return NextResponse.json(
+				{ message: "Service is temporarily under maintenance." },
+				{
+					status: 503,
+					headers: {
+						"Retry-After": "3600",
+					},
+				}
+			);
+		}
+
+		return NextResponse.redirect(new URL("/maintenance", request.url));
+	}
+
+	if (!isMaintenanceMode && isMaintenanceRoute) {
+		return NextResponse.redirect(new URL("/", request.url));
+	}
+
+	// Skip auth check for API routes
+	if (pathname.startsWith("/api/")) {
 		return NextResponse.next();
 	}
 
@@ -56,6 +86,7 @@ export async function proxy(request: NextRequest) {
 		"/admission",
 		"/gallery",
 		"/result",
+		"/maintenance",
 	];
 
 	// Auth pages that should redirect to dashboard if logged in
