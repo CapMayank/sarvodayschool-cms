@@ -3,62 +3,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { Prisma } from "@prisma/client";
 
-// Helper function to calculate result
-async function calculateResult(resultId: number) {
-	const result = await prisma.result.findUnique({
-		where: { id: resultId },
-		include: {
-			subjectMarks: {
-				include: {
-					subject: true,
-				},
-			},
-		},
-	});
+type UploadMarkValue = {
+	subjectId: number;
+	marksObtained?: number;
+	theoryMarks?: number;
+	practicalMarks?: number;
+	isAdditional?: boolean;
+};
 
-	if (!result) return;
-
-	let totalMarks = 0;
-	let maxTotalMarks = 0;
-	let allPassed = true;
-
-	for (const subjectMark of result.subjectMarks) {
-		// Only include non-additional subjects in grand total
-		if (!subjectMark.subject.isAdditional) {
-			if (subjectMark.subject.hasPractical) {
-				// For classes 9-12 with theory+practical
-				const theoryMarks = subjectMark.theoryMarks || 0;
-				const practicalMarks = subjectMark.practicalMarks || 0;
-				totalMarks += theoryMarks + practicalMarks;
-				maxTotalMarks +=
-					(subjectMark.subject.theoryMaxMarks || 0) +
-					(subjectMark.subject.practicalMaxMarks || 0);
-			} else {
-				// For classes Nursery-8th (traditional marking)
-				totalMarks += subjectMark.marksObtained;
-				maxTotalMarks += subjectMark.subject.maxMarks;
-			}
-		}
-
-		// Check if subject is passed
-		if (!subjectMark.isPassed) {
-			allPassed = false;
-		}
-	}
-
-	const percentage = maxTotalMarks > 0 ? (totalMarks / maxTotalMarks) * 100 : 0;
-
-	await prisma.result.update({
-		where: { id: resultId },
-		data: {
-			totalMarks,
-			maxTotalMarks,
-			percentage,
-			isPassed: allPassed,
-		},
-	});
-}
+type UploadStudent = {
+	rollNumber: string;
+	enrollmentNo: string;
+	name: string;
+	fatherName: string;
+	dateOfBirth: string;
+	marks?: Record<string, UploadMarkValue | number>;
+};
 
 // POST - Bulk upload results from JSON data (processed from Excel)
 export async function POST(request: NextRequest) {
@@ -80,275 +42,385 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Optionally clear existing results for this academic year and class
-		if (clearExisting) {
-			const existingStudents = await prisma.student.findMany({
-				where: {
-					classId,
-					academicYear,
-				},
-			});
+		const results: Array<{ rollNumber: string; status: "success" }> = [];
+		const errors: Array<{ rollNumber?: string; error: string }> = [];
 
-			for (const student of existingStudents) {
-				await prisma.result.deleteMany({
-					where: {
-						studentId: student.id,
-						academicYear,
-					},
+		const normalizedStudents: UploadStudent[] = [];
+		for (const studentData of students as UploadStudent[]) {
+			const {
+				rollNumber,
+				enrollmentNo,
+				name,
+				fatherName,
+				dateOfBirth,
+				marks,
+			} = studentData;
+
+			if (!rollNumber || !enrollmentNo || !name || !fatherName || !dateOfBirth) {
+				errors.push({
+					rollNumber,
+					error: "Missing required student information",
 				});
+				continue;
 			}
+
+			const parsedDob = new Date(dateOfBirth);
+			if (Number.isNaN(parsedDob.getTime())) {
+				errors.push({
+					rollNumber,
+					error: "Invalid date of birth",
+				});
+				continue;
+			}
+
+			normalizedStudents.push({
+				rollNumber,
+				enrollmentNo,
+				name,
+				fatherName,
+				dateOfBirth,
+				marks,
+			});
 		}
 
-		const results = [];
-		const errors = [];
+		if (normalizedStudents.length === 0) {
+			return NextResponse.json(
+				{
+					message: "Bulk upload completed",
+					results,
+					errors,
+					totalProcessed: students.length,
+					successCount: results.length,
+					errorCount: errors.length,
+				},
+				{ status: 201 }
+			);
+		}
 
-		for (const studentData of students) {
-			try {
-				const {
-					rollNumber,
-					enrollmentNo,
-					name,
-					fatherName,
-					dateOfBirth,
-					marks,
-				} = studentData;
-
-				// Validate required fields
-				if (
-					!rollNumber ||
-					!enrollmentNo ||
-					!name ||
-					!fatherName ||
-					!dateOfBirth
-				) {
-					errors.push({
-						rollNumber,
-						error: "Missing required student information",
-					});
-					continue;
-				}
-
-				// Find or create student
-				let student = await prisma.student.findFirst({
-					where: {
-						rollNumber,
+		if (clearExisting) {
+			await prisma.result.deleteMany({
+				where: {
+					academicYear,
+					student: {
+						classId,
 						academicYear,
 					},
+				},
+			});
+		}
+
+		const subjects = await prisma.subject.findMany({ where: { classId } });
+		const subjectsByName = new Map(subjects.map((subject) => [subject.name, subject]));
+
+		const uniqueRollNumbers = Array.from(
+			new Set(normalizedStudents.map((student) => student.rollNumber))
+		);
+
+		const existingStudents = await prisma.student.findMany({
+			where: {
+				classId,
+				academicYear,
+				rollNumber: { in: uniqueRollNumbers },
+			},
+		});
+		const existingStudentByRoll = new Map(
+			existingStudents.map((student) => [student.rollNumber, student])
+		);
+
+		const studentsToCreate = normalizedStudents
+			.filter((student) => !existingStudentByRoll.has(student.rollNumber))
+			.map((student) => ({
+				rollNumber: student.rollNumber,
+				enrollmentNo: student.enrollmentNo,
+				name: student.name,
+				fatherName: student.fatherName,
+				dateOfBirth: new Date(student.dateOfBirth),
+				classId,
+				academicYear,
+			}));
+
+		if (studentsToCreate.length > 0) {
+			await prisma.student.createMany({
+				data: studentsToCreate,
+				skipDuplicates: true,
+			});
+		}
+
+		const allStudents = await prisma.student.findMany({
+			where: {
+				classId,
+				academicYear,
+				rollNumber: { in: uniqueRollNumbers },
+			},
+		});
+		const studentByRoll = new Map(allStudents.map((student) => [student.rollNumber, student]));
+		const studentIds = allStudents.map((student) => student.id);
+
+		const existingResults = await prisma.result.findMany({
+			where: {
+				academicYear,
+				studentId: { in: studentIds },
+			},
+			select: {
+				id: true,
+				studentId: true,
+			},
+		});
+		const existingResultByStudent = new Map(
+			existingResults.map((result) => [result.studentId, result])
+		);
+
+		const resultsToCreate = studentIds
+			.filter((studentId) => !existingResultByStudent.has(studentId))
+			.map((studentId) => ({ studentId, academicYear }));
+
+		if (resultsToCreate.length > 0) {
+			await prisma.result.createMany({
+				data: resultsToCreate,
+				skipDuplicates: true,
+			});
+		}
+
+		const allResults = await prisma.result.findMany({
+			where: {
+				academicYear,
+				studentId: { in: studentIds },
+			},
+			select: {
+				id: true,
+				studentId: true,
+			},
+		});
+		const resultByStudentId = new Map(allResults.map((result) => [result.studentId, result]));
+		const resultIds = allResults.map((result) => result.id);
+
+		const optedInRows = await prisma.studentSubjectOptIn.findMany({
+			where: { studentId: { in: studentIds } },
+			select: { studentId: true, subjectId: true },
+		});
+		const optedInByStudent = new Map<number, Set<number>>();
+		for (const row of optedInRows) {
+			if (!optedInByStudent.has(row.studentId)) {
+				optedInByStudent.set(row.studentId, new Set<number>());
+			}
+			optedInByStudent.get(row.studentId)?.add(row.subjectId);
+		}
+
+		if (resultIds.length > 0) {
+			await prisma.subjectMark.deleteMany({
+				where: {
+					resultId: { in: resultIds },
+				},
+			});
+		}
+
+		const subjectMarksToCreate: Prisma.SubjectMarkCreateManyInput[] = [];
+		const aggregates = new Map<
+			number,
+			{ totalMarks: number; maxTotalMarks: number; allPassed: boolean }
+		>();
+		for (const resultId of resultIds) {
+			aggregates.set(resultId, {
+				totalMarks: 0,
+				maxTotalMarks: 0,
+				allPassed: true,
+			});
+		}
+
+		for (const studentData of normalizedStudents) {
+			const student = studentByRoll.get(studentData.rollNumber);
+			if (!student) {
+				errors.push({
+					rollNumber: studentData.rollNumber,
+					error: "Student not found after bulk preparation",
 				});
+				continue;
+			}
 
-				if (!student) {
-					student = await prisma.student.create({
-						data: {
-							rollNumber,
-							enrollmentNo,
-							name,
-							fatherName,
-							dateOfBirth: new Date(dateOfBirth),
-							classId,
-							academicYear,
-						},
-					});
-				}
-
-				// Create or update result
-				let result = await prisma.result.findUnique({
-					where: {
-						studentId_academicYear: {
-							studentId: student.id,
-							academicYear,
-						},
-					},
+			const result = resultByStudentId.get(student.id);
+			if (!result) {
+				errors.push({
+					rollNumber: studentData.rollNumber,
+					error: "Result record not found after bulk preparation",
 				});
+				continue;
+			}
 
-				if (!result) {
-					result = await prisma.result.create({
-						data: {
-							studentId: student.id,
-							academicYear,
-						},
-					});
-				}
+			const optedInSubjectIds = optedInByStudent.get(student.id) || new Set<number>();
+			const studentMarks = studentData.marks;
 
-				// Get all subjects for the class
-				const subjects = await prisma.subject.findMany({
-					where: { classId },
-				});
+			if (studentMarks && typeof studentMarks === "object") {
+				for (const [subjectName, markData] of Object.entries(studentMarks)) {
+					const subject = subjectsByName.get(subjectName);
 
-				// Get student's opted-in additional subjects
-				const optedInSubjects = await prisma.studentSubjectOptIn.findMany({
-					where: { studentId: student.id },
-					select: { subjectId: true },
-				});
-				const optedInSubjectIds = optedInSubjects.map((opt) => opt.subjectId);
+					if (!subject) {
+						errors.push({
+							rollNumber: studentData.rollNumber,
+							error: `Subject "${subjectName}" not found for this class`,
+						});
+						continue;
+					}
 
-				// Create subject marks
-				if (marks && typeof marks === "object") {
-					for (const [subjectName, markData] of Object.entries(marks)) {
-						const subject = subjects.find((s) => s.name === subjectName);
+					if (subject.isAdditional && !optedInSubjectIds.has(subject.id)) {
+						continue;
+					}
 
-						if (!subject) {
+					if (subject.hasPractical && markData && typeof markData === "object") {
+						const { theoryMarks, practicalMarks } = markData as UploadMarkValue;
+
+						let validTheoryMarks = 0;
+						let validPracticalMarks = 0;
+						let hasValidTheory = false;
+						let hasValidPractical = false;
+
+						if (theoryMarks !== undefined && theoryMarks !== null) {
+							if (!Number.isNaN(theoryMarks) && Number.isFinite(theoryMarks)) {
+								validTheoryMarks = theoryMarks;
+								hasValidTheory = true;
+							}
+						}
+
+						if (practicalMarks !== undefined && practicalMarks !== null) {
+							if (!Number.isNaN(practicalMarks) && Number.isFinite(practicalMarks)) {
+								validPracticalMarks = practicalMarks;
+								hasValidPractical = true;
+							}
+						}
+
+						if (!hasValidTheory && !hasValidPractical) {
 							errors.push({
-								rollNumber,
-								error: `Subject "${subjectName}" not found for this class`,
+								rollNumber: studentData.rollNumber,
+								error: `Invalid theory or practical marks for subject "${subjectName}"`,
 							});
 							continue;
 						}
 
-						// Check if subject is additional and student has opted in
+						const theoryPassing = subject.theoryPassingMarks || 0;
+						const practicalPassing = subject.practicalPassingMarks || 0;
+
+						const isTheoryPassed = hasValidTheory
+							? validTheoryMarks >= theoryPassing
+							: false;
+						const isPracticalPassed = hasValidPractical
+							? validPracticalMarks >= practicalPassing
+							: false;
+						const isOverallPassed = isTheoryPassed && isPracticalPassed;
+
+						subjectMarksToCreate.push({
+							resultId: result.id,
+							subjectId: subject.id,
+							theoryMarks: hasValidTheory ? validTheoryMarks : null,
+							practicalMarks: hasValidPractical ? validPracticalMarks : null,
+							isTheoryPassed: hasValidTheory ? isTheoryPassed : null,
+							isPracticalPassed: hasValidPractical ? isPracticalPassed : null,
+							isPassed: isOverallPassed,
+							marksObtained: 0,
+						});
+
+						const summary = aggregates.get(result.id);
+						if (summary) {
+							if (!subject.isAdditional) {
+								summary.totalMarks += validTheoryMarks + validPracticalMarks;
+								summary.maxTotalMarks +=
+									(subject.theoryMaxMarks || 0) +
+									(subject.practicalMaxMarks || 0);
+							}
+							if (!isOverallPassed) {
+								summary.allPassed = false;
+							}
+						}
+					} else {
+						const marksObtained =
+							markData && typeof markData === "object"
+								? (markData as UploadMarkValue).marksObtained
+								: typeof markData === "number"
+								? markData
+								: 0;
+
 						if (
-							subject.isAdditional &&
-							!optedInSubjectIds.includes(subject.id)
+							marksObtained === undefined ||
+							marksObtained === null ||
+							Number.isNaN(marksObtained) ||
+							!Number.isFinite(marksObtained)
 						) {
-							// Skip this subject - student hasn't opted in
+							errors.push({
+								rollNumber: studentData.rollNumber,
+								error: `Invalid marks value for subject "${subjectName}"`,
+							});
 							continue;
 						}
 
-						// Handle different marking systems
-						if (
-							subject.hasPractical &&
-							markData &&
-							typeof markData === "object"
-						) {
-							// For classes 9-12 with theory+practical
-							const { theoryMarks, practicalMarks } = markData as {
-								theoryMarks?: number;
-								practicalMarks?: number;
-								subjectId: number;
-							};
+						const isPassed = marksObtained >= subject.passingMarks;
 
-							// Validate marks
-							let validTheoryMarks = 0;
-							let validPracticalMarks = 0;
-							let hasValidTheory = false;
-							let hasValidPractical = false;
+						subjectMarksToCreate.push({
+							resultId: result.id,
+							subjectId: subject.id,
+							marksObtained,
+							isPassed,
+							theoryMarks: null,
+							practicalMarks: null,
+							isTheoryPassed: null,
+							isPracticalPassed: null,
+						});
 
-							if (theoryMarks !== undefined && theoryMarks !== null) {
-								if (!isNaN(theoryMarks) && isFinite(theoryMarks)) {
-									validTheoryMarks = theoryMarks;
-									hasValidTheory = true;
-								}
+						const summary = aggregates.get(result.id);
+						if (summary) {
+							if (!subject.isAdditional) {
+								summary.totalMarks += marksObtained;
+								summary.maxTotalMarks += subject.maxMarks;
 							}
-
-							if (practicalMarks !== undefined && practicalMarks !== null) {
-								if (!isNaN(practicalMarks) && isFinite(practicalMarks)) {
-									validPracticalMarks = practicalMarks;
-									hasValidPractical = true;
-								}
+							if (!isPassed) {
+								summary.allPassed = false;
 							}
-
-							if (!hasValidTheory && !hasValidPractical) {
-								errors.push({
-									rollNumber,
-									error: `Invalid theory or practical marks for subject "${subjectName}"`,
-								});
-								continue;
-							}
-
-							// Check passing criteria for theory/practical
-							const theoryPassing = subject.theoryPassingMarks || 0;
-							const practicalPassing = subject.practicalPassingMarks || 0;
-
-							const isTheoryPassed = hasValidTheory
-								? validTheoryMarks >= theoryPassing
-								: false;
-							const isPracticalPassed = hasValidPractical
-								? validPracticalMarks >= practicalPassing
-								: false;
-							const isOverallPassed = isTheoryPassed && isPracticalPassed;
-
-							await prisma.subjectMark.upsert({
-								where: {
-									resultId_subjectId: {
-										resultId: result.id,
-										subjectId: subject.id,
-									},
-								},
-								update: {
-									theoryMarks: hasValidTheory ? validTheoryMarks : null,
-									practicalMarks: hasValidPractical
-										? validPracticalMarks
-										: null,
-									isTheoryPassed: hasValidTheory ? isTheoryPassed : null,
-									isPracticalPassed: hasValidPractical
-										? isPracticalPassed
-										: null,
-									isPassed: isOverallPassed,
-									marksObtained: 0, // Reset traditional marks
-								},
-								create: {
-									resultId: result.id,
-									subjectId: subject.id,
-									theoryMarks: hasValidTheory ? validTheoryMarks : null,
-									practicalMarks: hasValidPractical
-										? validPracticalMarks
-										: null,
-									isTheoryPassed: hasValidTheory ? isTheoryPassed : null,
-									isPracticalPassed: hasValidPractical
-										? isPracticalPassed
-										: null,
-									isPassed: isOverallPassed,
-									marksObtained: 0,
-								},
-							});
-						} else {
-							// For classes Nursery-8th (traditional marking)
-							const marksObtained =
-								markData && typeof markData === "object"
-									? (markData as { marksObtained?: number }).marksObtained
-									: typeof markData === "number"
-									? markData
-									: 0;
-
-							if (
-								marksObtained === undefined ||
-								marksObtained === null ||
-								isNaN(marksObtained) ||
-								!isFinite(marksObtained)
-							) {
-								errors.push({
-									rollNumber,
-									error: `Invalid marks value for subject "${subjectName}"`,
-								});
-								continue;
-							}
-
-							const isPassed = marksObtained >= subject.passingMarks;
-
-							await prisma.subjectMark.upsert({
-								where: {
-									resultId_subjectId: {
-										resultId: result.id,
-										subjectId: subject.id,
-									},
-								},
-								update: {
-									marksObtained: marksObtained,
-									isPassed,
-									theoryMarks: null, // Reset theory/practical marks
-									practicalMarks: null,
-									isTheoryPassed: null,
-									isPracticalPassed: null,
-								},
-								create: {
-									resultId: result.id,
-									subjectId: subject.id,
-									marksObtained: marksObtained,
-									isPassed,
-								},
-							});
 						}
 					}
 				}
-
-				// Recalculate result
-				await calculateResult(result.id);
-				results.push({ rollNumber, status: "success" });
-			} catch (error) {
-				errors.push({
-					rollNumber: studentData.rollNumber,
-					error: error instanceof Error ? error.message : "Unknown error",
-				});
 			}
+
+			results.push({ rollNumber: studentData.rollNumber, status: "success" });
+		}
+
+		const batchSize = 500;
+		for (let index = 0; index < subjectMarksToCreate.length; index += batchSize) {
+			const chunk = subjectMarksToCreate.slice(index, index + batchSize);
+			if (chunk.length > 0) {
+				await prisma.subjectMark.createMany({ data: chunk });
+			}
+		}
+
+		const summaryUpdates = Array.from(aggregates.entries()).map(
+			([resultId, summary]) => {
+				const percentage =
+					summary.maxTotalMarks > 0
+						? (summary.totalMarks / summary.maxTotalMarks) * 100
+						: 0;
+				return {
+					resultId,
+					totalMarks: summary.totalMarks,
+					maxTotalMarks: summary.maxTotalMarks,
+					percentage,
+					isPassed: summary.allPassed,
+				};
+			}
+		);
+
+		if (summaryUpdates.length > 0) {
+			const values = summaryUpdates.map((summary) =>
+				Prisma.sql`(${summary.resultId}, ${summary.totalMarks}, ${summary.maxTotalMarks}, ${summary.percentage}, ${summary.isPassed})`
+			);
+
+			await prisma.$executeRaw`
+				UPDATE "Result" AS r
+				SET
+					"totalMarks" = v.total_marks,
+					"maxTotalMarks" = v.max_total_marks,
+					"percentage" = v.percentage,
+					"isPassed" = v.is_passed
+				FROM (
+					VALUES ${Prisma.join(values)}
+				) AS v(result_id, total_marks, max_total_marks, percentage, is_passed)
+				WHERE r.id = v.result_id
+			`;
 		}
 
 		return NextResponse.json(
