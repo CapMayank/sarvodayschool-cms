@@ -1,7 +1,7 @@
 /** @format */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { ensureResultPublicationAccess } from "@/lib/result-publication-guard";
 
 interface ResultData {
 	student: {
@@ -42,27 +42,9 @@ export async function POST(request: NextRequest) {
 	try {
 		const { student, result, academicYear } = await request.json();
 
-		// Check if results are published for this academic year
-		const publication = await prisma.resultPublication.findUnique({
-			where: { academicYear },
-		});
-
-		if (!publication) {
-			return NextResponse.json(
-				{ error: "Results not available for this academic year" },
-				{ status: 404 }
-			);
-		}
-
-		const now = new Date();
-		if (!publication.isPublished && now < publication.publishDate) {
-			return NextResponse.json(
-				{
-					error: "Results are not yet published",
-					publishDate: publication.publishDate,
-				},
-				{ status: 403 }
-			);
+		const publicationAccess = await ensureResultPublicationAccess(academicYear);
+		if (!publicationAccess.ok) {
+			return publicationAccess.response;
 		}
 
 		// Transform the already fetched data for PDF
@@ -119,7 +101,7 @@ export async function POST(request: NextRequest) {
 							hasPractical: false,
 						};
 					}
-				}
+				},
 			),
 			resultSummary: {
 				totalMarks: result.totalMarks,
@@ -144,7 +126,7 @@ export async function POST(request: NextRequest) {
 		console.error("PDF generation error:", error);
 		return NextResponse.json(
 			{ error: "Failed to generate PDF" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
@@ -412,7 +394,7 @@ function generateMarkStatementHTML(data: ResultData): string {
 
 	<div class="footer">
 		Generated on: ${new Date().toLocaleDateString(
-			"en-IN"
+			"en-IN",
 		)} at ${new Date().toLocaleTimeString("en-IN")}<br>
 		This is a computer-generated document and does not require a signature.
 	</div>

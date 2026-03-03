@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureResultPublicationAccess } from "@/lib/result-publication-guard";
 
 // POST - Search for student result (public API)
 export async function POST(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
 		if (!rollNumber || !academicYear) {
 			return NextResponse.json(
 				{ error: "Roll number and academic year are required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -20,31 +21,13 @@ export async function POST(request: NextRequest) {
 		if (!enrollmentNo && !dateOfBirth) {
 			return NextResponse.json(
 				{ error: "Either enrollment number or date of birth is required" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
-		// Check if results are published for this academic year
-		const publication = await prisma.resultPublication.findUnique({
-			where: { academicYear },
-		});
-
-		if (!publication) {
-			return NextResponse.json(
-				{ error: "Results not available for this academic year" },
-				{ status: 404 }
-			);
-		}
-
-		const now = new Date();
-		if (!publication.isPublished && now < publication.publishDate) {
-			return NextResponse.json(
-				{
-					error: "Results are not yet published",
-					publishDate: publication.publishDate,
-				},
-				{ status: 403 }
-			);
+		const publicationAccess = await ensureResultPublicationAccess(academicYear);
+		if (!publicationAccess.ok) {
+			return publicationAccess.response;
 		}
 
 		// Find student
@@ -97,7 +80,7 @@ export async function POST(request: NextRequest) {
 		if (!student) {
 			return NextResponse.json(
 				{ error: "Student not found with provided credentials" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -114,7 +97,7 @@ export async function POST(request: NextRequest) {
 			) {
 				return NextResponse.json(
 					{ error: "Invalid credentials" },
-					{ status: 401 }
+					{ status: 401 },
 				);
 			}
 		}
@@ -123,7 +106,7 @@ export async function POST(request: NextRequest) {
 		if (!student.results || student.results.length === 0) {
 			return NextResponse.json(
 				{ error: "Result not found for this student" },
-				{ status: 404 }
+				{ status: 404 },
 			);
 		}
 
@@ -184,7 +167,7 @@ export async function POST(request: NextRequest) {
 		console.error("Error searching for result:", error);
 		return NextResponse.json(
 			{ error: "Failed to search for result" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

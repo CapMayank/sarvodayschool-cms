@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 				{
 					error: "Academic year, class ID, and students array are required",
 				},
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -47,16 +47,16 @@ export async function POST(request: NextRequest) {
 
 		const normalizedStudents: UploadStudent[] = [];
 		for (const studentData of students as UploadStudent[]) {
-			const {
-				rollNumber,
-				enrollmentNo,
-				name,
-				fatherName,
-				dateOfBirth,
-				marks,
-			} = studentData;
+			const { rollNumber, enrollmentNo, name, fatherName, dateOfBirth, marks } =
+				studentData;
 
-			if (!rollNumber || !enrollmentNo || !name || !fatherName || !dateOfBirth) {
+			if (
+				!rollNumber ||
+				!enrollmentNo ||
+				!name ||
+				!fatherName ||
+				!dateOfBirth
+			) {
 				errors.push({
 					rollNumber,
 					error: "Missing required student information",
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 					successCount: results.length,
 					errorCount: errors.length,
 				},
-				{ status: 201 }
+				{ status: 201 },
 			);
 		}
 
@@ -110,10 +110,12 @@ export async function POST(request: NextRequest) {
 		}
 
 		const subjects = await prisma.subject.findMany({ where: { classId } });
-		const subjectsByName = new Map(subjects.map((subject) => [subject.name, subject]));
+		const subjectsByName = new Map(
+			subjects.map((subject) => [subject.name, subject]),
+		);
 
 		const uniqueRollNumbers = Array.from(
-			new Set(normalizedStudents.map((student) => student.rollNumber))
+			new Set(normalizedStudents.map((student) => student.rollNumber)),
 		);
 
 		const existingStudents = await prisma.student.findMany({
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
 			},
 		});
 		const existingStudentByRoll = new Map(
-			existingStudents.map((student) => [student.rollNumber, student])
+			existingStudents.map((student) => [student.rollNumber, student]),
 		);
 
 		const studentsToCreate = normalizedStudents
@@ -153,7 +155,9 @@ export async function POST(request: NextRequest) {
 				rollNumber: { in: uniqueRollNumbers },
 			},
 		});
-		const studentByRoll = new Map(allStudents.map((student) => [student.rollNumber, student]));
+		const studentByRoll = new Map(
+			allStudents.map((student) => [student.rollNumber, student]),
+		);
 		const studentIds = allStudents.map((student) => student.id);
 
 		const existingResults = await prisma.result.findMany({
@@ -167,7 +171,7 @@ export async function POST(request: NextRequest) {
 			},
 		});
 		const existingResultByStudent = new Map(
-			existingResults.map((result) => [result.studentId, result])
+			existingResults.map((result) => [result.studentId, result]),
 		);
 
 		const resultsToCreate = studentIds
@@ -191,7 +195,9 @@ export async function POST(request: NextRequest) {
 				studentId: true,
 			},
 		});
-		const resultByStudentId = new Map(allResults.map((result) => [result.studentId, result]));
+		const resultByStudentId = new Map(
+			allResults.map((result) => [result.studentId, result]),
+		);
 		const resultIds = allResults.map((result) => result.id);
 
 		const optedInRows = await prisma.studentSubjectOptIn.findMany({
@@ -246,7 +252,8 @@ export async function POST(request: NextRequest) {
 				continue;
 			}
 
-			const optedInSubjectIds = optedInByStudent.get(student.id) || new Set<number>();
+			const optedInSubjectIds =
+				optedInByStudent.get(student.id) || new Set<number>();
 			const studentMarks = studentData.marks;
 
 			if (studentMarks && typeof studentMarks === "object") {
@@ -265,7 +272,11 @@ export async function POST(request: NextRequest) {
 						continue;
 					}
 
-					if (subject.hasPractical && markData && typeof markData === "object") {
+					if (
+						subject.hasPractical &&
+						markData &&
+						typeof markData === "object"
+					) {
 						const { theoryMarks, practicalMarks } = markData as UploadMarkValue;
 
 						let validTheoryMarks = 0;
@@ -281,7 +292,10 @@ export async function POST(request: NextRequest) {
 						}
 
 						if (practicalMarks !== undefined && practicalMarks !== null) {
-							if (!Number.isNaN(practicalMarks) && Number.isFinite(practicalMarks)) {
+							if (
+								!Number.isNaN(practicalMarks) &&
+								Number.isFinite(practicalMarks)
+							) {
 								validPracticalMarks = practicalMarks;
 								hasValidPractical = true;
 							}
@@ -334,8 +348,8 @@ export async function POST(request: NextRequest) {
 							markData && typeof markData === "object"
 								? (markData as UploadMarkValue).marksObtained
 								: typeof markData === "number"
-								? markData
-								: 0;
+									? markData
+									: 0;
 
 						if (
 							marksObtained === undefined ||
@@ -381,7 +395,11 @@ export async function POST(request: NextRequest) {
 		}
 
 		const batchSize = 500;
-		for (let index = 0; index < subjectMarksToCreate.length; index += batchSize) {
+		for (
+			let index = 0;
+			index < subjectMarksToCreate.length;
+			index += batchSize
+		) {
 			const chunk = subjectMarksToCreate.slice(index, index + batchSize);
 			if (chunk.length > 0) {
 				await prisma.subjectMark.createMany({ data: chunk });
@@ -401,12 +419,13 @@ export async function POST(request: NextRequest) {
 					percentage,
 					isPassed: summary.allPassed,
 				};
-			}
+			},
 		);
 
 		if (summaryUpdates.length > 0) {
-			const values = summaryUpdates.map((summary) =>
-				Prisma.sql`(${summary.resultId}, ${summary.totalMarks}, ${summary.maxTotalMarks}, ${summary.percentage}, ${summary.isPassed})`
+			const values = summaryUpdates.map(
+				(summary) =>
+					Prisma.sql`(${summary.resultId}, ${summary.totalMarks}, ${summary.maxTotalMarks}, ${summary.percentage}, ${summary.isPassed})`,
 			);
 
 			await prisma.$executeRaw`
@@ -432,13 +451,13 @@ export async function POST(request: NextRequest) {
 				successCount: results.length,
 				errorCount: errors.length,
 			},
-			{ status: 201 }
+			{ status: 201 },
 		);
 	} catch (error) {
 		console.error("Error in bulk upload:", error);
 		return NextResponse.json(
 			{ error: "Failed to process bulk upload" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

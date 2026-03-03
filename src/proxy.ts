@@ -61,7 +61,7 @@ export async function proxy(request: NextRequest) {
 					headers: {
 						"Retry-After": "3600",
 					},
-				}
+				},
 			);
 		}
 
