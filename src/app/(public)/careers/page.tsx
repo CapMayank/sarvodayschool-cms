@@ -193,6 +193,7 @@ const Careers: React.FC = () => {
 		setSubmitting(true);
 		setUploadProgress(0);
 
+		let newlyUploadedResumeUrl = ""; // Track new upload for rollback
 		try {
 			let resumeUrl = formData.resumeUrl; // Use existing URL if available
 
@@ -205,6 +206,7 @@ const Careers: React.FC = () => {
 				});
 
 				resumeUrl = await uploadResumeToCloudinary(selectedFile);
+				newlyUploadedResumeUrl = resumeUrl;
 				setUploadProgress(40);
 			}
 
@@ -275,6 +277,24 @@ const Careers: React.FC = () => {
 			setTimeout(() => setSubmitMessage(null), 7000);
 		} catch (err) {
 			console.error("Error submitting form:", err);
+			
+			// Rollback resume upload if it was newly uploaded but the form submission failed
+			if (newlyUploadedResumeUrl) {
+				try {
+					const publicIdMatch = newlyUploadedResumeUrl.match(/\/v\d+\/(.+?)\.[a-zA-Z0-9]+$/);
+					if (publicIdMatch) {
+						const publicId = publicIdMatch[1];
+						await fetch("/api/cloudinary/delete", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ publicId }),
+						});
+					}
+				} catch (rollbackErr) {
+					console.error("Failed to rollback uploaded resume:", rollbackErr);
+				}
+			}
+
 			setSubmitMessage({
 				type: "error",
 				text: "Failed to submit application. Please try again.",

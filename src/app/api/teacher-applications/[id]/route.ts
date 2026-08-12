@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { deleteCloudinaryFileServer } from "@/lib/cloudinary-server";
 
 export async function PUT(
 	request: NextRequest,
@@ -66,9 +67,24 @@ export async function DELETE(
 		const { id: idParam } = await params;
 		const id = parseInt(idParam);
 
+		const existingApp = await prisma.teacherApplication.findUnique({
+			where: { id },
+		});
+
+		if (!existingApp) {
+			return NextResponse.json(
+				{ error: "Application not found" },
+				{ status: 404 }
+			);
+		}
+
 		await prisma.teacherApplication.delete({
 			where: { id },
 		});
+
+		if (existingApp.resumeUrl) {
+			await deleteCloudinaryFileServer(existingApp.resumeUrl);
+		}
 
 		return NextResponse.json({ success: true });
                  // eslint-disable-next-line @typescript-eslint/no-explicit-any

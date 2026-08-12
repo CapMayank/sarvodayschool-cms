@@ -47,6 +47,11 @@ export default function CloudinaryUpload({
 					console.log("Upload successful:", result);
 					const url = result?.info?.secure_url;
 					if (url) {
+						if (imageUrl && imageUrl !== currentImage) {
+							import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
+								deleteCloudinaryImage(imageUrl).catch(console.error);
+							});
+						}
 						setImageUrl(url);
 						onUploadSuccess(url);
 					}
@@ -112,6 +117,11 @@ export default function CloudinaryUpload({
 					<button
 						type="button"
 						onClick={() => {
+							if (imageUrl && imageUrl !== currentImage) {
+								import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
+									deleteCloudinaryImage(imageUrl).catch(console.error);
+								});
+							}
 							setImageUrl("");
 							onUploadSuccess("");
 						}}

@@ -30,6 +30,7 @@ export default function SlideshowsTab() {
 	const [submitting, setSubmitting] = useState(false);
 	const [deleting, setDeleting] = useState<number | null>(null);
 	const [isReordering, setIsReordering] = useState(false);
+	const [originalImageUrl, setOriginalImageUrl] = useState("");
 	const [formData, setFormData] = useState({
 		title: "",
 		imageUrl: "",
@@ -62,6 +63,23 @@ export default function SlideshowsTab() {
 			order: 0,
 		});
 		setEditingId(null);
+		setOriginalImageUrl("");
+	};
+
+	const handleCancel = () => {
+		if (formData.imageUrl && formData.imageUrl !== originalImageUrl) {
+			const publicIdMatch = formData.imageUrl.match(/\/v\d+\/(.+?)\.[a-zA-Z0-9]+$/);
+			if (publicIdMatch) {
+				const publicId = publicIdMatch[1];
+				fetch("/api/cloudinary/delete", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ publicId }),
+				}).catch(console.error);
+			}
+		}
+		setShowModal(false);
+		resetForm();
 	};
 
 	const handleSubmit = async () => {
@@ -86,6 +104,17 @@ export default function SlideshowsTab() {
 			await loadSlideshows();
 		} catch (error) {
 			console.error("Error saving slideshow:", error);
+			if (formData.imageUrl && formData.imageUrl !== originalImageUrl) {
+				const publicIdMatch = formData.imageUrl.match(/\/v\d+\/(.+?)\.[a-zA-Z0-9]+$/);
+				if (publicIdMatch) {
+					const publicId = publicIdMatch[1];
+					fetch("/api/cloudinary/delete", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ publicId }),
+					}).catch(console.error);
+				}
+			}
 			toast.error("Failed to save slideshow");
 		} finally {
 			setSubmitting(false);
@@ -101,6 +130,7 @@ export default function SlideshowsTab() {
 			order: slideshow.order,
 		});
 		setEditingId(slideshow.id);
+		setOriginalImageUrl(slideshow.imageUrl);
 		setShowModal(true);
 	};
 
@@ -337,7 +367,7 @@ export default function SlideshowsTab() {
 										</p>
 									</div>
 									<button
-										onClick={() => setShowModal(false)}
+										onClick={handleCancel}
 										className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
 									>
 										<svg
@@ -424,7 +454,7 @@ export default function SlideshowsTab() {
 							<div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 shrink-0">
 								<div className="flex flex-col sm:flex-row gap-3">
 									<button
-										onClick={() => setShowModal(false)}
+										onClick={handleCancel}
 										className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
 									>
 										Cancel

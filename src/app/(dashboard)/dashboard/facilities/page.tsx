@@ -146,6 +146,7 @@ export default function FacilitiesTab() {
 			return;
 		}
 
+		let newlyUploadedImages: string[] = [];
 		try {
 			setSubmitting(true);
 			let mainImageUrl = formData.imageUrl;
@@ -155,6 +156,7 @@ export default function FacilitiesTab() {
 			if (mainImageFile) {
 				toast.loading("Uploading main image...");
 				mainImageUrl = await uploadImageToCloudinary(mainImageFile);
+				newlyUploadedImages.push(mainImageUrl);
 				toast.dismiss();
 			}
 
@@ -164,6 +166,7 @@ export default function FacilitiesTab() {
 				for (const [index, file] of mediaImageFiles.entries()) {
 					const url = await uploadImageToCloudinary(file);
 					updatedMediaGallery[index].src = url;
+					newlyUploadedImages.push(url);
 				}
 				toast.dismiss();
 			}
@@ -189,6 +192,19 @@ export default function FacilitiesTab() {
 			await loadFacilities();
 		} catch (error) {
 			console.error("Error saving facility:", error);
+			if (newlyUploadedImages.length > 0) {
+				for (const url of newlyUploadedImages) {
+					const publicIdMatch = url.match(/\/v\d+\/(.+?)\.[a-zA-Z0-9]+$/);
+					if (publicIdMatch) {
+						const publicId = publicIdMatch[1];
+						fetch("/api/cloudinary/delete", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ publicId }),
+						}).catch(console.error);
+					}
+				}
+			}
 			toast.error("Failed to save facility");
 		} finally {
 			setSubmitting(false);
