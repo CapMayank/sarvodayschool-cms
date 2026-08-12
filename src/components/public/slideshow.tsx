@@ -119,17 +119,19 @@ const Slideshow = () => {
 				<div className="w-24 h-1 bg-linear-to-r from-red-600 to-red-500 mx-auto rounded-full" />
 			</motion.div>
 			<div className="relative w-full max-w-7xl mx-auto h-[480px] md:h-[650px] rounded-xl overflow-hidden shadow-xl">
-				{/* Background Blur */}
+				{/* Background Blur - fills letterbox/pillarbox areas with blurred version of the slide */}
 				<motion.div
 					key={currentIndex}
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ duration: 0.8 }}
-					style={{ backgroundImage: `url(${slides[currentIndex].imageUrl})` }}
-					className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-65"
+					className="absolute inset-0 bg-cover bg-center"
+					style={{
+						backgroundImage: `url(${slides[currentIndex].imageUrl})`,
+						filter: 'blur(30px) brightness(0.7)',
+						transform: 'scale(1.15)',
+					}}
 				/>
-				{/* Dark overlay to improve contrast between blurred bg and main image */}
-				<div className="absolute inset-0 bg-black/30 z-[1]" />
 
 				{/* Main Clean Image (no cropping, no stretch) */}
 				<motion.div
