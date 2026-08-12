@@ -126,8 +126,10 @@ const Slideshow = () => {
 					animate={{ opacity: 1 }}
 					transition={{ duration: 0.8 }}
 					style={{ backgroundImage: `url(${slides[currentIndex].imageUrl})` }}
-					className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-30"
+					className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-65"
 				/>
+				{/* Dark overlay to improve contrast between blurred bg and main image */}
+				<div className="absolute inset-0 bg-black/30 z-[1]" />
 
 				{/* Main Clean Image (no cropping, no stretch) */}
 				<motion.div
@@ -135,7 +137,7 @@ const Slideshow = () => {
 					initial={{ opacity: 0, scale: 1.02 }}
 					animate={{ opacity: 1, scale: 1 }}
 					transition={{ duration: 0.7 }}
-					className="relative w-full h-full flex items-center justify-center cursor-pointer z-10"
+					className="relative w-full h-full flex items-center justify-center cursor-pointer z-[2]"
 					onClick={() => openModal(slides[currentIndex].imageUrl)}
 				>
 					<div className="relative w-full h-full">
