@@ -18,11 +18,12 @@ export default function CloudinaryUpload({
 	folder = "sarvodaya",
 }: CloudinaryUploadProps) {
 	const [imageUrl, setImageUrl] = useState(currentImage || "");
+	const [prevImage, setPrevImage] = useState(currentImage);
 
-	// Update imageUrl when currentImage prop changes
-	useEffect(() => {
+	if (currentImage !== prevImage) {
+		setPrevImage(currentImage);
 		setImageUrl(currentImage || "");
-	}, [currentImage]);
+	}
 
 	return (
 		<div className="space-y-3">
@@ -97,9 +98,11 @@ export default function CloudinaryUpload({
 
 			{imageUrl && (
 				<div className="relative inline-block">
-					<img
+					<Image
 						src={imageUrl}
 						alt="Preview"
+						width={400}
+						height={200}
 						className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-gray-200"
 					/>
 

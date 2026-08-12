@@ -28,6 +28,7 @@ export default function ForgotPasswordPage() {
 		setIsLoading(true);
 
 		try {
+			// @ts-expect-error - better-auth type generation bug, method exists at runtime
 			const response = await authClient.forgetPassword({
 				email,
 				redirectTo: "/reset-password",

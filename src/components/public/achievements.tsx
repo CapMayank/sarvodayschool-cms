@@ -3,6 +3,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Award, Sparkles } from "lucide-react";
 
 interface Achievement {
@@ -221,9 +222,11 @@ export default function AchievementsSection() {
 								<div className="absolute inset-0 bg-linear-to-br from-red-600/0 to-red-600/0 group-hover/card:from-red-600/10 group-hover/card:to-red-600/20 transition-all duration-500 z-20 pointer-events-none" />
 
 								{/* Achievement Image */}
-								<img
+								<Image
 									src={achievement.imageUrl}
 									alt={achievement.title}
+									width={600}
+									height={350}
 									className="w-full h-[350px] object-cover transition-transform duration-500 group-hover/card:scale-110"
 								/>
 

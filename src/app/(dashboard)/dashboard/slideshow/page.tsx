@@ -18,6 +18,7 @@ import {
 	GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function SlideshowsTab() {
 	const [slideshows, setSlideshows] = useState<any[]>([]);
@@ -200,7 +201,7 @@ export default function SlideshowsTab() {
 							No slideshows yet
 						</h3>
 						<p className="text-gray-600 text-sm sm:text-base">
-							Click "Add Slideshow" to create your first banner.
+							Click &quot;Add Slideshow&quot; to create your first banner.
 						</p>
 					</div>
 				) : (
@@ -233,9 +234,11 @@ export default function SlideshowsTab() {
 									<div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
 										{/* Image */}
 										<div className="relative shrink-0 w-full sm:w-auto">
-											<img
+											<Image
 												src={item.imageUrl}
 												alt={item.title || "Slideshow"}
+												width={128}
+												height={80}
 												className="h-20 w-full sm:w-32 object-cover rounded-lg border border-gray-200"
 											/>
 											{!item.isActive && (

@@ -10,6 +10,7 @@ import ReorderableList from "@/components/ReorderableList";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Loader2, Edit, Trash2, Award, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function AchievementsTab() {
 	const [achievements, setAchievements] = useState<any[]>([]);
@@ -157,7 +158,7 @@ export default function AchievementsTab() {
 							Achievement Management
 						</h1>
 						<p className="text-gray-600 mt-1 text-sm sm:text-base">
-							Showcase your school's accomplishments and milestones
+							Showcase your school&apos;s accomplishments and milestones
 						</p>
 					</div>
 					<div className="text-center sm:text-right">
@@ -204,7 +205,7 @@ export default function AchievementsTab() {
 							No achievements yet
 						</h3>
 						<p className="text-gray-600 text-sm sm:text-base">
-							Click "Add Achievement" to create your first achievement.
+							Click &quot;Add Achievement&quot; to create your first achievement.
 						</p>
 					</div>
 				) : (
@@ -236,9 +237,11 @@ export default function AchievementsTab() {
 								>
 									<div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
 										{/* Image */}
-										<img
+										<Image
 											src={item.imageUrl}
 											alt={item.title}
+											width={80}
+											height={80}
 											className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-lg border border-gray-200 shrink-0 mx-auto sm:mx-0"
 										/>
 
@@ -317,7 +320,7 @@ export default function AchievementsTab() {
 												: "Create New Achievement"}
 										</h3>
 										<p className="text-orange-100 text-xs sm:text-sm">
-											Showcase your school's accomplishments and milestones
+											Showcase your school&apos;s accomplishments and milestones
 										</p>
 									</div>
 									<button

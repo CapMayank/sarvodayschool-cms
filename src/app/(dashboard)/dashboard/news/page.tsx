@@ -343,7 +343,7 @@ export default function NewsTab() {
 							No news articles yet
 						</h3>
 						<p className="text-gray-600 text-sm sm:text-base">
-							Click "Add News" to create your first article.
+							Click &quot;Add News&quot; to create your first article.
 						</p>
 					</div>
 				) : (

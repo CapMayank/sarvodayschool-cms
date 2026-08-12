@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 interface Highlight {
 	title: string;
@@ -392,7 +393,7 @@ export default function FacilitiesTab() {
 							No facilities yet
 						</h3>
 						<p className="text-gray-600 text-sm sm:text-base">
-							Click "Add Facility" to create your first facility.
+							Click &quot;Add Facility&quot; to create your first facility.
 						</p>
 					</div>
 				) : (
@@ -425,9 +426,11 @@ export default function FacilitiesTab() {
 									<div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
 										{/* Image */}
 										<div className="relative shrink-0 w-full sm:w-auto">
-											<img
+											<Image
 												src={item.imageUrl}
 												alt={item.title}
+												width={128}
+												height={80}
 												className="h-20 w-full sm:w-32 object-cover rounded-lg border border-gray-200"
 											/>
 											{!item.isActive && (

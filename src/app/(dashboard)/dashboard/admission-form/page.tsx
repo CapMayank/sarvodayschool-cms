@@ -498,7 +498,7 @@ export default function AdmissionsTab() {
 											<div className="grid grid-cols-2 gap-4">
 												<div className="space-y-1">
 													<p className="text-sm font-medium text-gray-500">
-														Father's Name
+														Father&apos;s Name
 													</p>
 													<p className="text-gray-900">
 														{selectedForm.fatherName}
@@ -506,7 +506,7 @@ export default function AdmissionsTab() {
 												</div>
 												<div className="space-y-1">
 													<p className="text-sm font-medium text-gray-500">
-														Mother's Name
+														Mother&apos;s Name
 													</p>
 													<p className="text-gray-900">
 														{selectedForm.motherName}
