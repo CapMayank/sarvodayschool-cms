@@ -23,14 +23,15 @@ import { CldUploadWidget } from "next-cloudinary";
 import ReorderableList from "@/components/ReorderableList";
 import { toast } from "sonner";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-	DialogFooter,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetDescription,
+	SheetFooter,
+	SheetTrigger,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -338,34 +339,35 @@ export default function GalleryTab() {
 					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 						<h2 className="text-xl sm:text-2xl font-bold">Image Categories</h2>
 
-						<Dialog
+						<Sheet
 							open={categoryDialogOpen}
 							onOpenChange={setCategoryDialogOpen}
 						>
-							<DialogTrigger asChild>
+							<SheetTrigger asChild>
 								<Button
 									onClick={resetCategoryForm}
 									className="w-full sm:w-auto"
 								>
 									<Plus className="mr-2 h-4 w-4" /> Add Category
 								</Button>
-							</DialogTrigger>
-							<DialogContent className="mx-4 max-w-lg">
-								<DialogHeader>
-									<DialogTitle className="text-lg sm:text-xl">
+							</SheetTrigger>
+							<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
+								<SheetHeader className="mb-6">
+									<SheetTitle className="text-xl sm:text-2xl">
 										{editingCategory ? "Edit Category" : "Create Category"}
-									</DialogTitle>
-									<DialogDescription className="text-sm sm:text-base">
+									</SheetTitle>
+									<SheetDescription>
 										{editingCategory
 											? "Update the category details below"
 											: "Add a new category to organize your images"}
-									</DialogDescription>
-								</DialogHeader>
+									</SheetDescription>
+								</SheetHeader>
 
-								<div className="grid gap-4 py-4">
+								<div className="grid gap-6 py-4">
 									<div className="space-y-2">
+										<Label>Category Title</Label>
 										<Input
-											placeholder="Category title"
+											placeholder="e.g., Annual Sports Day"
 											value={categoryFormData.title}
 											onChange={(e) =>
 												setCategoryFormData({
@@ -376,8 +378,9 @@ export default function GalleryTab() {
 										/>
 									</div>
 									<div className="space-y-2">
+										<Label>Description</Label>
 										<Textarea
-											placeholder="Description"
+											placeholder="Brief description"
 											value={categoryFormData.description}
 											onChange={(e) =>
 												setCategoryFormData({
@@ -385,17 +388,18 @@ export default function GalleryTab() {
 													description: e.target.value,
 												})
 											}
+											rows={4}
 										/>
 									</div>
 								</div>
 
-								<DialogFooter>
-									<Button onClick={handleCategorySubmit}>
+								<SheetFooter className="mt-6">
+									<Button onClick={handleCategorySubmit} className="w-full sm:w-auto">
 										{editingCategory ? "Save Changes" : "Create Category"}
 									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+								</SheetFooter>
+							</SheetContent>
+						</Sheet>
 					</div>
 
 					{loadingCategories ? (
@@ -529,32 +533,33 @@ export default function GalleryTab() {
 					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 						<h2 className="text-xl sm:text-2xl font-bold">Video Playlists</h2>
 
-						<Dialog
+						<Sheet
 							open={playlistDialogOpen}
 							onOpenChange={setPlaylistDialogOpen}
 						>
-							<DialogTrigger asChild>
+							<SheetTrigger asChild>
 								<Button
 									onClick={resetPlaylistForm}
 									className="w-full sm:w-auto"
 								>
 									<Plus className="mr-2 h-4 w-4" /> Add Playlist
 								</Button>
-							</DialogTrigger>
-							<DialogContent className="mx-4 max-w-lg">
-								<DialogHeader>
-									<DialogTitle className="text-lg sm:text-xl">
+							</SheetTrigger>
+							<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
+								<SheetHeader className="mb-6">
+									<SheetTitle className="text-xl sm:text-2xl">
 										{editingPlaylist ? "Edit Playlist" : "Create Playlist"}
-									</DialogTitle>
-									<DialogDescription className="text-sm sm:text-base">
+									</SheetTitle>
+									<SheetDescription>
 										Add the YouTube playlist details below
-									</DialogDescription>
-								</DialogHeader>
+									</SheetDescription>
+								</SheetHeader>
 
-								<div className="grid gap-4 py-4">
+								<div className="grid gap-6 py-4">
 									<div className="space-y-2">
+										<Label>Playlist Title</Label>
 										<Input
-											placeholder="Playlist title"
+											placeholder="e.g., Science Fair Highlights"
 											value={playlistFormData.title}
 											onChange={(e) =>
 												setPlaylistFormData({
@@ -565,8 +570,9 @@ export default function GalleryTab() {
 										/>
 									</div>
 									<div className="space-y-2">
+										<Label>YouTube Playlist ID</Label>
 										<Input
-											placeholder="YouTube Playlist ID"
+											placeholder="e.g., PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-"
 											value={playlistFormData.youtubeId}
 											onChange={(e) =>
 												setPlaylistFormData({
@@ -575,19 +581,19 @@ export default function GalleryTab() {
 												})
 											}
 										/>
-										<p className="text-xs text-gray-500">
+										<p className="text-xs text-muted-foreground mt-1">
 											Example ID: PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-
 										</p>
 									</div>
 								</div>
 
-								<DialogFooter>
-									<Button onClick={handlePlaylistSubmit}>
+								<SheetFooter className="mt-6">
+									<Button onClick={handlePlaylistSubmit} className="w-full sm:w-auto">
 										{editingPlaylist ? "Save Changes" : "Create Playlist"}
 									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
+								</SheetFooter>
+							</SheetContent>
+						</Sheet>
 					</div>
 
 					{loadingPlaylists ? (

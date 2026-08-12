@@ -102,7 +102,7 @@ export default function DashboardSidebar({ session }: { session: any }) {
 		}
 	};
 
-	const NavContent = () => (
+	const navContent = (
 		<div className="flex flex-col h-full bg-white border-r">
 			{/* Sidebar Header */}
 			<div className="flex h-16 shrink-0 items-center justify-between px-4 border-b">
@@ -236,7 +236,7 @@ export default function DashboardSidebar({ session }: { session: any }) {
 					collapsed ? "w-20" : "w-64"
 				)}
 			>
-				<NavContent />
+				{navContent}
 			</aside>
 		);
 	}
@@ -252,7 +252,7 @@ export default function DashboardSidebar({ session }: { session: any }) {
 					</Button>
 				</SheetTrigger>
 				<SheetContent side="left" className="w-72 p-0">
-					<NavContent />
+					{navContent}
 				</SheetContent>
 			</Sheet>
 			<div className="flex items-center gap-2">

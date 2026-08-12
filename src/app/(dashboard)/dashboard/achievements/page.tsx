@@ -12,6 +12,14 @@ import { Plus, Loader2, Edit, Trash2, Award, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+
 export default function AchievementsTab() {
                                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [achievements, setAchievements] = useState<any[]>([]);
@@ -182,287 +190,232 @@ export default function AchievementsTab() {
 	};
 
 	return (
-		<div className="space-y-4 sm:space-y-6">
+		<div className="space-y-6">
 			{/* Header */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<Card>
+				<CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div>
-						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-							Achievement Management
-						</h1>
-						<p className="text-gray-600 mt-1 text-sm sm:text-base">
+						<CardTitle className="text-2xl">Achievement Management</CardTitle>
+						<CardDescription>
 							Showcase your school&apos;s accomplishments and milestones
-						</p>
+						</CardDescription>
 					</div>
-					<div className="text-center sm:text-right">
-						<div className="text-2xl sm:text-3xl font-bold text-orange-600">
-							{achievements.length}
+					<div className="flex items-center gap-4">
+						<div className="text-right hidden sm:block">
+							<div className="text-2xl font-bold text-orange-600">
+								{achievements.length}
+							</div>
+							<div className="text-xs text-muted-foreground">
+								Total Achievements
+							</div>
 						</div>
-						<div className="text-xs sm:text-sm text-gray-500">
-							Total Achievements
-						</div>
+						<Button
+							className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
+							onClick={() => {
+								resetForm();
+								setShowModal(true);
+							}}
+						>
+							<Plus className="w-4 h-4 mr-2" />
+							Add Achievement
+						</Button>
 					</div>
-				</div>
-
-				<div className="mt-4 sm:mt-6">
-					<motion.button
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
-						onClick={() => {
-							resetForm();
-							setShowModal(true);
-						}}
-						className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium transition-colors text-sm sm:text-base"
-					>
-						<Plus className="w-4 h-4" />
-						Add Achievement
-					</motion.button>
-				</div>
-			</div>
+				</CardHeader>
+			</Card>
 
 			{/* Content */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-				{loading ? (
-					<div className="flex items-center justify-center py-8 sm:py-12">
-						<div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-600"></div>
-						<span className="ml-3 text-gray-600 text-sm sm:text-base">
-							Loading achievements...
-						</span>
-					</div>
-				) : achievements.length === 0 ? (
-					<div className="text-center py-12 sm:py-16 px-4">
-						<div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4">
-							<Award size={48} className="sm:w-16 sm:h-16" />
+			<Card>
+				<CardContent className="p-0">
+					{loading ? (
+						<div className="flex items-center justify-center py-12">
+							<Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+							<span className="ml-3 text-muted-foreground">
+								Loading achievements...
+							</span>
 						</div>
-						<h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-							No achievements yet
-						</h3>
-						<p className="text-gray-600 text-sm sm:text-base">
-							Click &quot;Add Achievement&quot; to create your first achievement.
-						</p>
-					</div>
-				) : (
-					<div className="p-4 sm:p-6">
-						{achievements.length > 0 && (
-							<div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-orange-50 rounded-lg border border-orange-200">
-								<div className="flex items-center gap-2">
-									<GripVertical className="w-4 h-4 text-orange-600 shrink-0" />
-									<p className="text-xs sm:text-sm text-orange-800">
-										<strong>Tip:</strong> Drag items using the grip handle or{" "}
-										<span className="sm:hidden">
-											long-press and drag on mobile
-										</span>
-										<span className="hidden sm:inline">
-											drag to reorder them
-										</span>
-										. Changes are saved automatically.
-									</p>
-								</div>
+					) : achievements.length === 0 ? (
+						<div className="text-center py-16 px-4">
+							<div className="mx-auto h-16 w-16 text-muted-foreground mb-4">
+								<Award size={48} className="w-full h-full" />
 							</div>
-						)}
-
-						<ReorderableList items={achievements} onReorder={handleReorder}>
-							{(item, index) => (
-								<motion.div
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all duration-200"
-								>
-									<div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-										{/* Image */}
-										<Image
-											src={item.imageUrl}
-											alt={item.title}
-											width={80}
-											height={80}
-											className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-lg border border-gray-200 shrink-0 mx-auto sm:mx-0"
-										/>
-
-										{/* Content */}
-										<div className="flex-grow min-w-0 text-center sm:text-left">
-											<h3 className="font-semibold text-gray-900 text-base sm:text-lg">
-												{item.title}
-											</h3>
-											<p className="text-sm text-gray-600 line-clamp-2 mt-1">
-												{item.description}
-											</p>
-											<div className="mt-2 sm:mt-3">
-												<span className="inline-flex px-2 sm:px-3 py-1 text-xs bg-orange-100 text-orange-800 rounded-full font-medium">
-													Position #{index + 1}
-												</span>
-											</div>
-										</div>
-
-										{/* Actions */}
-										<div className="flex gap-2 shrink-0 w-full sm:w-auto justify-center sm:justify-start">
-											<motion.button
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-												onClick={() => handleEdit(item)}
-												disabled={isReordering}
-												className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-											>
-												<Edit className="w-4 h-4" />
-												<span className="hidden sm:inline">Edit</span>
-											</motion.button>
-											<motion.button
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-												onClick={() => handleDelete(item.id)}
-												disabled={deleting === item.id || isReordering}
-												className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-											>
-												{deleting === item.id ? (
-													<Loader2 className="w-4 h-4 animate-spin" />
-												) : (
-													<Trash2 className="w-4 h-4" />
-												)}
-												<span className="hidden sm:inline">Delete</span>
-											</motion.button>
-										</div>
-									</div>
-								</motion.div>
-							)}
-						</ReorderableList>
-					</div>
-				)}
-			</div>
-
-			{/* Enhanced Modal */}
-			<AnimatePresence>
-				{showModal && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-					>
-						<motion.div
-							initial={{ scale: 0.95, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							exit={{ scale: 0.95, opacity: 0 }}
-							className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col mx-4"
-						>
-							{/* Modal Header */}
-							<div className="bg-gradient-to-r from-orange-600 to-orange-700 px-4 sm:px-6 py-4 shrink-0">
-								<div className="flex items-center justify-between">
-									<div>
-										<h3 className="text-lg sm:text-xl font-semibold text-white">
-											{editingId
-												? "Edit Achievement"
-												: "Create New Achievement"}
-										</h3>
-										<p className="text-orange-100 text-xs sm:text-sm">
-											Showcase your school&apos;s accomplishments and milestones
+							<h3 className="text-lg font-semibold text-foreground mb-2">
+								No achievements yet
+							</h3>
+							<p className="text-muted-foreground">
+								Click "Add Achievement" to create your first achievement.
+							</p>
+						</div>
+					) : (
+						<div className="p-6">
+							{achievements.length > 0 && (
+								<div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+									<div className="flex items-center gap-2">
+										<GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+										<p className="text-sm text-muted-foreground">
+											<strong>Tip:</strong> Drag items using the grip handle or{" "}
+											<span className="sm:hidden">
+												long-press and drag on mobile
+											</span>
+											<span className="hidden sm:inline">
+												drag to reorder them
+											</span>
+											. Changes are saved automatically.
 										</p>
 									</div>
-									<button
-										onClick={handleCancel}
-										className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
-									>
-										<svg
-											className="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
+								</div>
+							)}
+
+							<ReorderableList items={achievements} onReorder={handleReorder}>
+								{(item, index) => (
+									<Card className="mb-4 overflow-hidden hover:shadow-md transition-all duration-200">
+										<div className="flex flex-col sm:flex-row items-start gap-4 p-4">
+											{/* Image */}
+											<Image
+												src={item.imageUrl}
+												alt={item.title}
+												width={80}
+												height={80}
+												className="h-20 w-20 object-cover rounded-lg border shrink-0 mx-auto sm:mx-0"
 											/>
-										</svg>
-									</button>
-								</div>
-							</div>
 
-							{/* Modal Content */}
-							<div className="flex-1 overflow-y-auto p-4 sm:p-6">
-								<div className="space-y-4 sm:space-y-6">
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Title <span className="text-red-500">*</span>
-										</label>
-										<input
-											type="text"
-											placeholder="Enter achievement title"
-											value={formData.title}
-											onChange={(e) =>
-												setFormData({ ...formData, title: e.target.value })
-											}
-											className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-										/>
-									</div>
+											{/* Content */}
+											<div className="flex-grow min-w-0 text-center sm:text-left">
+												<h3 className="font-semibold text-lg">
+													{item.title}
+												</h3>
+												<p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+													{item.description}
+												</p>
+												<div className="mt-3">
+													<Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
+														Position #{index + 1}
+													</Badge>
+												</div>
+											</div>
 
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Description <span className="text-red-500">*</span>
-										</label>
-										<textarea
-											placeholder="Enter achievement description"
-											value={formData.description}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													description: e.target.value,
-												})
-											}
-											rows={4}
-											className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-										/>
-									</div>
+											{/* Actions */}
+											<div className="flex gap-2 shrink-0 w-full sm:w-auto justify-center sm:justify-start mt-4 sm:mt-0">
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+													onClick={() => handleEdit(item)}
+													disabled={isReordering}
+												>
+													<Edit className="w-4 h-4 sm:mr-2" />
+													<span className="hidden sm:inline">Edit</span>
+												</Button>
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-red-600 hover:text-red-700 hover:bg-red-50"
+													onClick={() => handleDelete(item.id)}
+													disabled={deleting === item.id || isReordering}
+												>
+													{deleting === item.id ? (
+														<Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+													) : (
+														<Trash2 className="w-4 h-4 sm:mr-2" />
+													)}
+													<span className="hidden sm:inline">Delete</span>
+												</Button>
+											</div>
+										</div>
+									</Card>
+								)}
+							</ReorderableList>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Image <span className="text-red-500">*</span>
-										</label>
-										<CloudinaryUpload
-											currentImage={formData.imageUrl}
-											folder="sarvodaya/achievements"
-											onUploadSuccess={(url) =>
-												setFormData({ ...formData, imageUrl: url })
-											}
-										/>
-										{!formData.imageUrl && (
-											<p className="text-red-500 text-xs mt-2">
-												Image is required
-											</p>
-										)}
-									</div>
-								</div>
-							</div>
+			{/* Sheet Modal */}
+			<Sheet open={showModal} onOpenChange={(open) => {
+				if (!open) handleCancel();
+			}}>
+				<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
+					<SheetHeader className="mb-6">
+						<SheetTitle className="text-2xl">
+							{editingId ? "Edit Achievement" : "Create New Achievement"}
+						</SheetTitle>
+						<SheetDescription>
+							Showcase your school&apos;s accomplishments and milestones
+						</SheetDescription>
+					</SheetHeader>
 
-							{/* Modal Footer */}
-							<div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 shrink-0">
-								<div className="flex flex-col sm:flex-row gap-3">
-									<button
-										onClick={handleCancel}
-										className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
-									>
-										Cancel
-									</button>
-									<button
-										onClick={handleSubmit}
-										disabled={
-											submitting ||
-											!formData.imageUrl ||
-											!formData.title.trim() ||
-											!formData.description.trim()
-										}
-										className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center text-sm sm:text-base"
-									>
-										{submitting && (
-											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										)}
-										{editingId ? "Update Achievement" : "Create Achievement"}
-									</button>
-								</div>
-							</div>
-						</motion.div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+					<div className="space-y-6 pb-20">
+						<div>
+							<Label className="mb-2 block">
+								Title <span className="text-red-500">*</span>
+							</Label>
+							<Input
+								placeholder="Enter achievement title"
+								value={formData.title}
+								onChange={(e) =>
+									setFormData({ ...formData, title: e.target.value })
+								}
+							/>
+						</div>
+
+						<div>
+							<Label className="mb-2 block">
+								Description <span className="text-red-500">*</span>
+							</Label>
+							<Textarea
+								placeholder="Enter achievement description"
+								value={formData.description}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										description: e.target.value,
+									})
+								}
+								rows={4}
+								className="resize-none"
+							/>
+						</div>
+
+						<div>
+							<Label className="mb-2 block">
+								Image <span className="text-red-500">*</span>
+							</Label>
+							<CloudinaryUpload
+								currentImage={formData.imageUrl}
+								folder="sarvodaya/achievements"
+								onUploadSuccess={(url) =>
+									setFormData({ ...formData, imageUrl: url })
+								}
+							/>
+							{!formData.imageUrl && (
+								<p className="text-red-500 text-xs mt-2">
+									Image is required
+								</p>
+							)}
+						</div>
+					</div>
+
+					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+						<Button variant="outline" onClick={handleCancel}>
+							Cancel
+						</Button>
+						<Button
+							className="bg-orange-600 hover:bg-orange-700"
+							onClick={handleSubmit}
+							disabled={
+								submitting ||
+								!formData.imageUrl ||
+								!formData.title.trim() ||
+								!formData.description.trim()
+							}
+						>
+							{submitting && (
+								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							)}
+							{editingId ? "Update Achievement" : "Create Achievement"}
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }

@@ -20,6 +20,14 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 import Image from "next/image";
 
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+
 interface Highlight {
 	title: string;
 	value: string;
@@ -353,536 +361,486 @@ export default function FacilitiesTab() {
 	};
 
 	return (
-		<div className="space-y-4 sm:space-y-6">
+		<div className="space-y-6">
 			{/* Header */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<Card>
+				<CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div>
-						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-							Facilities Management
-						</h1>
-						<p className="text-gray-600 mt-1 text-sm sm:text-base">
+						<CardTitle className="text-2xl">Facilities Management</CardTitle>
+						<CardDescription>
 							Manage school facilities displayed on your website
-						</p>
+						</CardDescription>
 					</div>
-					<div className="text-center sm:text-right">
-						<div className="text-2xl sm:text-3xl font-bold text-blue-600">
-							{facilities.length}
+					<div className="flex items-center gap-4">
+						<div className="text-right hidden sm:block">
+							<div className="text-2xl font-bold text-blue-600">
+								{facilities.length}
+							</div>
+							<div className="text-xs text-muted-foreground">
+								Total Facilities
+							</div>
 						</div>
-						<div className="text-xs sm:text-sm text-gray-500">
-							Total Facilities
-						</div>
+						<Button
+							className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+							onClick={() => {
+								resetForm();
+								setShowModal(true);
+							}}
+						>
+							<Plus className="w-4 h-4 mr-2" />
+							Add Facility
+						</Button>
 					</div>
-				</div>
-
-				<div className="mt-4 sm:mt-6">
-					<motion.button
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
-						onClick={() => {
-							resetForm();
-							setShowModal(true);
-						}}
-						className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors text-sm sm:text-base"
-					>
-						<Plus className="w-4 h-4" />
-						Add Facility
-					</motion.button>
-				</div>
-			</div>
+				</CardHeader>
+			</Card>
 
 			{/* Content */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-				{loading ? (
-					<div className="flex items-center justify-center py-8 sm:py-12">
-						<div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
-						<span className="ml-3 text-gray-600 text-sm sm:text-base">
-							Loading facilities...
-						</span>
-					</div>
-				) : facilities.length === 0 ? (
-					<div className="text-center py-12 sm:py-16 px-4">
-						<div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4">
-							<Building2 size={48} className="sm:w-16 sm:h-16" />
+			<Card>
+				<CardContent className="p-0">
+					{loading ? (
+						<div className="flex items-center justify-center py-12">
+							<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+							<span className="ml-3 text-muted-foreground">
+								Loading facilities...
+							</span>
 						</div>
-						<h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-							No facilities yet
-						</h3>
-						<p className="text-gray-600 text-sm sm:text-base">
-							Click &quot;Add Facility&quot; to create your first facility.
-						</p>
-					</div>
-				) : (
-					<div className="p-4 sm:p-6">
-						{facilities.length > 0 && (
-							<div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-								<div className="flex items-center gap-2">
-									<GripVertical className="w-4 h-4 text-blue-600 shrink-0" />
-									<p className="text-xs sm:text-sm text-blue-800">
-										<strong>Tip:</strong> Drag items using the grip handle or{" "}
-										<span className="sm:hidden">
-											long-press and drag on mobile
-										</span>
-										<span className="hidden sm:inline">
-											drag to reorder them
-										</span>
-										. Changes are saved automatically.
+					) : facilities.length === 0 ? (
+						<div className="text-center py-16 px-4">
+							<div className="mx-auto h-16 w-16 text-muted-foreground mb-4">
+								<Building2 size={48} className="w-full h-full" />
+							</div>
+							<h3 className="text-lg font-semibold text-foreground mb-2">
+								No facilities yet
+							</h3>
+							<p className="text-muted-foreground">
+								Click "Add Facility" to create your first facility.
+							</p>
+						</div>
+					) : (
+						<div className="p-6">
+							{facilities.length > 0 && (
+								<div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+									<div className="flex items-center gap-2">
+										<GripVertical className="w-4 h-4 text-muted-foreground shrink-0" />
+										<p className="text-sm text-muted-foreground">
+											<strong>Tip:</strong> Drag items using the grip handle or{" "}
+											<span className="sm:hidden">
+												long-press and drag on mobile
+											</span>
+											<span className="hidden sm:inline">
+												drag to reorder them
+											</span>
+											. Changes are saved automatically.
+										</p>
+									</div>
+								</div>
+							)}
+
+							<ReorderableList items={facilities} onReorder={handleReorder}>
+								{(item, index) => (
+									<Card className="mb-4 overflow-hidden hover:shadow-md transition-all duration-200">
+										<div className="flex flex-col sm:flex-row items-center gap-4 p-4">
+											{/* Image */}
+											<div className="relative shrink-0 w-full sm:w-auto">
+												<Image
+													src={item.imageUrl}
+													alt={item.title}
+													width={128}
+													height={80}
+													className="h-20 w-full sm:w-32 object-cover rounded-lg border"
+												/>
+												{!item.isActive && (
+													<div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+														<span className="text-white text-xs font-medium">
+															Inactive
+														</span>
+													</div>
+												)}
+											</div>
+
+											{/* Content */}
+											<div className="flex-grow min-w-0 text-center sm:text-left">
+												<h3 className="font-semibold text-lg">
+													{item.title}
+												</h3>
+												<p className="text-muted-foreground text-sm mt-1 line-clamp-2">
+													{item.description}
+												</p>
+												<div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
+													<Badge
+														variant={item.isActive ? "default" : "secondary"}
+														className={
+															item.isActive
+																? "bg-green-600 hover:bg-green-600"
+																: ""
+														}
+													>
+														{item.isActive ? "Active" : "Inactive"}
+													</Badge>
+													<Badge variant="outline" className="text-blue-600 border-blue-200">
+														Position #{index + 1}
+													</Badge>
+												</div>
+											</div>
+
+											{/* Actions */}
+											<div className="flex gap-2 shrink-0 w-full sm:w-auto justify-center sm:justify-start">
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+													onClick={() => handleEdit(item)}
+													disabled={isReordering}
+												>
+													<Edit className="w-4 h-4 sm:mr-2" />
+													<span className="hidden sm:inline">Edit</span>
+												</Button>
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-red-600 hover:text-red-700 hover:bg-red-50"
+													onClick={() => handleDelete(item.id)}
+													disabled={deleting === item.id || isReordering}
+												>
+													{deleting === item.id ? (
+														<Loader2 className="w-4 h-4 sm:mr-2 animate-spin" />
+													) : (
+														<Trash2 className="w-4 h-4 sm:mr-2" />
+													)}
+													<span className="hidden sm:inline">Delete</span>
+												</Button>
+											</div>
+										</div>
+									</Card>
+								)}
+							</ReorderableList>
+						</div>
+					)}
+				</CardContent>
+			</Card>
+
+			{/* Sheet Modal */}
+			<Sheet open={showModal} onOpenChange={(open) => {
+				if (!open) setShowModal(false);
+			}}>
+				<SheetContent className="w-full sm:max-w-2xl overflow-y-auto" side="right">
+					<SheetHeader className="mb-6">
+						<SheetTitle className="text-2xl">
+							{editingId ? "Edit Facility" : "Create New Facility"}
+						</SheetTitle>
+						<SheetDescription>
+							Add school facilities to display on your website
+						</SheetDescription>
+					</SheetHeader>
+
+					<div className="space-y-6 pb-20">
+						<div>
+							<Label className="mb-2 block">
+								Facility Name <span className="text-red-500">*</span>
+							</Label>
+							<Input
+								placeholder="e.g., Science Laboratory"
+								value={formData.title}
+								onChange={(e) =>
+									setFormData({ ...formData, title: e.target.value })
+								}
+							/>
+						</div>
+						<div>
+							<Label className="mb-2 block">
+								URL Slug (Optional)
+							</Label>
+							<Input
+								placeholder="Auto-generated from title"
+								value={formData.slug}
+								onChange={(e) =>
+									setFormData({ ...formData, slug: e.target.value })
+								}
+							/>
+							<p className="text-xs text-muted-foreground mt-1">
+								Leave empty to auto-generate from title
+							</p>
+						</div>
+						<div>
+							<Label className="mb-2 block">
+								Description <span className="text-red-500">*</span>
+							</Label>
+							<Textarea
+								placeholder="Brief description of the facility"
+								value={formData.description}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										description: e.target.value,
+									})
+								}
+								rows={3}
+								className="resize-none"
+							/>
+						</div>
+						<div>
+							<Label className="mb-2 block">
+								Facility Image <span className="text-red-500">*</span>
+							</Label>
+							<DeferredImageUpload
+								onImageSelect={(file) => setMainImageFile(file)}
+								onImageRemove={() => {
+									setMainImageFile(null);
+									if (!editingId) {
+										setFormData({ ...formData, imageUrl: "" });
+									}
+								}}
+								previewUrl={formData.imageUrl}
+								label="Upload Main Image"
+							/>
+							<p className="text-xs text-muted-foreground mt-1">
+								Image uploads when you submit the form
+							</p>
+						</div>
+
+						<div className="bg-muted/50 rounded-lg p-4 border">
+							<label className="flex items-center gap-3 cursor-pointer">
+								<input
+									type="checkbox"
+									checked={formData.isActive}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											isActive: e.target.checked,
+										})
+									}
+									className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+								/>
+								<div>
+									<span className="text-sm font-medium">
+										Active
+									</span>
+									<p className="text-xs text-muted-foreground mt-1">
+										Only active facilities will be displayed on the
+										website
 									</p>
 								</div>
-							</div>
-						)}
+							</label>
+						</div>
 
-						<ReorderableList items={facilities} onReorder={handleReorder}>
-							{(item, index) => (
-								<motion.div
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all duration-200"
+						{/* Highlights Section */}
+						<div className="space-y-4 border-t pt-4">
+							<div className="flex justify-between items-center">
+								<h4 className="font-semibold text-foreground">
+									Highlights
+								</h4>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={addHighlight}
+									className="text-blue-600"
 								>
-									<div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-										{/* Image */}
-										<div className="relative shrink-0 w-full sm:w-auto">
-											<Image
-												src={item.imageUrl}
-												alt={item.title}
-												width={128}
-												height={80}
-												className="h-20 w-full sm:w-32 object-cover rounded-lg border border-gray-200"
-											/>
-											{!item.isActive && (
-												<div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-													<span className="text-white text-xs font-medium">
-														Inactive
-													</span>
-												</div>
-											)}
-										</div>
+									+ Add Highlight
+								</Button>
+							</div>
 
-										{/* Content */}
-										<div className="flex-grow min-w-0 text-center sm:text-left">
-											<h3 className="font-semibold text-gray-900 text-base sm:text-lg">
-												{item.title}
-											</h3>
-											<p className="text-gray-500 text-xs sm:text-sm mt-1 line-clamp-2">
-												{item.description}
-											</p>
-											<div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
-												<span
-													className={`inline-flex px-2 sm:px-3 py-1 text-xs font-semibold rounded-full ${
-														item.isActive
-															? "bg-green-100 text-green-800"
-															: "bg-gray-100 text-gray-800"
-													}`}
-												>
-													{item.isActive ? "Active" : "Inactive"}
-												</span>
-												<span className="inline-flex px-2 sm:px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">
-													Position #{index + 1}
-												</span>
-											</div>
-										</div>
-
-										{/* Actions */}
-										<div className="flex gap-2 shrink-0 w-full sm:w-auto justify-center sm:justify-start">
-											<motion.button
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-												onClick={() => handleEdit(item)}
-												disabled={isReordering}
-												className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-											>
-												<Edit className="w-4 h-4" />
-												<span className="hidden sm:inline">Edit</span>
-											</motion.button>
-											<motion.button
-												whileHover={{ scale: 1.05 }}
-												whileTap={{ scale: 0.95 }}
-												onClick={() => handleDelete(item.id)}
-												disabled={deleting === item.id || isReordering}
-												className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-											>
-												{deleting === item.id ? (
-													<Loader2 className="w-4 h-4 animate-spin" />
-												) : (
-													<Trash2 className="w-4 h-4" />
-												)}
-												<span className="hidden sm:inline">Delete</span>
-											</motion.button>
-										</div>
+							{formData.highlights.map((highlight, index) => (
+								<div
+									key={index}
+									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
+								>
+									<div className="flex-1 space-y-2">
+										<Input
+											placeholder="Title (e.g., Capacity)"
+											value={highlight.title}
+											onChange={(e) =>
+												updateHighlight(index, "title", e.target.value)
+											}
+										/>
+										<Input
+											placeholder="Value (e.g., 1000+ People)"
+											value={highlight.value}
+											onChange={(e) =>
+												updateHighlight(index, "value", e.target.value)
+											}
+										/>
 									</div>
-								</motion.div>
-							)}
-						</ReorderableList>
-					</div>
-				)}
-			</div>
-
-			{/* Enhanced Modal */}
-			<AnimatePresence>
-				{showModal && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
-					>
-						<motion.div
-							initial={{ scale: 0.95, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							exit={{ scale: 0.95, opacity: 0 }}
-							className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col mx-2"
-						>
-							{/* Modal Header */}
-							<div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4 shrink-0">
-								<div className="flex items-center justify-between">
-									<div>
-										<h3 className="text-lg sm:text-xl font-semibold text-white">
-											{editingId ? "Edit Facility" : "Create New Facility"}
-										</h3>
-										<p className="text-blue-100 text-xs sm:text-sm">
-											Add school facilities to display on your website
-										</p>
-									</div>
-									<button
-										onClick={() => setShowModal(false)}
-										className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={() => removeHighlight(index)}
+										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
 									>
-										<svg
-											className="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
+										<X className="h-4 w-4" />
+									</Button>
+								</div>
+							))}
+						</div>
+
+						{/* Facility Features Section */}
+						<div className="space-y-4 border-t pt-4">
+							<div className="flex justify-between items-center">
+								<h4 className="font-semibold text-foreground">
+									Facility Features
+								</h4>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={addFacilityFeature}
+									className="text-blue-600"
+								>
+									+ Add Feature
+								</Button>
+							</div>
+
+							{formData.facilityFeatures.map((feature, index) => (
+								<div
+									key={index}
+									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
+								>
+									<div className="flex-1 space-y-2">
+										<Input
+											placeholder="Title (e.g., Safety Measures)"
+											value={feature.title}
+											onChange={(e) =>
+												updateFacilityFeature(
+													index,
+													"title",
+													e.target.value
+												)
+											}
+										/>
+										<Input
+											placeholder="Value (e.g., CCTV, Fire safety)"
+											value={feature.value}
+											onChange={(e) =>
+												updateFacilityFeature(
+													index,
+													"value",
+													e.target.value
+												)
+											}
+										/>
+									</div>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={() => removeFacilityFeature(index)}
+										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+									>
+										<X className="h-4 w-4" />
+									</Button>
+								</div>
+							))}
+						</div>
+
+						{/* Media Gallery Section */}
+						<div className="space-y-4 border-t pt-4">
+							<div className="flex justify-between items-center">
+								<h4 className="font-semibold text-foreground">
+									Media Gallery
+								</h4>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={addMediaItem}
+									className="text-blue-600"
+								>
+									+ Add Media
+								</Button>
+							</div>
+
+							{formData.mediaGallery.map((media, index) => (
+								<div
+									key={index}
+									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
+								>
+									<div className="flex-1 space-y-2">
+										<select
+											value={media.type}
+											onChange={(e) =>
+												updateMediaItem(
+													index,
+													"type",
+													e.target.value as "image" | "youtube"
+												)
+											}
+											className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</button>
-								</div>
-							</div>
+											<option value="image">Image</option>
+											<option value="youtube">YouTube</option>
+										</select>
 
-							{/* Modal Content */}
-							<div className="flex-1 overflow-y-auto p-4 sm:p-6">
-								<div className="space-y-4 sm:space-y-6">
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Facility Name <span className="text-red-500">*</span>
-										</label>
-										<input
-											type="text"
-											placeholder="e.g., Science Laboratory"
-											value={formData.title}
-											onChange={(e) =>
-												setFormData({ ...formData, title: e.target.value })
-											}
-											className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											URL Slug (Optional)
-										</label>
-										<input
-											type="text"
-											placeholder="Auto-generated from title"
-											value={formData.slug}
-											onChange={(e) =>
-												setFormData({ ...formData, slug: e.target.value })
-											}
-											className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-										/>
-										<p className="text-xs text-gray-500 mt-1">
-											Leave empty to auto-generate from title
-										</p>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Description <span className="text-red-500">*</span>
-										</label>
-										<textarea
-											placeholder="Brief description of the facility"
-											value={formData.description}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													description: e.target.value,
-												})
-											}
-											rows={3}
-											className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">
-											Facility Image <span className="text-red-500">*</span>
-										</label>
-										<DeferredImageUpload
-											onImageSelect={(file) => setMainImageFile(file)}
-											onImageRemove={() => {
-												setMainImageFile(null);
-												if (!editingId) {
-													setFormData({ ...formData, imageUrl: "" });
-												}
-											}}
-											previewUrl={formData.imageUrl}
-											label="Upload Main Image"
-										/>
-										<p className="text-xs text-gray-500 mt-1">
-											Image uploads when you submit the form
-										</p>
-									</div>{" "}
-									<div className="bg-gray-50 rounded-lg p-4">
-										<label className="flex items-center gap-3 cursor-pointer">
-											<input
-												type="checkbox"
-												checked={formData.isActive}
+										{media.type === "image" ? (
+											<DeferredImageUpload
+												onImageSelect={(file) => {
+													const newFiles = new Map(mediaImageFiles);
+													newFiles.set(index, file);
+													setMediaImageFiles(newFiles);
+												}}
+												onImageRemove={() => {
+													const newFiles = new Map(mediaImageFiles);
+													newFiles.delete(index);
+													setMediaImageFiles(newFiles);
+													updateMediaItem(index, "src", "");
+												}}
+												previewUrl={media.src}
+												label="Upload Gallery Image"
+											/>
+										) : (
+											<Input
+												placeholder="YouTube Video ID (e.g., n6U7VgrejiY)"
+												value={media.src}
 												onChange={(e) =>
-													setFormData({
-														...formData,
-														isActive: e.target.checked,
-													})
+													updateMediaItem(index, "src", e.target.value)
 												}
-												className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
 											/>
-											<div>
-												<span className="text-sm font-medium text-gray-900">
-													Active
-												</span>
-												<p className="text-xs text-gray-500">
-													Only active facilities will be displayed on the
-													website
-												</p>
-											</div>
-										</label>
-									</div>
-									{/* Highlights Section */}
-									<div className="space-y-4 border-t border-gray-200 pt-4">
-										<div className="flex justify-between items-center">
-											<h4 className="font-semibold text-gray-900">
-												Highlights
-											</h4>
-											<button
-												type="button"
-												onClick={addHighlight}
-												className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-											>
-												+ Add Highlight
-											</button>
-										</div>
-
-										{formData.highlights.map((highlight, index) => (
-											<div
-												key={index}
-												className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg border border-gray-200"
-											>
-												<div className="flex-1 space-y-2">
-													<input
-														type="text"
-														placeholder="Title (e.g., Capacity)"
-														value={highlight.title}
-														onChange={(e) =>
-															updateHighlight(index, "title", e.target.value)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													/>
-													<input
-														type="text"
-														placeholder="Value (e.g., 1000+ People)"
-														value={highlight.value}
-														onChange={(e) =>
-															updateHighlight(index, "value", e.target.value)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													/>
-												</div>
-												<button
-													type="button"
-													onClick={() => removeHighlight(index)}
-													className="p-2 text-red-600 hover:bg-red-50 rounded-lg shrink-0"
-												>
-													<X className="h-4 w-4" />
-												</button>
-											</div>
-										))}
-									</div>
-									{/* Facility Features Section */}
-									<div className="space-y-4 border-t border-gray-200 pt-4">
-										<div className="flex justify-between items-center">
-											<h4 className="font-semibold text-gray-900">
-												Facility Features
-											</h4>
-											<button
-												type="button"
-												onClick={addFacilityFeature}
-												className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-											>
-												+ Add Feature
-											</button>
-										</div>
-
-										{formData.facilityFeatures.map((feature, index) => (
-											<div
-												key={index}
-												className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg border border-gray-200"
-											>
-												<div className="flex-1 space-y-2">
-													<input
-														type="text"
-														placeholder="Title (e.g., Safety Measures)"
-														value={feature.title}
-														onChange={(e) =>
-															updateFacilityFeature(
-																index,
-																"title",
-																e.target.value
-															)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													/>
-													<input
-														type="text"
-														placeholder="Value (e.g., CCTV, Fire safety)"
-														value={feature.value}
-														onChange={(e) =>
-															updateFacilityFeature(
-																index,
-																"value",
-																e.target.value
-															)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													/>
-												</div>
-												<button
-													type="button"
-													onClick={() => removeFacilityFeature(index)}
-													className="p-2 text-red-600 hover:bg-red-50 rounded-lg shrink-0"
-												>
-													<X className="h-4 w-4" />
-												</button>
-											</div>
-										))}
-									</div>
-									{/* Media Gallery Section */}
-									<div className="space-y-4 border-t border-gray-200 pt-4">
-										<div className="flex justify-between items-center">
-											<h4 className="font-semibold text-gray-900">
-												Media Gallery
-											</h4>
-											<button
-												type="button"
-												onClick={addMediaItem}
-												className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-											>
-												+ Add Media
-											</button>
-										</div>
-
-										{formData.mediaGallery.map((media, index) => (
-											<div
-												key={index}
-												className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg border border-gray-200"
-											>
-												<div className="flex-1 space-y-2">
-													<select
-														value={media.type}
-														onChange={(e) =>
-															updateMediaItem(
-																index,
-																"type",
-																e.target.value as "image" | "youtube"
-															)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													>
-														<option value="image">Image</option>
-														<option value="youtube">YouTube</option>
-													</select>
-
-													{media.type === "image" ? (
-														<DeferredImageUpload
-															onImageSelect={(file) => {
-																const newFiles = new Map(mediaImageFiles);
-																newFiles.set(index, file);
-																setMediaImageFiles(newFiles);
-															}}
-															onImageRemove={() => {
-																const newFiles = new Map(mediaImageFiles);
-																newFiles.delete(index);
-																setMediaImageFiles(newFiles);
-																updateMediaItem(index, "src", "");
-															}}
-															previewUrl={media.src}
-															label="Upload Gallery Image"
-														/>
-													) : (
-														<input
-															type="text"
-															placeholder="YouTube Video ID (e.g., n6U7VgrejiY)"
-															value={media.src}
-															onChange={(e) =>
-																updateMediaItem(index, "src", e.target.value)
-															}
-															className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-														/>
-													)}
-
-													<input
-														type="text"
-														placeholder="Caption"
-														value={media.caption}
-														onChange={(e) =>
-															updateMediaItem(index, "caption", e.target.value)
-														}
-														className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-													/>
-												</div>
-												<button
-													type="button"
-													onClick={() => removeMediaItem(index)}
-													className="p-2 text-red-600 hover:bg-red-50 rounded-lg shrink-0"
-												>
-													<X className="h-4 w-4" />
-												</button>
-											</div>
-										))}
-									</div>
-								</div>
-							</div>
-
-							{/* Modal Footer */}
-							<div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200 shrink-0">
-								<div className="flex flex-col sm:flex-row gap-3">
-									<button
-										onClick={() => setShowModal(false)}
-										className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
-									>
-										Cancel
-									</button>
-									<button
-										onClick={handleSubmit}
-										disabled={
-											submitting ||
-											!formData.title ||
-											!formData.imageUrl ||
-											!formData.description
-										}
-										className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center text-sm sm:text-base"
-									>
-										{submitting && (
-											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
 										)}
-										{editingId ? "Update Facility" : "Create Facility"}
-									</button>
+
+										<Input
+											placeholder="Caption"
+											value={media.caption}
+											onChange={(e) =>
+												updateMediaItem(index, "caption", e.target.value)
+											}
+										/>
+									</div>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={() => removeMediaItem(index)}
+										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+									>
+										<X className="h-4 w-4" />
+									</Button>
 								</div>
-							</div>
-						</motion.div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+							))}
+						</div>
+					</div>
+
+					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+						<Button variant="outline" onClick={() => setShowModal(false)}>
+							Cancel
+						</Button>
+						<Button
+							className="bg-blue-600 hover:bg-blue-700"
+							onClick={handleSubmit}
+							disabled={
+								submitting ||
+								!formData.title ||
+								(!formData.imageUrl && !mainImageFile) ||
+								!formData.description
+							}
+						>
+							{submitting && (
+								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							)}
+							{editingId ? "Update Facility" : "Create Facility"}
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }

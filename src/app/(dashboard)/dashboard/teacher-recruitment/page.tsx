@@ -6,29 +6,33 @@ import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { deleteCloudinaryFile } from "@/lib/cloudinary-helper";
 import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetDescription,
+	SheetFooter,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	Eye,
 	Trash2,
 	FileText,
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
-	ChevronRight,
 	Download,
 	ExternalLink,
 	User,
 	BookOpen,
 	MapPin,
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
-	Award,
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
-	Phone,
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
-	Calendar,
 } from "lucide-react";
 
 export default function TeachersTab() {
-                                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [applications, setApplications] = useState<any[]>([]);
-                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [selectedApp, setSelectedApp] = useState<any>(null);
 	const [showModal, setShowModal] = useState(false);
 	const [showPDFModal, setShowPDFModal] = useState(false);
@@ -95,7 +99,7 @@ export default function TeachersTab() {
 		}
 	};
 
-                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const viewDetails = (app: any) => {
 		setSelectedApp(app);
 		setStatusNotes(app.notes || "");
@@ -129,723 +133,598 @@ export default function TeachersTab() {
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case "New":
-				return "bg-blue-100 text-blue-800";
+				return "bg-blue-100 text-blue-800 border-transparent hover:bg-blue-100";
 			case "Shortlisted":
-				return "bg-purple-100 text-purple-800";
+				return "bg-purple-100 text-purple-800 border-transparent hover:bg-purple-100";
 			case "Interview Scheduled":
-				return "bg-yellow-100 text-yellow-800";
+				return "bg-yellow-100 text-yellow-800 border-transparent hover:bg-yellow-100";
 			case "Hired":
-				return "bg-green-100 text-green-800";
+				return "bg-green-100 text-green-800 border-transparent hover:bg-green-100";
 			case "Rejected":
-				return "bg-red-100 text-red-800";
+				return "bg-red-100 text-red-800 border-transparent hover:bg-red-100";
 			default:
-				return "bg-gray-100 text-gray-800";
+				return "bg-gray-100 text-gray-800 border-transparent hover:bg-gray-100";
 		}
 	};
 
 	return (
-		<div className="space-y-4 sm:space-y-6">
+		<div className="space-y-6">
 			{/* Header */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+			<Card>
+				<CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div>
-						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-							Teacher Recruitment
-						</h1>
-						<p className="text-gray-600 mt-1 text-sm sm:text-base">
+						<CardTitle className="text-2xl">Teacher Recruitment</CardTitle>
+						<CardDescription>
 							Manage and review all teacher applications
-						</p>
+						</CardDescription>
 					</div>
 					<div className="text-center sm:text-right">
-						<div className="text-2xl sm:text-3xl font-bold text-red-600">
+						<div className="text-2xl font-bold text-red-600">
 							{applications.length}
 						</div>
-						<div className="text-xs sm:text-sm text-gray-500">
+						<div className="text-xs text-muted-foreground">
 							Total Applications
 						</div>
 					</div>
-				</div>
-
-				{/* Filter Pills */}
-				<div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 sm:gap-3">
-					{[
-						"All",
-						"New",
-						"Shortlisted",
-						"Interview Scheduled",
-						"Hired",
-						"Rejected",
-					].map((status) => (
-						<motion.button
-							key={status}
-							onClick={() => setFilterStatus(status)}
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.98 }}
-							className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 ${
-								filterStatus === status
-									? "bg-red-600 text-white shadow-md transform scale-105"
-									: "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-102"
-							}`}
-						>
-							<span className="block sm:inline">{status}</span>
-							<span className="block sm:inline text-xs">
-								({statusCounts[status as keyof typeof statusCounts]})
-							</span>
-						</motion.button>
-					))}
-				</div>
-			</div>
+				</CardHeader>
+				<CardContent>
+					{/* Filter Pills */}
+					<div className="flex flex-wrap gap-2">
+						{[
+							"All",
+							"New",
+							"Shortlisted",
+							"Interview Scheduled",
+							"Hired",
+							"Rejected",
+						].map((status) => (
+							<Button
+								key={status}
+								variant={filterStatus === status ? "default" : "outline"}
+								onClick={() => setFilterStatus(status)}
+								className={filterStatus === status ? "bg-red-600 text-white hover:bg-red-700" : ""}
+							>
+								{status}
+								<span className="ml-2 opacity-70">
+									({statusCounts[status as keyof typeof statusCounts]})
+								</span>
+							</Button>
+						))}
+					</div>
+				</CardContent>
+			</Card>
 
 			{/* Table Container */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-				{loading ? (
-					<div className="flex items-center justify-center py-8 sm:py-12">
-						<div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-red-600"></div>
-						<span className="ml-3 text-gray-600 text-sm sm:text-base">
-							Loading applications...
-						</span>
-					</div>
-				) : (
-					<>
-						{/* Desktop Table View */}
-						<div className="hidden lg:block overflow-x-auto">
-							<table className="w-full">
-								<thead className="bg-gray-50">
-									<tr>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Teacher Details
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Subject & Experience
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Contact
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Location
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Resume
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Status
-										</th>
-										<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Applied Date
-										</th>
-										<th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-											Actions
-										</th>
-									</tr>
-								</thead>
-								<tbody className="bg-white divide-y divide-gray-200">
-									<AnimatePresence>
-										{filteredApps.map((app) => (
-											<motion.tr
-												key={app.id}
-												initial={{ opacity: 0 }}
-												animate={{ opacity: 1 }}
-												exit={{ opacity: 0 }}
-												className="hover:bg-gray-50 transition-colors duration-150"
-											>
-												<td className="px-6 py-4">
-													<div className="flex items-start space-x-3">
-														<div className="flex-shrink-0">
-															<div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
-																<span className="text-white font-semibold text-sm">
-																	{app.name.charAt(0).toUpperCase()}
-																</span>
+			<Card>
+				<CardContent className="p-0">
+					{loading ? (
+						<div className="flex items-center justify-center py-12">
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+							<span className="ml-3 text-muted-foreground">
+								Loading applications...
+							</span>
+						</div>
+					) : (
+						<>
+							{/* Desktop Table View */}
+							<div className="hidden lg:block overflow-x-auto">
+								<table className="w-full">
+									<thead className="bg-muted/50 border-b">
+										<tr>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Teacher Details
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Subject & Experience
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Contact
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Location
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Resume
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Status
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Applied Date
+											</th>
+											<th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+												Actions
+											</th>
+										</tr>
+									</thead>
+									<tbody className="bg-background divide-y divide-border">
+										<AnimatePresence>
+											{filteredApps.map((app) => (
+												<motion.tr
+													key={app.id}
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													className="hover:bg-muted/50 transition-colors"
+												>
+													<td className="px-6 py-4">
+														<div className="flex items-start space-x-3">
+															<div className="flex-shrink-0">
+																<div className="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+																	<span className="font-semibold text-sm">
+																		{app.name.charAt(0).toUpperCase()}
+																	</span>
+																</div>
 															</div>
+															<div>
+																<div className="font-semibold text-foreground">
+																	{app.name}
+																</div>
+																<div className="text-sm text-muted-foreground">
+																	{app.gender}
+																</div>
+															</div>
+														</div>
+													</td>
+													<td className="px-6 py-4">
+														<div className="text-sm">
+															<div className="font-medium text-foreground">
+																{app.subject}
+															</div>
+															<div className="text-muted-foreground">
+																Class {app.class} • {app.experience} yrs
+															</div>
+														</div>
+													</td>
+													<td className="px-6 py-4 text-sm text-foreground">
+														{app.mobileNumber}
+													</td>
+													<td className="px-6 py-4">
+														<div className="text-sm">
+															<div className="font-medium text-foreground">
+																{app.district}
+															</div>
+															<div className="text-muted-foreground">{app.block}</div>
+														</div>
+													</td>
+													<td className="px-6 py-4">
+														{app.resumeUrl ? (
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => openPDF(app.resumeUrl)}
+																className="text-green-600 hover:text-green-700 hover:bg-green-50"
+															>
+																<FileText size={16} className="mr-2" />
+																View
+															</Button>
+														) : (
+															<span className="text-muted-foreground text-sm">—</span>
+														)}
+													</td>
+													<td className="px-6 py-4">
+														<Badge variant="outline" className={getStatusColor(app.status)}>
+															{app.status}
+														</Badge>
+													</td>
+													<td className="px-6 py-4 text-sm text-foreground">
+														{new Date(app.createdAt).toLocaleDateString("en-IN", {
+															year: "numeric",
+															month: "short",
+															day: "numeric",
+														})}
+													</td>
+													<td className="px-6 py-4 text-right">
+														<div className="flex justify-end space-x-2">
+															<Button
+																variant="outline"
+																size="sm"
+																className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+																onClick={() => viewDetails(app)}
+															>
+																View Details
+															</Button>
+															<Button
+																variant="outline"
+																size="sm"
+																className="text-red-600 hover:text-red-700 hover:bg-red-50"
+																onClick={() => {
+																	if (confirm("Are you sure you want to delete this application?")) {
+																		handleDelete(app.id);
+																	}
+																}}
+															>
+																Delete
+															</Button>
+														</div>
+													</td>
+												</motion.tr>
+											))}
+										</AnimatePresence>
+									</tbody>
+								</table>
+							</div>
+
+							{/* Mobile Card View */}
+							<div className="lg:hidden divide-y divide-border">
+								<AnimatePresence>
+									{filteredApps.map((app) => (
+										<motion.div
+											key={app.id}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -10 }}
+											className="p-4 hover:bg-muted/50 transition-colors"
+										>
+											<div className="space-y-3">
+												<div className="flex items-start justify-between">
+													<div className="flex items-start space-x-3">
+														<div className="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+															<span className="font-semibold text-sm">
+																{app.name.charAt(0).toUpperCase()}
+															</span>
 														</div>
 														<div>
-															<div className="font-semibold text-gray-900">
+															<h3 className="font-semibold text-foreground">
 																{app.name}
-															</div>
-															<div className="text-sm text-gray-500">
+															</h3>
+															<p className="text-sm text-muted-foreground">
 																{app.gender}
-															</div>
+															</p>
 														</div>
 													</div>
-												</td>
-												<td className="px-6 py-4">
-													<div className="text-sm">
-														<div className="font-medium text-gray-900">
-															{app.subject}
-														</div>
-														<div className="text-gray-500">
-															Class {app.class} • {app.experience} yrs
-														</div>
-													</div>
-												</td>
-												<td className="px-6 py-4 text-sm text-gray-900">
-													{app.mobileNumber}
-												</td>
-												<td className="px-6 py-4">
-													<div className="text-sm">
-														<div className="font-medium text-gray-900">
-															{app.district}
-														</div>
-														<div className="text-gray-500">{app.block}</div>
-													</div>
-												</td>
-												<td className="px-6 py-4">
-													{app.resumeUrl ? (
-														<button
-															onClick={() => openPDF(app.resumeUrl)}
-															className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-150"
-														>
-															<FileText size={16} />
-															View
-														</button>
-													) : (
-														<span className="text-gray-400 text-sm">—</span>
-													)}
-												</td>
-												<td className="px-6 py-4">
-													<span
-														className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-															app.status
-														)}`}
-													>
+													<Badge variant="outline" className={getStatusColor(app.status)}>
 														{app.status}
-													</span>
-												</td>
-												<td className="px-6 py-4 text-sm text-gray-900">
-													{new Date(app.createdAt).toLocaleDateString("en-IN", {
-														year: "numeric",
-														month: "short",
-														day: "numeric",
-													})}
-												</td>
-												<td className="px-6 py-4 text-right">
-													<div className="flex justify-end space-x-2">
-														<button
-															onClick={() => viewDetails(app)}
-															className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-150"
-														>
-															View Details
-														</button>
-														<button
-															onClick={() => {
-																if (
-																	confirm(
-																		"Are you sure you want to delete this application?"
-																	)
-																) {
-																	handleDelete(app.id);
-																}
-															}}
-															className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-150"
-														>
-															Delete
-														</button>
-													</div>
-												</td>
-											</motion.tr>
-										))}
-									</AnimatePresence>
-								</tbody>
-							</table>
-						</div>
+													</Badge>
+												</div>
 
-						{/* Mobile Card View */}
-						<div className="lg:hidden divide-y divide-gray-200">
-							<AnimatePresence>
-								{filteredApps.map((app) => (
-									<motion.div
-										key={app.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -10 }}
-										className="p-4 hover:bg-gray-50 transition-colors"
-									>
-										<div className="space-y-3">
-											<div className="flex items-start justify-between">
-												<div className="flex items-start space-x-3">
-													<div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center flex-shrink-0">
-														<span className="text-white font-semibold text-sm">
-															{app.name.charAt(0).toUpperCase()}
-														</span>
+												<div className="grid grid-cols-2 gap-3 py-3 border-y border-border">
+													<div>
+														<p className="text-xs text-muted-foreground font-medium">
+															Subject
+														</p>
+														<p className="font-medium text-foreground">
+															{app.subject}
+														</p>
 													</div>
 													<div>
-														<h3 className="font-semibold text-gray-900">
-															{app.name}
-														</h3>
-														<p className="text-sm text-gray-500">
-															{app.gender}
-														</p>
-													</div>
-												</div>
-												<span
-													className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-														app.status
-													)}`}
-												>
-													{app.status}
-												</span>
-											</div>
-
-											<div className="grid grid-cols-2 gap-3 py-3 border-y border-gray-200">
-												<div>
-													<p className="text-xs text-gray-500 font-medium">
-														Subject
-													</p>
-													<p className="font-medium text-gray-900">
-														{app.subject}
-													</p>
-												</div>
-												<div>
-													<p className="text-xs text-gray-500 font-medium">
-														Experience
-													</p>
-													<p className="font-medium text-gray-900">
-														{app.experience} years
-													</p>
-												</div>
-												<div>
-													<p className="text-xs text-gray-500 font-medium">
-														Mobile
-													</p>
-													<p className="font-medium text-gray-900">
-														{app.mobileNumber}
-													</p>
-												</div>
-												<div>
-													<p className="text-xs text-gray-500 font-medium">
-														Location
-													</p>
-													<p className="font-medium text-gray-900">
-														{app.district}
-													</p>
-												</div>
-											</div>
-
-											<div className="flex items-center justify-between text-sm">
-												<p className="text-gray-600">
-													Applied:{" "}
-													<span className="font-medium">
-														{new Date(app.createdAt).toLocaleDateString(
-															"en-IN"
-														)}
-													</span>
-												</p>
-												{app.resumeUrl && (
-													<button
-														onClick={() => openPDF(app.resumeUrl)}
-														className="text-green-600 font-medium hover:text-green-700 flex items-center gap-1"
-													>
-														<FileText size={16} />
-														Resume
-													</button>
-												)}
-											</div>
-
-											<div className="flex gap-2 pt-2">
-												<motion.button
-													whileTap={{ scale: 0.95 }}
-													onClick={() => viewDetails(app)}
-													className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium text-sm transition-colors"
-												>
-													<Eye size={16} />
-													View Details
-												</motion.button>
-												<motion.button
-													whileTap={{ scale: 0.95 }}
-													onClick={() => {
-														if (confirm("Delete this application?")) {
-															handleDelete(app.id);
-														}
-													}}
-													className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium text-sm transition-colors"
-												>
-													<Trash2 size={16} />
-												</motion.button>
-											</div>
-										</div>
-									</motion.div>
-								))}
-							</AnimatePresence>
-						</div>
-					</>
-				)}
-
-				{filteredApps.length === 0 && !loading && (
-					<div className="text-center py-12 sm:py-16 px-4">
-						<div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={1.5}
-									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-								/>
-							</svg>
-						</div>
-						<h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-							No applications found
-						</h3>
-						<p className="text-gray-600 text-sm sm:text-base">
-							{filterStatus === "All"
-								? "Applications will appear here when teachers submit their forms."
-								: `No applications with status "${filterStatus}" found.`}
-						</p>
-					</div>
-				)}
-			</div>
-
-			{/* Enhanced Details Modal */}
-			<AnimatePresence>
-				{showModal && selectedApp && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
-					>
-						<motion.div
-							initial={{ scale: 0.95, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							exit={{ scale: 0.95, opacity: 0 }}
-							className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col mx-2"
-						>
-							{/* Modal Header */}
-							<div className="bg-linear-to-r from-red-600 to-red-700 px-4 sm:px-6 py-4 shrink-0">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center space-x-3">
-										<div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-											<span className="text-white font-semibold">
-												{selectedApp.name.charAt(0).toUpperCase()}
-											</span>
-										</div>
-										<div>
-											<h3 className="text-xl font-semibold text-white">
-												{selectedApp.name}
-											</h3>
-											<p className="text-red-100 text-sm">
-												Teacher Application Details
-											</p>
-										</div>
-									</div>
-									<button
-										onClick={() => setShowModal(false)}
-										className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
-									>
-										<svg
-											className="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</button>
-								</div>
-							</div>
-
-							{/* Modal Content */}
-							<div className="flex-1 overflow-y-auto">
-								<div className="p-4 sm:p-6">
-									<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-										{/* Status Management */}
-										<div className="lg:col-span-1 space-y-6">
-											<div className="bg-gray-50 rounded-xl p-4">
-												<h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-													<svg
-														className="w-5 h-5 mr-2 text-red-600"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-														/>
-													</svg>
-													Status Management
-												</h4>
-												<div className="space-y-3">
-													<select
-														value={selectedApp.status}
-														onChange={(e) =>
-															setSelectedApp({
-																...selectedApp,
-																status: e.target.value,
-															})
-														}
-														className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-													>
-														<option value="New">New</option>
-														<option value="Shortlisted">Shortlisted</option>
-														<option value="Interview Scheduled">
-															Interview Scheduled
-														</option>
-														<option value="Hired">Hired</option>
-														<option value="Rejected">Rejected</option>
-													</select>
-													<span
-														className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(
-															selectedApp.status
-														)}`}
-													>
-														{selectedApp.status}
-													</span>
-												</div>
-											</div>
-
-											{/* Resume Section */}
-											{selectedApp.resumeUrl && (
-												<div className="bg-green-50 rounded-xl p-4">
-													<h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-														<FileText className="w-5 h-5 mr-2 text-green-600" />
-														Resume
-													</h4>
-													<div className="space-y-2">
-														<button
-															onClick={() => openPDF(selectedApp.resumeUrl)}
-															className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium text-sm transition-colors"
-														>
-															<Eye size={16} />
-															View Resume
-														</button>
-														<a
-															href={selectedApp.resumeUrl}
-															download="resume.pdf"
-															className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium text-sm transition-colors"
-														>
-															<Download size={16} />
-															Download
-														</a>
-													</div>
-												</div>
-											)}
-
-											{/* Admin Notes */}
-											<div className="bg-yellow-50 rounded-xl p-4">
-												<h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-													<svg
-														className="w-5 h-5 mr-2 text-yellow-600"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-														/>
-													</svg>
-													Admin Notes
-												</h4>
-												<textarea
-													value={statusNotes}
-													onChange={(e) => setStatusNotes(e.target.value)}
-													className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
-													rows={4}
-													placeholder="Add notes about this application..."
-												/>
-											</div>
-										</div>
-
-										{/* Application Details */}
-										<div className="lg:col-span-2 space-y-6">
-											{/* Personal Information */}
-											<div className="bg-white border border-gray-200 rounded-xl p-4">
-												<h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-													<User className="w-5 h-5 mr-2 text-blue-600" />
-													Personal Information
-												</h4>
-												<div className="grid grid-cols-2 gap-4">
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Name
-														</p>
-														<p className="text-gray-900">{selectedApp.name}</p>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Gender
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.gender}
-														</p>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Mobile Number
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.mobileNumber}
-														</p>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
+														<p className="text-xs text-muted-foreground font-medium">
 															Experience
 														</p>
-														<p className="text-gray-900">
-															{selectedApp.experience} years
+														<p className="font-medium text-foreground">
+															{app.experience} years
+														</p>
+													</div>
+													<div>
+														<p className="text-xs text-muted-foreground font-medium">
+															Mobile
+														</p>
+														<p className="font-medium text-foreground">
+															{app.mobileNumber}
+														</p>
+													</div>
+													<div>
+														<p className="text-xs text-muted-foreground font-medium">
+															Location
+														</p>
+														<p className="font-medium text-foreground">
+															{app.district}
 														</p>
 													</div>
 												</div>
-											</div>
 
-											{/* Professional Information */}
-											<div className="bg-white border border-gray-200 rounded-xl p-4">
-												<h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-													<BookOpen className="w-5 h-5 mr-2 text-purple-600" />
-													Professional Information
-												</h4>
-												<div className="space-y-4">
-													<div className="grid grid-cols-2 gap-4">
-														<div className="space-y-1">
-															<p className="text-sm font-medium text-gray-500">
-																Subject
-															</p>
-															<p className="text-gray-900">
-																{selectedApp.subject}
-															</p>
-														</div>
-														<div className="space-y-1">
-															<p className="text-sm font-medium text-gray-500">
-																Class
-															</p>
-															<p className="text-gray-900">
-																{selectedApp.class}
-															</p>
-														</div>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Qualifications
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.qualifications}
-														</p>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Specialization
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.specialization}
-														</p>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Professional Qualification
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.professionalQualification}
-														</p>
-													</div>
-													{selectedApp.otherProfessionalQualification && (
-														<div className="space-y-1">
-															<p className="text-sm font-medium text-gray-500">
-																Other Professional Qualification
-															</p>
-															<p className="text-gray-900">
-																{selectedApp.otherProfessionalQualification}
-															</p>
-														</div>
+												<div className="flex items-center justify-between text-sm">
+													<p className="text-muted-foreground">
+														Applied:{" "}
+														<span className="font-medium text-foreground">
+															{new Date(app.createdAt).toLocaleDateString(
+																"en-IN"
+															)}
+														</span>
+													</p>
+													{app.resumeUrl && (
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() => openPDF(app.resumeUrl)}
+															className="text-green-600 font-medium hover:text-green-700 hover:bg-green-50"
+														>
+															<FileText size={16} className="mr-2" />
+															Resume
+														</Button>
 													)}
 												</div>
-											</div>
 
-											{/* Location Information */}
-											<div className="bg-white border border-gray-200 rounded-xl p-4">
-												<h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-													<MapPin className="w-5 h-5 mr-2 text-green-600" />
-													Location Information
-												</h4>
-												<div className="space-y-3">
-													<div className="grid grid-cols-2 gap-4">
-														<div className="space-y-1">
-															<p className="text-sm font-medium text-gray-500">
-																District
-															</p>
-															<p className="text-gray-900">
-																{selectedApp.district}
-															</p>
-														</div>
-														<div className="space-y-1">
-															<p className="text-sm font-medium text-gray-500">
-																Block
-															</p>
-															<p className="text-gray-900">
-																{selectedApp.block}
-															</p>
-														</div>
-													</div>
-													<div className="space-y-1">
-														<p className="text-sm font-medium text-gray-500">
-															Address
-														</p>
-														<p className="text-gray-900">
-															{selectedApp.address}
-														</p>
-													</div>
+												<div className="flex gap-2 pt-2">
+													<Button
+														onClick={() => viewDetails(app)}
+														className="flex-1 bg-blue-100 text-blue-700 hover:bg-blue-200"
+													>
+														<Eye size={16} className="mr-2" />
+														View Details
+													</Button>
+													<Button
+														onClick={() => {
+															if (confirm("Delete this application?")) {
+																handleDelete(app.id);
+															}
+														}}
+														className="bg-red-100 text-red-700 hover:bg-red-200"
+													>
+														<Trash2 size={16} />
+													</Button>
 												</div>
+											</div>
+										</motion.div>
+									))}
+								</AnimatePresence>
+							</div>
+						</>
+					)}
+
+					{filteredApps.length === 0 && !loading && (
+						<div className="text-center py-16 px-4">
+							<div className="mx-auto h-16 w-16 text-muted-foreground mb-4 flex items-center justify-center">
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-10 h-10 opacity-50">
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={1.5}
+										d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+									/>
+								</svg>
+							</div>
+							<h3 className="text-lg font-semibold text-foreground mb-2">
+								No applications found
+							</h3>
+							<p className="text-muted-foreground">
+								{filterStatus === "All"
+									? "Applications will appear here when teachers submit their forms."
+									: `No applications with status "${filterStatus}" found.`}
+							</p>
+						</div>
+					)}
+				</CardContent>
+			</Card>
+
+			{/* Enhanced Details Modal -> Sheet */}
+			<Sheet open={showModal} onOpenChange={(open) => {
+				if (!open) setShowModal(false);
+			}}>
+				<SheetContent className="w-full sm:max-w-3xl overflow-y-auto" side="right">
+					<SheetHeader className="mb-6 mt-4">
+						<SheetTitle className="text-2xl flex items-center gap-3">
+							<div className="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+								<span className="font-bold">
+									{selectedApp?.name?.charAt(0).toUpperCase()}
+								</span>
+							</div>
+							<div className="text-left">
+								<div>{selectedApp?.name}</div>
+								<div className="text-sm text-muted-foreground font-normal">
+									Teacher Application Details
+								</div>
+							</div>
+						</SheetTitle>
+						<SheetDescription></SheetDescription>
+					</SheetHeader>
+
+					{selectedApp && (
+						<div className="space-y-6 pb-20">
+							<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+								{/* Left Column */}
+								<div className="lg:col-span-1 space-y-6">
+									{/* Status Management */}
+									<div className="bg-muted/50 rounded-lg p-4 border">
+										<h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+											Status Management
+										</h4>
+										<div className="space-y-4">
+											<select
+												value={selectedApp.status}
+												onChange={(e) =>
+													setSelectedApp({
+														...selectedApp,
+														status: e.target.value,
+													})
+												}
+												className="w-full p-2 border border-input rounded-md bg-background focus:ring-2 focus:ring-ring focus:border-input"
+											>
+												<option value="New">New</option>
+												<option value="Shortlisted">Shortlisted</option>
+												<option value="Interview Scheduled">Interview Scheduled</option>
+												<option value="Hired">Hired</option>
+												<option value="Rejected">Rejected</option>
+											</select>
+											<div>
+												<Badge variant="outline" className={getStatusColor(selectedApp.status)}>
+													{selectedApp.status}
+												</Badge>
+											</div>
+										</div>
+									</div>
+
+									{/* Resume Section */}
+									{selectedApp.resumeUrl && (
+										<div className="bg-green-50 rounded-lg p-4 border border-green-100">
+											<h4 className="font-semibold text-green-900 mb-3 flex items-center">
+												<FileText className="w-5 h-5 mr-2" />
+												Resume
+											</h4>
+											<div className="space-y-2">
+												<Button
+													variant="outline"
+													className="w-full text-green-700 border-green-200 hover:bg-green-100 bg-white"
+													onClick={() => openPDF(selectedApp.resumeUrl)}
+												>
+													<Eye size={16} className="mr-2" />
+													View Resume
+												</Button>
+												<Button
+													variant="outline"
+													className="w-full text-blue-700 border-blue-200 hover:bg-blue-100 bg-white"
+													asChild
+												>
+													<a href={selectedApp.resumeUrl} download="resume.pdf">
+														<Download size={16} className="mr-2" />
+														Download
+													</a>
+												</Button>
+											</div>
+										</div>
+									)}
+
+									{/* Admin Notes */}
+									<div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100">
+										<h4 className="font-semibold text-yellow-900 mb-3 flex items-center">
+											Admin Notes
+										</h4>
+										<Textarea
+											value={statusNotes}
+											onChange={(e) => setStatusNotes(e.target.value)}
+											className="resize-none bg-white border-yellow-200 focus-visible:ring-yellow-400"
+											rows={4}
+											placeholder="Add notes about this application..."
+										/>
+									</div>
+								</div>
+
+								{/* Right Column (Details) */}
+								<div className="lg:col-span-2 space-y-6">
+									{/* Personal Information */}
+									<div className="bg-background border rounded-lg p-4 shadow-sm">
+										<h4 className="font-semibold text-foreground mb-4 flex items-center">
+											<User className="w-5 h-5 mr-2 text-blue-600" />
+											Personal Information
+										</h4>
+										<div className="grid grid-cols-2 gap-4">
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Name</p>
+												<p className="text-foreground font-medium">{selectedApp.name}</p>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Gender</p>
+												<p className="text-foreground font-medium">{selectedApp.gender}</p>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Mobile Number</p>
+												<p className="text-foreground font-medium">{selectedApp.mobileNumber}</p>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Experience</p>
+												<p className="text-foreground font-medium">{selectedApp.experience} years</p>
+											</div>
+										</div>
+									</div>
+
+									{/* Professional Information */}
+									<div className="bg-background border rounded-lg p-4 shadow-sm">
+										<h4 className="font-semibold text-foreground mb-4 flex items-center">
+											<BookOpen className="w-5 h-5 mr-2 text-purple-600" />
+											Professional Information
+										</h4>
+										<div className="space-y-4">
+											<div className="grid grid-cols-2 gap-4">
+												<div>
+													<p className="text-sm font-medium text-muted-foreground">Subject</p>
+													<p className="text-foreground font-medium">{selectedApp.subject}</p>
+												</div>
+												<div>
+													<p className="text-sm font-medium text-muted-foreground">Class</p>
+													<p className="text-foreground font-medium">{selectedApp.class}</p>
+												</div>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Qualifications</p>
+												<p className="text-foreground font-medium">{selectedApp.qualifications}</p>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Specialization</p>
+												<p className="text-foreground font-medium">{selectedApp.specialization}</p>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Professional Qualification</p>
+												<p className="text-foreground font-medium">{selectedApp.professionalQualification}</p>
+											</div>
+											{selectedApp.otherProfessionalQualification && (
+												<div>
+													<p className="text-sm font-medium text-muted-foreground">Other Professional Qualification</p>
+													<p className="text-foreground font-medium">{selectedApp.otherProfessionalQualification}</p>
+												</div>
+											)}
+										</div>
+									</div>
+
+									{/* Location Information */}
+									<div className="bg-background border rounded-lg p-4 shadow-sm">
+										<h4 className="font-semibold text-foreground mb-4 flex items-center">
+											<MapPin className="w-5 h-5 mr-2 text-green-600" />
+											Location Information
+										</h4>
+										<div className="space-y-3">
+											<div className="grid grid-cols-2 gap-4">
+												<div>
+													<p className="text-sm font-medium text-muted-foreground">District</p>
+													<p className="text-foreground font-medium">{selectedApp.district}</p>
+												</div>
+												<div>
+													<p className="text-sm font-medium text-muted-foreground">Block</p>
+													<p className="text-foreground font-medium">{selectedApp.block}</p>
+												</div>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-muted-foreground">Address</p>
+												<p className="text-foreground font-medium">{selectedApp.address}</p>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
+						</div>
+					)}
 
-							{/* Modal Footer */}
-							<div className="bg-gray-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end border-t border-gray-200 shrink-0">
-								<button
-									onClick={() => setShowModal(false)}
-									className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150 text-sm sm:text-base"
-								>
-									Close
-								</button>
-								<button
-									onClick={() => {
-										if (
-											confirm(
-												"Are you sure you want to delete this application? This action cannot be undone."
-											)
-										) {
-											handleDelete(selectedApp.id);
-										}
-									}}
-									disabled={deleting}
-									className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center"
-								>
-									{deleting && (
-										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-									)}
-									Delete Application
-								</button>
-								<button
-									onClick={() => {
-										updateStatus(
-											selectedApp.id,
-											selectedApp.status,
-											statusNotes
-										);
-										setShowModal(false);
-									}}
-									disabled={updating}
-									className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center"
-								>
-									{updating && (
-										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-									)}
-									Save Changes
-								</button>
-							</div>
-						</motion.div>
-					</motion.div>
-				)}
-			</AnimatePresence>
+					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3 z-10">
+						<Button variant="outline" onClick={() => setShowModal(false)}>
+							Close
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => {
+								if (
+									confirm(
+										"Are you sure you want to delete this application? This action cannot be undone."
+									)
+								) {
+									handleDelete(selectedApp.id);
+								}
+							}}
+							disabled={deleting}
+						>
+							{deleting && (
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+							)}
+							Delete Application
+						</Button>
+						<Button
+							className="bg-red-600 hover:bg-red-700"
+							onClick={() => {
+								updateStatus(
+									selectedApp.id,
+									selectedApp.status,
+									statusNotes
+								);
+								setShowModal(false);
+							}}
+							disabled={updating}
+						>
+							{updating && (
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+							)}
+							Save Changes
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 
 			{/* Enhanced PDF Viewer Modal */}
 			<AnimatePresence>
@@ -854,24 +733,26 @@ export default function TeachersTab() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
+						className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4"
 					>
 						<motion.div
 							initial={{ scale: 0.95, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							exit={{ scale: 0.95, opacity: 0 }}
-							className="bg-white rounded-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] flex flex-col shadow-2xl overflow-hidden mx-2"
+							className="bg-background rounded-2xl w-full max-w-6xl h-[95vh] sm:h-[90vh] flex flex-col shadow-2xl overflow-hidden mx-2 border"
 						>
 							{/* PDF Header */}
-							<div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-4 border-b shrink-0">
+							<div className="bg-muted/30 px-4 sm:px-6 py-4 border-b shrink-0">
 								<div className="flex justify-between items-center">
-									<h3 className="text-lg font-semibold text-gray-900 flex items-center">
+									<h3 className="text-lg font-semibold text-foreground flex items-center">
 										<FileText className="w-5 h-5 mr-2 text-green-600" />
 										Resume Viewer
 									</h3>
-									<button
+									<Button
+										variant="ghost"
+										size="icon"
 										onClick={() => setShowPDFModal(false)}
-										className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-200 transition-colors"
+										className="text-muted-foreground hover:text-foreground hover:bg-muted"
 									>
 										<svg
 											className="w-5 h-5"
@@ -886,12 +767,12 @@ export default function TeachersTab() {
 												d="M6 18L18 6M6 6l12 12"
 											/>
 										</svg>
-									</button>
+									</Button>
 								</div>
 							</div>
 
 							{/* PDF Viewer */}
-							<div className="flex-1 bg-gray-100">
+							<div className="flex-1 bg-muted/50">
 								<iframe
 									src={`${selectedPDF}#toolbar=1&navpanes=0`}
 									className="w-full h-full border-none"
@@ -900,34 +781,29 @@ export default function TeachersTab() {
 							</div>
 
 							{/* Footer */}
-							<div className="bg-gray-50 px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row gap-4 sm:gap-0 sm:justify-between sm:items-center shrink-0">
-								<p className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
+							<div className="bg-background px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row gap-4 sm:gap-0 sm:justify-between sm:items-center shrink-0">
+								<p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
 									Use the toolbar above to navigate and zoom
 								</p>
 								<div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-									<a
-										href={selectedPDF}
-										download="resume.pdf"
-										className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-xs sm:text-sm transition-colors"
-									>
-										<Download size={14} className="sm:w-4 sm:h-4" />
-										Download
-									</a>
-									<a
-										href={selectedPDF}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-xs sm:text-sm transition-colors"
-									>
-										<ExternalLink size={14} className="sm:w-4 sm:h-4" />
-										Open in New Tab
-									</a>
-									<button
+									<Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+										<a href={selectedPDF} download="resume.pdf">
+											<Download size={14} className="mr-2 sm:w-4 sm:h-4" />
+											Download
+										</a>
+									</Button>
+									<Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+										<a href={selectedPDF} target="_blank" rel="noopener noreferrer">
+											<ExternalLink size={14} className="mr-2 sm:w-4 sm:h-4" />
+											Open in New Tab
+										</a>
+									</Button>
+									<Button
+										variant="outline"
 										onClick={() => setShowPDFModal(false)}
-										className="px-3 sm:px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium text-xs sm:text-sm transition-colors"
 									>
 										Close
-									</button>
+									</Button>
 								</div>
 							</div>
 						</motion.div>
