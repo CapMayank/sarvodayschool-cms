@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import DashboardNav from "@/components/dashboard-nav";
+import DashboardSidebar from "@/components/dashboard-sidebar";
 
 export default async function DashboardLayout({
 	children,
@@ -19,10 +19,13 @@ export default async function DashboardLayout({
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<DashboardNav session={session} />
-			<main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-				{children}
+		<div className="flex min-h-screen bg-slate-50/50">
+			{/* Mobile uses the header inside DashboardSidebar and places sidebar logic in a Sheet */}
+			<DashboardSidebar session={session} />
+			<main className="flex-1 max-w-[1600px] w-full min-w-0">
+				<div className="p-4 sm:p-6 lg:p-8">
+					{children}
+				</div>
 			</main>
 		</div>
 	);
