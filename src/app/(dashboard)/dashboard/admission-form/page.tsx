@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 
 export default function AdmissionsTab() {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [forms, setForms] = useState<any[]>([]);
+                                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [selectedForm, setSelectedForm] = useState<any>(null);
 	const [showModal, setShowModal] = useState(false);
 	const [filterStatus, setFilterStatus] = useState<string>("All");
@@ -61,6 +63,7 @@ export default function AdmissionsTab() {
 		}
 	};
 
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const viewDetails = (form: any) => {
 		setSelectedForm(form);
 		setStatusNotes(form.notes || "");

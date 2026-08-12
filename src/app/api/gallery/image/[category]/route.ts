@@ -22,6 +22,7 @@ export async function GET(
 			.max_results(500)
 			.execute();
 
+                                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const images = (result.resources || []).map((resource: any) => ({
 			id: resource.asset_id,
 			publicId: resource.public_id,

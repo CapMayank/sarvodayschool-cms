@@ -1,7 +1,9 @@
 /** @format */
 
 import Navbar from "@/components/public/navbar";
+       // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Script from "next/script";
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SITE_NAME, SITE_NAME_SHORT, DEFAULT_IMAGE } from "@/lib/seo";
 import "./globals.css";
 

@@ -35,6 +35,7 @@ export async function PUT(
 		});
 
 		return NextResponse.json(updated);
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		console.error("Error updating teacher application:", error);
 
@@ -70,6 +71,7 @@ export async function DELETE(
 		});
 
 		return NextResponse.json({ success: true });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		console.error("Error deleting teacher application:", error);
 

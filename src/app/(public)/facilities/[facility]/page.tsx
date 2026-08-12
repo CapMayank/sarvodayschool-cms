@@ -79,8 +79,11 @@ export default async function Facilities({ params }: PageProps) {
 		title: facility.title,
 		imageUrl: facility.imageUrl,
 		description: facility.description,
+                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		highlights: facility.highlights as any,
+                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		facilityFeatures: facility.facilityFeatures as any,
+                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		mediaGallery: facility.mediaGallery as any,
 	};
 

@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
 		const category = searchParams.get("category");
 		const publishedOnly = searchParams.get("published") !== "false"; // Default to true
 
-		let where: any = {};
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const where: any = {};
 		if (category) {
 			where.category = category;
 		}

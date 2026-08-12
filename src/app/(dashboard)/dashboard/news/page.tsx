@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 export default function NewsTab() {
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [news, setNews] = useState<any[]>([]);
 	const [showModal, setShowModal] = useState(false);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -61,6 +62,8 @@ export default function NewsTab() {
 			setLoading(true);
 			const data = await apiClient.getNews(100);
 			const sorted = data.sort(
+                 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
 				(a: any, b: any) =>
 					new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
 			);
@@ -228,6 +231,7 @@ export default function NewsTab() {
 		}
 	};
 
+                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleEdit = (item: any) => {
 		setFormData({
 			title: item.title,

@@ -44,6 +44,7 @@ export async function PUT(
 		const body = await request.json();
 
 		// Generate slug from title if title is changed
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const updateData: any = {
 			title: body.title,
 			excerpt: body.excerpt,

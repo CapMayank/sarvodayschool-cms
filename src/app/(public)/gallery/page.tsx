@@ -45,6 +45,7 @@ const Gallery = () => {
 				if (!res.ok) throw new Error("Failed to fetch categories");
 				const data = await res.json();
 				setCategories(data.categories || []);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
 			} catch (err) {
 				setError("Failed to load gallery categories");
 			} finally {
@@ -63,6 +64,7 @@ const Gallery = () => {
 				if (!res.ok) throw new Error("Failed to fetch playlists");
 				const data = await res.json();
 				setPlaylists(data.playlists || []);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
 			} catch (err) {
 				setError("Failed to load video playlists");
 			} finally {

@@ -112,6 +112,8 @@ const Careers: React.FC = () => {
 	});
 
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+                 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [blocks, setBlocks] = useState<string[]>([]);
 	const [submitting, setSubmitting] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);

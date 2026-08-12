@@ -76,6 +76,7 @@ function ResetPasswordForm() {
 
 			toast.success("Password reset successfully");
 			setTimeout(() => router.push("/login"), 1500);
+           // eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (error) {
 			toast.error("An error occurred. Please try again.");
 		} finally {

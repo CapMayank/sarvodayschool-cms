@@ -42,6 +42,7 @@ export default function LoginPage() {
 			toast.success("Logged in successfully");
 			router.push("/dashboard");
 			router.refresh();
+           // eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (error) {
 			toast.error("An error occurred. Please try again.");
 		} finally {

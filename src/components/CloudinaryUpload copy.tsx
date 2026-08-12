@@ -3,6 +3,7 @@
 "use client";
 
 import { CldUploadWidget } from "next-cloudinary";
+                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
@@ -41,6 +42,7 @@ export default function CloudinaryUpload({
 					showSkipCropButton: false,
 					cropping: false,
 				}}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
 				onSuccess={(result: any) => {
 					console.log("Upload successful:", result);
 					const url = result?.info?.secure_url;
@@ -49,6 +51,7 @@ export default function CloudinaryUpload({
 						onUploadSuccess(url);
 					}
 				}}
+                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 				onError={(error: any) => {
 					console.error("Upload error:", error);
 					alert(

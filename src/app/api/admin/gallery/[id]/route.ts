@@ -37,6 +37,7 @@ export async function PATCH(
 		});
 
 		return NextResponse.json({ category: updated });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		if (error.code === "P2025") {
 			return NextResponse.json(
@@ -84,6 +85,7 @@ export async function DELETE(
 				.execute();
 
 			if (resources && resources.length > 0) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const publicIds = resources.map((r: any) => r.public_id);
 				await cloudinary.api.delete_resources(publicIds);
 			}

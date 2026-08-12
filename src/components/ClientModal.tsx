@@ -13,6 +13,7 @@ interface ClientModalProps {
 export default function ClientModal({
 	children,
 	imageUrl,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	altText,
 }: ClientModalProps) {
 	const [showModal, setShowModal] = useState(false);

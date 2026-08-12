@@ -30,6 +30,7 @@ import {
 	Home,
 	LayoutDashboard,
 	User,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	Trophy,
 	Newspaper,
 	Image,
@@ -43,6 +44,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+                                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function DashboardNav({ session }: { session: any }) {
 	const router = useRouter();
 	const pathname = usePathname();

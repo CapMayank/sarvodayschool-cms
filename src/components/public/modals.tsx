@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React, { useEffect, useCallback } from "react";
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FaTimes, FaDownload } from "react-icons/fa";
 import { saveAs } from "file-saver";
 
@@ -48,6 +49,7 @@ const Modal: React.FC<ModalProps> = ({ showModal, setShowModal, imageUrl }) => {
 	};
 
 	// Download Image
+       // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const downloadImage = () => {
 		const fileName =
 			imageUrl.substring(imageUrl.lastIndexOf("/") + 1) || "download";

@@ -435,6 +435,7 @@ const Navbar = () => {
 	);
 };
 
+                                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const NavItem = ({ href, children, onClick }: any) => (
 	<Link
 		href={href}

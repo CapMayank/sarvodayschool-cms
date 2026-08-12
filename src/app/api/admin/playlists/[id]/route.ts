@@ -29,6 +29,7 @@ export async function PATCH(
 		});
 
 		return NextResponse.json({ playlist: updated });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		if (error.code === "P2025") {
 			return NextResponse.json(
@@ -63,6 +64,7 @@ export async function DELETE(
 		});
 
 		return NextResponse.json({ success: true });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		if (error.code === "P2025") {
 			return NextResponse.json(

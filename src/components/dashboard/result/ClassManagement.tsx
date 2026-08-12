@@ -15,7 +15,9 @@ import {
 	GraduationCap,
 	BookOpen,
 	Zap,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	Copy,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	Download,
 	Upload,
 	Wand2,
@@ -223,6 +225,7 @@ export default function ClassManagement() {
 	const [selectedClass, setSelectedClass] = useState<number | null>(null);
 	const [bulkClassText, setBulkClassText] = useState("");
 	const [bulkSubjectText, setBulkSubjectText] = useState("");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 	const [classForm, setClassForm] = useState({
 		name: "",

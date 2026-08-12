@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		return NextResponse.json({ playlist }, { status: 201 });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		if (error.code === "P2002") {
 			return NextResponse.json(
@@ -95,6 +96,7 @@ export async function PUT(request: NextRequest) {
 		}
 
 		const updated = await Promise.all(
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			playlists.map((playlist: any, index: number) =>
 				prisma.playlistVideo.update({
 					where: { id: playlist.id },

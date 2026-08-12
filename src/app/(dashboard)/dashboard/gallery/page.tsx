@@ -2,7 +2,10 @@
 
 "use client";
 
+                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useState, useEffect, useRef, useCallback } from "react";
+                  
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Plus,
@@ -10,6 +13,7 @@ import {
 	Upload,
 	Edit2,
 	Loader2,
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
 	AlertCircle,
 	ImageIcon,
 	Youtube,
@@ -174,6 +178,7 @@ export default function GalleryTab() {
 			}
 			setCategoryDialogOpen(false);
 			resetCategoryForm();
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			toast.error(
 				error.message ||

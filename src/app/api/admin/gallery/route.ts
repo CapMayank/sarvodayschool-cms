@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		return NextResponse.json({ category }, { status: 201 });
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (error: any) {
 		if (error.code === "P2002") {
 			return NextResponse.json(
@@ -110,6 +111,7 @@ export async function PUT(request: NextRequest) {
 		}
 
 		const updated = await Promise.all(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			categories.map((cat: any, index: number) =>
 				prisma.galleryCategory.update({
 					where: { id: cat.id },
