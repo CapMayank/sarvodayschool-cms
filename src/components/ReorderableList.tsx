@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 
 interface ReorderableItemBase {
 	id: number;
@@ -64,31 +65,25 @@ function SortableItem<T extends ReorderableItemBase>({
 		<div
 			ref={setNodeRef}
 			style={style}
-			className={`bg-white border-2 rounded-lg p-4 transition-all select-none ${
+			className={`bg-card text-card-foreground border rounded-xl p-4 transition-all select-none ${
 				isDragging
-					? "border-blue-500 shadow-lg bg-blue-50 scale-105 rotate-2"
-					: "border-gray-200 hover:border-gray-300"
+					? "border-primary shadow-xl ring-1 ring-primary/20 scale-[1.02] rotate-1 z-50 opacity-90"
+					: "border-border hover:border-muted-foreground/30 hover:shadow-sm"
 			}`}
 		>
-			<div className="flex items-start gap-4">
+			<div className="flex items-center gap-4">
 				{/* Drag Handle */}
 				<div
 					{...attributes}
 					{...listeners}
-					className="shrink-0 cursor-grab active:cursor-grabbing pt-1 hover:text-gray-600 touch-manipulation p-1 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors"
+					className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-manipulation p-2 rounded-md hover:bg-muted active:bg-muted/80 transition-colors flex items-center justify-center"
 					title="Drag to reorder"
 				>
-					<svg
-						className="w-6 h-6 text-gray-400"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-					>
-						<path d="M8 5a2 2 0 11-4 0 2 2 0 014 0zM8 15a2 2 0 11-4 0 2 2 0 014 0zM14 5a2 2 0 11-4 0 2 2 0 014 0zM14 15a2 2 0 11-4 0 2 2 0 014 0z" />
-					</svg>
+					<GripVertical className="w-5 h-5" />
 				</div>
 
 				{/* Content */}
-				<div className="grow">{children}</div>
+				<div className="grow overflow-hidden">{children}</div>
 			</div>
 		</div>
 	);
@@ -168,7 +163,7 @@ function ReorderableListComponent<T extends ReorderableItemBase>(
 			>
 				<div
 					ref={ref}
-					className={`space-y-2 p-2 rounded-lg bg-gray-50 ${
+					className={`space-y-3 p-1 ${
 						isLoading ? "opacity-50 pointer-events-none" : ""
 					}`}
 				>

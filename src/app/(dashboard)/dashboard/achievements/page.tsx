@@ -267,8 +267,7 @@ export default function AchievementsTab() {
 
 							<ReorderableList items={achievements} onReorder={handleReorder}>
 								{(item, index) => (
-									<Card className="mb-4 overflow-hidden hover:shadow-md transition-all duration-200">
-										<div className="flex flex-col sm:flex-row items-start gap-4 p-4">
+									<div className="flex flex-col sm:flex-row items-start gap-4 w-full">
 											{/* Image */}
 											<Image
 												src={item.imageUrl}
@@ -321,7 +320,6 @@ export default function AchievementsTab() {
 												</Button>
 											</div>
 										</div>
-									</Card>
 								)}
 							</ReorderableList>
 						</div>

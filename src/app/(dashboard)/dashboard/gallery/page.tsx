@@ -444,8 +444,7 @@ export default function GalleryTab() {
 								onReorder={handleCategoryReorder}
 							>
 								{(category, index) => (
-									<Card>
-										<CardContent className="flex flex-col sm:flex-row items-start justify-between p-4 sm:p-6 gap-4">
+									<div className="flex flex-col sm:flex-row items-start justify-between p-2 gap-4 w-full">
 											<div className="space-y-2 grow">
 												<h3 className="font-semibold text-lg">
 													{category.title}
@@ -521,8 +520,7 @@ export default function GalleryTab() {
 													<Trash2 className="h-4 w-4" />
 												</Button>
 											</div>
-										</CardContent>
-									</Card>
+									</div>
 								)}
 							</ReorderableList>
 						</div>
@@ -638,8 +636,7 @@ export default function GalleryTab() {
 								onReorder={handlePlaylistReorder}
 							>
 								{(playlist, index) => (
-									<Card>
-										<CardContent className="flex flex-col sm:flex-row items-start justify-between p-4 sm:p-6 gap-4">
+									<div className="flex flex-col sm:flex-row items-start justify-between p-2 gap-4 w-full">
 											<div className="space-y-2 grow">
 												<h3 className="font-semibold text-lg">
 													{playlist.title}
@@ -674,8 +671,7 @@ export default function GalleryTab() {
 													<Trash2 className="h-4 w-4" />
 												</Button>
 											</div>
-										</CardContent>
-									</Card>
+										</div>
 								)}
 							</ReorderableList>
 						</div>

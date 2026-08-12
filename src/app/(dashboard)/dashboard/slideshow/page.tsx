@@ -263,8 +263,7 @@ export default function SlideshowsTab() {
 
 							<ReorderableList items={slideshows} onReorder={handleReorder}>
 								{(item, index) => (
-									<Card className="mb-4 overflow-hidden hover:shadow-md transition-all duration-200">
-										<div className="flex flex-col sm:flex-row items-center gap-4 p-4">
+									<div className="flex flex-col sm:flex-row items-center gap-4 w-full">
 											{/* Image */}
 											<div className="relative shrink-0 w-full sm:w-auto">
 												<Image
@@ -333,7 +332,6 @@ export default function SlideshowsTab() {
 												</Button>
 											</div>
 										</div>
-									</Card>
 								)}
 							</ReorderableList>
 						</div>
