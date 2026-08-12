@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { deleteCloudinaryFileServer } from "@/lib/cloudinary-server";
 
 export async function GET(
 	request: NextRequest,
@@ -69,10 +70,32 @@ export async function PUT(
 			updateData.slug = body.slug;
 		}
 
+		const existingNews = await prisma.news.findUnique({
+			where: { id: parseInt(id) },
+		});
+		
+		if (!existingNews) {
+			return NextResponse.json({ error: "News not found" }, { status: 404 });
+		}
+
 		const news = await prisma.news.update({
 			where: { id: parseInt(id) },
 			data: updateData,
 		});
+
+		// Cleanup old images from Cloudinary if they were changed/removed
+		if (body.imageUrl !== undefined && existingNews.imageUrl && existingNews.imageUrl !== body.imageUrl) {
+			await deleteCloudinaryFileServer(existingNews.imageUrl);
+		}
+
+		if (body.images !== undefined && existingNews.images && existingNews.images.length > 0) {
+			const newImagesSet = new Set(body.images as string[]);
+			const removedImages = existingNews.images.filter(img => !newImagesSet.has(img));
+			
+			for (const img of removedImages) {
+				await deleteCloudinaryFileServer(img);
+			}
+		}
 
 		revalidatePath("/news");
 		revalidatePath("/");
@@ -100,9 +123,27 @@ export async function DELETE(
 	try {
 		const { id } = await params;
 
+		const existingNews = await prisma.news.findUnique({
+			where: { id: parseInt(id) },
+		});
+
+		if (!existingNews) {
+			return NextResponse.json({ error: "News not found" }, { status: 404 });
+		}
+
 		const deletedNews = await prisma.news.delete({
 			where: { id: parseInt(id) },
 		});
+
+		// Clean up Cloudinary images
+		if (existingNews.imageUrl) {
+			await deleteCloudinaryFileServer(existingNews.imageUrl);
+		}
+		if (existingNews.images && existingNews.images.length > 0) {
+			for (const img of existingNews.images) {
+				await deleteCloudinaryFileServer(img);
+			}
+		}
 
 		revalidatePath("/news");
 		revalidatePath("/");

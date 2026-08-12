@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { deleteCloudinaryFileServer } from "@/lib/cloudinary-server";
 
 // GET single achievement
 export async function GET(
@@ -47,6 +48,17 @@ export async function PUT(
 		const { id } = await params; // ← AWAIT params
 		const body = await request.json();
 
+		const existingAchievement = await prisma.achievement.findUnique({
+			where: { id: parseInt(id) },
+		});
+
+		if (!existingAchievement) {
+			return NextResponse.json(
+				{ error: "Achievement not found" },
+				{ status: 404 }
+			);
+		}
+
 		const achievement = await prisma.achievement.update({
 			where: { id: parseInt(id) },
 			data: {
@@ -56,6 +68,10 @@ export async function PUT(
 				order: body.order,
 			},
 		});
+
+		if (body.imageUrl !== undefined && existingAchievement.imageUrl && existingAchievement.imageUrl !== body.imageUrl) {
+			await deleteCloudinaryFileServer(existingAchievement.imageUrl);
+		}
 
 		return NextResponse.json(achievement);
 	} catch (error) {
@@ -80,9 +96,24 @@ export async function DELETE(
 	try {
 		const { id } = await params; // ← AWAIT params
 
+		const existingAchievement = await prisma.achievement.findUnique({
+			where: { id: parseInt(id) },
+		});
+
+		if (!existingAchievement) {
+			return NextResponse.json(
+				{ error: "Achievement not found" },
+				{ status: 404 }
+			);
+		}
+
 		await prisma.achievement.delete({
 			where: { id: parseInt(id) },
 		});
+
+		if (existingAchievement.imageUrl) {
+			await deleteCloudinaryFileServer(existingAchievement.imageUrl);
+		}
 
 		return NextResponse.json({ message: "Achievement deleted" });
 	} catch (error) {

@@ -27,14 +27,35 @@ export async function PATCH(
 		const body = await request.json();
 		const { title, description, name } = body;
 
+		const existingCategory = await prisma.galleryCategory.findUnique({
+			where: { id },
+		});
+		if (!existingCategory) {
+			return NextResponse.json({ error: "Category not found" }, { status: 404 });
+		}
+
+		const newName = name ? name.replace(/\s+/g, "_") : undefined;
+
 		const updated = await prisma.galleryCategory.update({
 			where: { id },
 			data: {
 				...(title && { title }),
 				...(description !== undefined && { description }),
-				...(name && { name: name.replace(/\s+/g, "_") }),
+				...(newName && { name: newName }),
 			},
 		});
+
+		if (newName && existingCategory.name !== newName) {
+			try {
+				await cloudinary.api.rename_folder(
+					`sarvodayaGallery/${existingCategory.name}`,
+					`sarvodayaGallery/${newName}`
+				);
+			} catch (err) {
+				console.error("Failed to rename Cloudinary folder:", err);
+				// Proceed anyway, as DB is already updated, though this is a sync issue.
+			}
+		}
 
 		return NextResponse.json({ category: updated });
                  // eslint-disable-next-line @typescript-eslint/no-explicit-any

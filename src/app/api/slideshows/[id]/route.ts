@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { deleteCloudinaryFileServer } from "@/lib/cloudinary-server";
 
 export async function GET(
 	request: NextRequest,
@@ -46,6 +47,17 @@ export async function PUT(
 		const { id } = await params;
 		const body = await request.json();
 
+		const existingSlideshow = await prisma.slideShow.findUnique({
+			where: { id: parseInt(id) },
+		});
+
+		if (!existingSlideshow) {
+			return NextResponse.json(
+				{ error: "Slideshow not found" },
+				{ status: 404 }
+			);
+		}
+
 		const slideshow = await prisma.slideShow.update({
 			where: { id: parseInt(id) },
 			data: {
@@ -55,6 +67,10 @@ export async function PUT(
 				order: body.order,
 			},
 		});
+
+		if (body.imageUrl !== undefined && existingSlideshow.imageUrl && existingSlideshow.imageUrl !== body.imageUrl) {
+			await deleteCloudinaryFileServer(existingSlideshow.imageUrl);
+		}
 
 		return NextResponse.json(slideshow);
 	} catch (error) {
@@ -78,9 +94,24 @@ export async function DELETE(
 	try {
 		const { id } = await params;
 
+		const existingSlideshow = await prisma.slideShow.findUnique({
+			where: { id: parseInt(id) },
+		});
+
+		if (!existingSlideshow) {
+			return NextResponse.json(
+				{ error: "Slideshow not found" },
+				{ status: 404 }
+			);
+		}
+
 		await prisma.slideShow.delete({
 			where: { id: parseInt(id) },
 		});
+
+		if (existingSlideshow.imageUrl) {
+			await deleteCloudinaryFileServer(existingSlideshow.imageUrl);
+		}
 
 		return NextResponse.json({ message: "Slideshow deleted" });
 	} catch (error) {

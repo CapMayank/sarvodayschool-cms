@@ -152,11 +152,12 @@ export default function NewsTab() {
 			return;
 		}
 
+		let uploadedPrimaryImageUrl = formData.imageUrl;
+		let uploadedAdditionalImages = [...formData.images];
+		const rollbackImageUrls: string[] = []; // Track new uploads for rollback
+
 		try {
 			setSubmitting(true);
-
-			let uploadedPrimaryImageUrl = formData.imageUrl;
-			let uploadedAdditionalImages = [...formData.images];
 
 			// Upload primary image if a new file is selected
 			if (pendingPrimaryImage) {
@@ -166,6 +167,9 @@ export default function NewsTab() {
 						pendingPrimaryImage,
 						"sarvodaya/news"
 					);
+					if (uploadedPrimaryImageUrl) {
+						rollbackImageUrls.push(uploadedPrimaryImageUrl);
+					}
 				} catch (error) {
 					console.error("Error uploading primary image:", error);
 					toast.error("Failed to upload primary image");
@@ -184,6 +188,11 @@ export default function NewsTab() {
 						uploadToCloudinary(file, "sarvodaya/news/gallery")
 					);
 					const newImageUrls = await Promise.all(uploadPromises);
+					
+					newImageUrls.forEach(url => {
+						if (url) rollbackImageUrls.push(url);
+					});
+
 					uploadedAdditionalImages = [
 						...uploadedAdditionalImages,
 						...newImageUrls,
@@ -225,7 +234,16 @@ export default function NewsTab() {
 			await loadNews();
 		} catch (err) {
 			console.error("Error saving news:", err);
-			toast.error("Failed to save news");
+			toast.error("Failed to save news. Rolling back images...");
+			
+			// Rollback any newly uploaded images on API failure
+			for (const url of rollbackImageUrls) {
+				try {
+					await deleteCloudinaryImage(url);
+				} catch (rollbackErr) {
+					console.error("Failed to rollback image:", rollbackErr);
+				}
+			}
 		} finally {
 			setSubmitting(false);
 		}

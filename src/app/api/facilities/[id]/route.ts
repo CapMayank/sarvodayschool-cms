@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { deleteCloudinaryFileServer } from "@/lib/cloudinary-server";
 
 interface RouteParams {
 	params: Promise<{
@@ -119,6 +120,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 			},
 		});
 
+		if (imageUrl && existingFacility.imageUrl && existingFacility.imageUrl !== imageUrl) {
+			await deleteCloudinaryFileServer(existingFacility.imageUrl);
+		}
+
+		if (mediaGallery !== undefined && existingFacility.mediaGallery) {
+			const existingMedia = (existingFacility.mediaGallery as any[]) || [];
+			const newMedia = (mediaGallery as any[]) || [];
+			const newMediaSrcs = new Set(newMedia.filter(m => m.type === 'image').map(m => m.src));
+			
+			const removedMedia = existingMedia.filter(m => m.type === 'image' && !newMediaSrcs.has(m.src));
+			for (const m of removedMedia) {
+				if (m.src) await deleteCloudinaryFileServer(m.src);
+			}
+		}
+
 		return NextResponse.json(facility);
 	} catch (error) {
 		console.error("Error updating facility:", error);
@@ -164,6 +180,19 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 		await prisma.facility.delete({
 			where: { id: facilityId },
 		});
+
+		if (facility.imageUrl) {
+			await deleteCloudinaryFileServer(facility.imageUrl);
+		}
+		
+		if (facility.mediaGallery) {
+			const media = (facility.mediaGallery as any[]) || [];
+			for (const m of media) {
+				if (m.type === 'image' && m.src) {
+					await deleteCloudinaryFileServer(m.src);
+				}
+			}
+		}
 
 		return NextResponse.json({ message: "Facility deleted successfully" });
 	} catch (error) {
