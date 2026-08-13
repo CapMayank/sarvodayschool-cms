@@ -6,6 +6,7 @@ import { BsChevronCompactLeft, BsChevronCompactRight } from "react-icons/bs";
 import { motion } from "framer-motion";
 import Modal from "@/components/public/Modal"; // (updated version below)
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Slide {
 	id: number;
@@ -72,9 +73,20 @@ const Slideshow = () => {
 	/* ✅ Loading State */
 	if (loading) {
 		return (
-			<div className="relative w-full h-[480px] md:h-[680px] flex items-center justify-center">
-				<div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-red-600"></div>
-			</div>
+			<section className="relative w-full bg-linear-to-b from-white to-gray-50 py-20 overflow-visible">
+				<div className="text-center mb-16">
+					<Skeleton className="h-12 w-64 mx-auto mb-4" />
+					<Skeleton className="w-24 h-1 mx-auto rounded-full" />
+				</div>
+				<div className="relative w-full max-w-7xl mx-auto h-[480px] md:h-[650px] rounded-xl overflow-hidden shadow-xl">
+					<Skeleton className="w-full h-full rounded-xl" />
+					<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+						{[1, 2, 3].map((i) => (
+							<Skeleton key={i} className="w-2 h-2 rounded-full bg-white/50" />
+						))}
+					</div>
+				</div>
+			</section>
 		);
 	}
 

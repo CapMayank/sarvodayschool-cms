@@ -7,6 +7,7 @@ import { FaCalendarAlt, FaArrowRight } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import Link from "next/link";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface NewsItem {
 	id: number;
@@ -92,18 +93,41 @@ const News = () => {
 						</h2>
 						<div className="w-24 h-1 bg-linear-to-r from-red-600 to-red-500 mx-auto rounded-full mb-4" />
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-						{[...Array(6)].map((_, i) => (
-							<div key={i} className="animate-pulse">
-								<div className="bg-gray-200 h-64 rounded-t-xl" />
-								<div className="bg-white p-6 rounded-b-xl shadow-lg">
-									<div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-									<div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
-									<div className="h-3 bg-gray-200 rounded w-full mb-2" />
-									<div className="h-3 bg-gray-200 rounded w-5/6" />
+					<div className="space-y-8">
+						{/* Featured News Skeleton */}
+						<div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+							<div className="grid md:grid-cols-2 gap-0">
+								<Skeleton className="h-[300px] md:h-[500px] w-full rounded-none" />
+								<div className="p-8 md:p-12 flex flex-col justify-center">
+									<Skeleton className="h-4 w-32 mb-4" />
+									<Skeleton className="h-10 w-full mb-4" />
+									<Skeleton className="h-10 w-3/4 mb-6" />
+									<Skeleton className="h-4 w-full mb-2" />
+									<Skeleton className="h-4 w-full mb-2" />
+									<Skeleton className="h-4 w-5/6 mb-6" />
+									<Skeleton className="h-6 w-32" />
 								</div>
 							</div>
-						))}
+						</div>
+						
+						{/* Compact List Skeleton */}
+						<div className="grid md:grid-cols-2 gap-6 mt-8">
+							{[1, 2, 3, 4].map((i) => (
+								<div key={i} className="bg-white rounded-xl overflow-hidden shadow-md flex h-full">
+									<Skeleton className="w-32 md:w-40 h-full min-h-[160px] rounded-none shrink-0" />
+									<div className="p-4 grow flex flex-col justify-between">
+										<div>
+											<Skeleton className="h-3 w-40 mb-3" />
+											<Skeleton className="h-5 w-full mb-2" />
+											<Skeleton className="h-5 w-3/4 mb-3" />
+											<Skeleton className="h-3 w-full mb-1" />
+											<Skeleton className="h-3 w-full mb-3" />
+										</div>
+										<Skeleton className="h-4 w-24" />
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>
