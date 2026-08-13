@@ -26,7 +26,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, 	SheetTitle,
+	SheetDescription,
+	SheetFooter,
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SlideshowsTab() {
                                               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,11 +223,20 @@ export default function SlideshowsTab() {
 			<Card>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="flex items-center justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-							<span className="ml-3 text-muted-foreground">
-								Loading slideshows...
-							</span>
+						<div className="p-6 space-y-4">
+							{[1, 2, 3].map((i) => (
+								<div key={i} className="flex flex-col sm:flex-row items-center gap-4 w-full p-4 border rounded-xl">
+									<Skeleton className="h-32 w-full sm:w-64 shrink-0 rounded-lg" />
+									<div className="flex flex-col flex-grow min-w-0 w-full space-y-2 py-1">
+										<Skeleton className="h-6 w-1/2" />
+										<Skeleton className="h-4 w-full" />
+									</div>
+									<div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0">
+										<Skeleton className="h-9 w-full sm:w-24" />
+										<Skeleton className="h-9 w-full sm:w-24" />
+									</div>
+								</div>
+							))}
 						</div>
 					) : slideshows.length === 0 ? (
 						<div className="text-center py-16 px-4">

@@ -15,6 +15,7 @@ import {
 	SheetDescription,
 	SheetFooter,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Search } from "lucide-react";
 
@@ -163,11 +164,22 @@ export default function AdmissionsTab() {
 			<Card>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="flex items-center justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-							<span className="ml-3 text-muted-foreground">
-								Loading applications...
-							</span>
+						<div className="p-6 space-y-4">
+							{[1, 2, 3, 4, 5].map((i) => (
+								<div key={i} className="flex items-center space-x-4">
+									<Skeleton className="h-10 w-10 rounded-full" />
+									<div className="space-y-2 flex-1">
+										<Skeleton className="h-4 w-[200px]" />
+										<Skeleton className="h-3 w-[150px]" />
+									</div>
+									<div className="space-y-2 flex-1">
+										<Skeleton className="h-4 w-[120px]" />
+										<Skeleton className="h-3 w-[100px]" />
+									</div>
+									<Skeleton className="h-6 w-[80px]" />
+									<Skeleton className="h-8 w-24" />
+								</div>
+							))}
 						</div>
 					) : (
 						<div className="overflow-x-auto">

@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NewsTab() {
                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -353,11 +354,24 @@ export default function NewsTab() {
 			<Card>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="flex items-center justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin text-green-600" />
-							<span className="ml-3 text-muted-foreground">
-								Loading news...
-							</span>
+						<div className="p-6">
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+								{[1, 2, 3, 4, 5, 6].map((i) => (
+									<Card key={i} className="overflow-hidden flex flex-col">
+										<Skeleton className="h-48 w-full rounded-none" />
+										<CardContent className="p-4 space-y-4">
+											<div className="flex justify-between">
+												<Skeleton className="h-5 w-20" />
+												<Skeleton className="h-5 w-16" />
+											</div>
+											<Skeleton className="h-6 w-3/4" />
+											<Skeleton className="h-4 w-full" />
+											<Skeleton className="h-4 w-5/6" />
+											<Skeleton className="h-4 w-32 mt-4" />
+										</CardContent>
+									</Card>
+								))}
+							</div>
 						</div>
 					) : news.length === 0 ? (
 						<div className="text-center py-16 px-4">

@@ -31,6 +31,7 @@ import {
 	SheetFooter,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -393,8 +394,23 @@ export default function GalleryTab() {
 					</div>
 
 					{loadingCategories ? (
-						<div className="flex justify-center py-6 sm:py-8">
-							<Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
+						<div className="space-y-4">
+							{[1, 2, 3].map((i) => (
+								<div key={i} className="flex flex-col sm:flex-row items-start justify-between p-4 border rounded-xl w-full">
+									<div className="space-y-2 grow w-full">
+										<Skeleton className="h-6 w-1/3" />
+										<Skeleton className="h-4 w-1/2" />
+										<div className="flex gap-2 mt-4">
+											<Skeleton className="h-5 w-20" />
+											<Skeleton className="h-5 w-20" />
+										</div>
+									</div>
+									<div className="flex gap-2 mt-4 sm:mt-0">
+										<Skeleton className="h-9 w-20" />
+										<Skeleton className="h-9 w-20" />
+									</div>
+								</div>
+							))}
 						</div>
 					) : categories.length === 0 ? (
 						<Card>
@@ -585,8 +601,22 @@ export default function GalleryTab() {
 					</div>
 
 					{loadingPlaylists ? (
-						<div className="flex justify-center py-6 sm:py-8">
-							<Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
+						<div className="space-y-4">
+							{[1, 2, 3].map((i) => (
+								<div key={i} className="flex flex-col sm:flex-row items-start justify-between p-4 border rounded-xl w-full">
+									<div className="space-y-2 grow w-full">
+										<Skeleton className="h-6 w-1/3" />
+										<Skeleton className="h-4 w-1/2" />
+										<div className="flex gap-2 mt-4">
+											<Skeleton className="h-5 w-24" />
+										</div>
+									</div>
+									<div className="flex gap-2 mt-4 sm:mt-0">
+										<Skeleton className="h-9 w-20" />
+										<Skeleton className="h-9 w-20" />
+									</div>
+								</div>
+							))}
 						</div>
 					) : playlists.length === 0 ? (
 						<Card>

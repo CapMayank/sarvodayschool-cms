@@ -17,6 +17,7 @@ import {
 	SheetDescription,
 	SheetFooter,
 } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	Eye,
@@ -198,11 +199,17 @@ export default function TeachersTab() {
 			<Card>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-							<span className="ml-3 text-muted-foreground">
-								Loading applications...
-							</span>
+						<div className="p-6 space-y-4">
+							{[1, 2, 3, 4, 5].map((i) => (
+								<div key={i} className="flex items-center space-x-4">
+									<Skeleton className="h-12 w-12 rounded-full" />
+									<div className="space-y-2 flex-1">
+										<Skeleton className="h-4 w-1/3" />
+										<Skeleton className="h-4 w-1/4" />
+									</div>
+									<Skeleton className="h-8 w-24" />
+								</div>
+							))}
 						</div>
 					) : (
 						<>

@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AchievementsTab() {
                                                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,11 +224,20 @@ export default function AchievementsTab() {
 			<Card>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="flex items-center justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-							<span className="ml-3 text-muted-foreground">
-								Loading achievements...
-							</span>
+						<div className="p-6 space-y-4">
+							{[1, 2, 3, 4, 5].map((i) => (
+								<div key={i} className="flex flex-col sm:flex-row gap-4 p-4 w-full border rounded-xl">
+									<Skeleton className="h-32 w-full sm:w-48 shrink-0 rounded-lg" />
+									<div className="flex flex-col flex-grow min-w-0 justify-between py-1">
+										<div className="space-y-2">
+											<Skeleton className="h-6 w-3/4" />
+											<Skeleton className="h-4 w-full" />
+											<Skeleton className="h-4 w-5/6" />
+										</div>
+										<Skeleton className="h-4 w-24 mt-4" />
+									</div>
+								</div>
+							))}
 						</div>
 					) : achievements.length === 0 ? (
 						<div className="text-center py-16 px-4">
