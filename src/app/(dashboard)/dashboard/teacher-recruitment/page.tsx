@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { Pagination } from "@/components/Pagination";
 import { deleteCloudinaryFile } from "@/lib/cloudinary-helper";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import {
 	Eye,
 	Trash2,
@@ -39,6 +41,8 @@ export default function TeachersTab() {
 	const [showPDFModal, setShowPDFModal] = useState(false);
 	const [selectedPDF, setSelectedPDF] = useState<string | null>(null);
 	const [filterStatus, setFilterStatus] = useState<string>("All");
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
 	const [statusNotes, setStatusNotes] = useState<string>("");
 	const [loading, setLoading] = useState(true);
 	const [updating, setUpdating] = useState(false);
@@ -51,8 +55,8 @@ export default function TeachersTab() {
 	const loadApplications = async () => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getTeacherApplications();
-			setApplications(data);
+			const response = await apiClient.getTeacherApplications(1, 1000);
+			setApplications(response.data);
 		} catch (error) {
 			console.error("Error loading applications:", error);
 		} finally {
@@ -64,11 +68,11 @@ export default function TeachersTab() {
 		try {
 			setUpdating(true);
 			await apiClient.updateTeacherApplication(id, { status, notes });
-			await loadApplications();
+			setApplications((prev) => prev.map((app) => (app.id === id ? { ...app, status, notes } : app)));
 			setStatusNotes("");
 		} catch (error) {
 			console.error("Error updating application:", error);
-			alert("Failed to update status. Please try again.");
+			toast.error("Failed to update status. Please try again.");
 		} finally {
 			setUpdating(false);
 		}
@@ -91,10 +95,10 @@ export default function TeachersTab() {
 			}
 
 			setShowModal(false);
-			await loadApplications();
+			setApplications((prev) => prev.filter((a) => a.id !== id));
 		} catch (error) {
 			console.error("Error deleting application:", error);
-			alert("Failed to delete application");
+			toast.error("Failed to delete application");
 		} finally {
 			setDeleting(false);
 		}
@@ -113,10 +117,16 @@ export default function TeachersTab() {
 	};
 
 	// Filter applications by status
-	const filteredApps =
+	const allFilteredApps =
 		filterStatus === "All"
 			? applications
 			: applications.filter((app) => app.status === filterStatus);
+
+	const totalPages = Math.max(1, Math.ceil(allFilteredApps.length / itemsPerPage));
+	const paginatedApps = allFilteredApps.slice(
+		(currentPage - 1) * itemsPerPage,
+		currentPage * itemsPerPage
+	);
 
 	// Status counts
 	const statusCounts = {
@@ -182,7 +192,10 @@ export default function TeachersTab() {
 							<Button
 								key={status}
 								variant={filterStatus === status ? "default" : "outline"}
-								onClick={() => setFilterStatus(status)}
+								onClick={() => {
+									setFilterStatus(status);
+									setCurrentPage(1);
+								}}
 								className={filterStatus === status ? "bg-red-600 text-white hover:bg-red-700" : ""}
 							>
 								{status}
@@ -246,7 +259,7 @@ export default function TeachersTab() {
 									</thead>
 									<tbody className="bg-background divide-y divide-border">
 										<AnimatePresence>
-											{filteredApps.map((app) => (
+											{paginatedApps.map((app) => (
 												<motion.tr
 													key={app.id}
 													initial={{ opacity: 0 }}
@@ -355,7 +368,7 @@ export default function TeachersTab() {
 							{/* Mobile Card View */}
 							<div className="lg:hidden divide-y divide-border">
 								<AnimatePresence>
-									{filteredApps.map((app) => (
+									{paginatedApps.map((app) => (
 										<motion.div
 											key={app.id}
 											initial={{ opacity: 0, y: 10 }}
@@ -469,7 +482,15 @@ export default function TeachersTab() {
 						</>
 					)}
 
-					{filteredApps.length === 0 && !loading && (
+					{!loading && allFilteredApps.length > 0 && (
+						<Pagination
+							currentPage={currentPage}
+							totalPages={totalPages}
+							onPageChange={setCurrentPage}
+						/>
+					)}
+
+					{allFilteredApps.length === 0 && !loading && (
 						<div className="text-center py-16 px-4">
 							<div className="mx-auto h-16 w-16 text-muted-foreground mb-4 flex items-center justify-center">
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-10 h-10 opacity-50">

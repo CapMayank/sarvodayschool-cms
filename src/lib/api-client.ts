@@ -34,8 +34,8 @@ function getRequestUrl(url: string): string {
 
 export const apiClient = {
 	// ==================== ACHIEVEMENTS ====================
-	getAchievements: async () => {
-		const url = getRequestUrl(`${API_URL}/api/achievements`);
+	getAchievements: async (page = 1, limit = 1000) => {
+		const url = getRequestUrl(`${API_URL}/api/achievements?page=${page}&limit=${limit}`);
 		const res = await fetch(url, {
 			next: { revalidate: 60 },
 		});
@@ -77,8 +77,8 @@ export const apiClient = {
 	},
 
 	// ==================== SLIDESHOWS ====================
-	getSlideshows: async () => {
-		const url = getRequestUrl(`${API_URL}/api/slideshows`);
+	getSlideshows: async (page = 1, limit = 1000) => {
+		const url = getRequestUrl(`${API_URL}/api/slideshows?page=${page}&limit=${limit}`);
 		const res = await fetch(url, {
 			next: { revalidate: 60 },
 		});
@@ -120,8 +120,8 @@ export const apiClient = {
 	},
 
 	// ==================== NEWS ====================
-	getNews: async (limit = 10) => {
-		const url = getRequestUrl(`${API_URL}/api/news?limit=${limit}`);
+	getNews: async (page = 1, limit = 10) => {
+		const url = getRequestUrl(`${API_URL}/api/news?page=${page}&limit=${limit}`);
 		const res = await fetch(url, {
 			next: { revalidate: 60 },
 		});
@@ -163,8 +163,8 @@ export const apiClient = {
 	},
 
 	// ==================== ADMISSION FORMS ====================
-	getAdmissionForms: async () => {
-		const url = getRequestUrl(`${API_URL}/api/admission-forms`);
+	getAdmissionForms: async (page = 1, limit = 1000) => {
+		const url = getRequestUrl(`${API_URL}/api/admission-forms?page=${page}&limit=${limit}`);
 		const res = await fetch(url);
 		if (!res.ok) throw new Error("Failed to fetch admission forms");
 		return res.json();
@@ -204,8 +204,8 @@ export const apiClient = {
 	},
 
 	// ==================== TEACHER APPLICATIONS ====================
-	getTeacherApplications: async () => {
-		const url = getRequestUrl(`${API_URL}/api/teacher-applications`);
+	getTeacherApplications: async (page = 1, limit = 1000) => {
+		const url = getRequestUrl(`${API_URL}/api/teacher-applications?page=${page}&limit=${limit}`);
 		const res = await fetch(url);
 		if (!res.ok) throw new Error("Failed to fetch applications");
 		return res.json();
@@ -245,8 +245,8 @@ export const apiClient = {
 	},
 
 	// ==================== FACILITIES ====================
-	getFacilities: async () => {
-		const url = getRequestUrl(`${API_URL}/api/facilities`);
+	getFacilities: async (page = 1, limit = 1000) => {
+		const url = getRequestUrl(`${API_URL}/api/facilities?page=${page}&limit=${limit}`);
 		const res = await fetch(url, {
 			next: { revalidate: 60 },
 		});

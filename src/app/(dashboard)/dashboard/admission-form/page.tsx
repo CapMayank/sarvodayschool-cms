@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { Pagination } from "@/components/Pagination";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdmissionsTab() {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +28,8 @@ export default function AdmissionsTab() {
 	const [selectedForm, setSelectedForm] = useState<any>(null);
 	const [showModal, setShowModal] = useState(false);
 	const [filterStatus, setFilterStatus] = useState<string>("All");
+	const [currentPage, setCurrentPage] = useState(1);
+	const itemsPerPage = 10;
 	const [statusNotes, setStatusNotes] = useState<string>("");
 	const [loading, setLoading] = useState(true);
 	const [updating, setUpdating] = useState(false);
@@ -38,8 +42,8 @@ export default function AdmissionsTab() {
 	const loadForms = async () => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getAdmissionForms();
-			setForms(data);
+			const response = await apiClient.getAdmissionForms(1, 1000);
+			setForms(response.data);
 		} catch (error) {
 			console.error("Error loading forms:", error);
 		} finally {
@@ -51,11 +55,11 @@ export default function AdmissionsTab() {
 		try {
 			setUpdating(true);
 			await apiClient.updateAdmissionForm(id, { status, notes });
+			setForms((prev) => prev.map((f) => (f.id === id ? { ...f, status, notes } : f)));
 			setStatusNotes("");
-			await loadForms();
 		} catch (error) {
 			console.error("Error updating form:", error);
-			alert("Failed to update status");
+			toast.error("Failed to update status");
 		} finally {
 			setUpdating(false);
 		}
@@ -68,10 +72,10 @@ export default function AdmissionsTab() {
 				method: "DELETE",
 			});
 			setShowModal(false);
-			await loadForms();
+			setForms((prev) => prev.filter((f) => f.id !== id));
 		} catch (error) {
 			console.error("Error deleting form:", error);
-			alert("Failed to delete application");
+			toast.error("Failed to delete application");
 		} finally {
 			setDeleting(false);
 		}
@@ -85,10 +89,16 @@ export default function AdmissionsTab() {
 	};
 
 	// Filter forms by status
-	const filteredForms =
+	const allFilteredForms =
 		filterStatus === "All"
 			? forms
 			: forms.filter((form) => form.status === filterStatus);
+
+	const totalPages = Math.max(1, Math.ceil(allFilteredForms.length / itemsPerPage));
+	const paginatedForms = allFilteredForms.slice(
+		(currentPage - 1) * itemsPerPage,
+		currentPage * itemsPerPage
+	);
 
 	// Status counts
 	const statusCounts = {
@@ -146,7 +156,10 @@ export default function AdmissionsTab() {
 								<Button
 									key={status}
 									variant={filterStatus === status ? "default" : "outline"}
-									onClick={() => setFilterStatus(status)}
+									onClick={() => {
+										setFilterStatus(status);
+										setCurrentPage(1);
+									}}
 									className="text-xs sm:text-sm"
 								>
 									{status}
@@ -207,7 +220,7 @@ export default function AdmissionsTab() {
 									</tr>
 								</thead>
 								<tbody className="bg-background divide-y divide-gray-200">
-									{filteredForms.map((form) => (
+									{paginatedForms.map((form) => (
 										<tr
 											key={form.id}
 											className="hover:bg-muted/50 transition-colors"
@@ -297,7 +310,16 @@ export default function AdmissionsTab() {
 							</table>
 						</div>
 					)}
-					{filteredForms.length === 0 && !loading && (
+					
+					{!loading && allFilteredForms.length > 0 && (
+						<Pagination
+							currentPage={currentPage}
+							totalPages={totalPages}
+							onPageChange={setCurrentPage}
+						/>
+					)}
+
+					{allFilteredForms.length === 0 && !loading && (
 						<div className="text-center py-16 px-4">
 							<div className="mx-auto h-16 w-16 text-muted-foreground mb-4 flex items-center justify-center">
 								<Search className="h-10 w-10 opacity-50" />

@@ -41,7 +41,7 @@ const News = () => {
 				const data = await response.json();
 
 				// Sort by publishDate (newest first)
-				const sortedNews = data.sort(
+				const sortedNews = data.data.sort(
 					(a: NewsItem, b: NewsItem) =>
 						new Date(b.publishDate).getTime() -
 						new Date(a.publishDate).getTime()

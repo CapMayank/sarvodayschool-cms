@@ -91,8 +91,8 @@ export default function FacilitiesTab() {
 	const loadFacilities = async () => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getFacilities();
-			setFacilities(data);
+			const response = await apiClient.getFacilities();
+			setFacilities(response.data);
 		} catch (error) {
 			console.error("Error loading facilities:", error);
 			toast.error("Failed to load facilities");
@@ -189,16 +189,17 @@ export default function FacilitiesTab() {
 			};
 
 			if (editingId) {
-				await apiClient.updateFacility(editingId, dataToSend);
+				const updated = await apiClient.updateFacility(editingId, dataToSend);
+				setFacilities((prev) => prev.map((f) => (f.id === editingId ? { ...f, ...updated } : f)));
 				toast.success("Facility updated successfully");
 			} else {
-				await apiClient.createFacility(dataToSend);
+				const created = await apiClient.createFacility(dataToSend);
+				setFacilities((prev) => [...prev, created]);
 				toast.success("Facility created successfully");
 			}
 
 			setShowModal(false);
 			resetForm();
-			await loadFacilities();
 		} catch (error) {
 			console.error("Error saving facility:", error);
 			if (newlyUploadedImages.length > 0) {
@@ -250,7 +251,7 @@ export default function FacilitiesTab() {
 			}
 
 			toast.success("Facility deleted successfully");
-			await loadFacilities();
+			setFacilities((prev) => prev.filter((f) => f.id !== id));
 		} catch (error) {
 			console.error("Error deleting facility:", error);
 			toast.error("Failed to delete facility");

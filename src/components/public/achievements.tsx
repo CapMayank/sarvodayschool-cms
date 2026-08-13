@@ -37,7 +37,7 @@ export default function AchievementsSection() {
 				const data = await response.json();
 
 				// Sort by order field
-				const sortedAchievements = data.sort(
+				const sortedAchievements = data.data.sort(
 					(a: Achievement, b: Achievement) => a.order - b.order
 				);
 

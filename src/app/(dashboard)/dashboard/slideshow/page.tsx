@@ -56,8 +56,8 @@ export default function SlideshowsTab() {
 	const loadSlideshows = async () => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getSlideshows();
-			setSlideshows(data);
+			const response = await apiClient.getSlideshows();
+			setSlideshows(response.data);
 		} catch (error) {
 			console.error("Error loading slideshows:", error);
 			toast.error("Failed to load slideshows");
@@ -103,16 +103,17 @@ export default function SlideshowsTab() {
 			setSubmitting(true);
 
 			if (editingId) {
-				await apiClient.updateSlideshow(editingId, formData);
+				const updated = await apiClient.updateSlideshow(editingId, formData);
+				setSlideshows((prev) => prev.map((s) => (s.id === editingId ? { ...s, ...updated } : s)));
 				toast.success("Slideshow updated successfully");
 			} else {
-				await apiClient.createSlideshow(formData);
+				const created = await apiClient.createSlideshow(formData);
+				setSlideshows((prev) => [...prev, created]);
 				toast.success("Slideshow created successfully");
 			}
 
 			setShowModal(false);
 			resetForm();
-			await loadSlideshows();
 		} catch (error) {
 			console.error("Error saving slideshow:", error);
 			if (formData.imageUrl && formData.imageUrl !== originalImageUrl) {
@@ -159,7 +160,7 @@ export default function SlideshowsTab() {
 			}
 
 			toast.success("Slideshow deleted successfully");
-			await loadSlideshows();
+			setSlideshows((prev) => prev.filter((s) => s.id !== id));
 		} catch (error) {
 			console.error("Error deleting slideshow:", error);
 			toast.error("Failed to delete slideshow");

@@ -9,13 +9,31 @@ export async function GET(request: NextRequest) {
 	try {
 		const searchParams = request.nextUrl.searchParams;
 		const activeOnly = searchParams.get("activeOnly") === "true";
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "1000");
+		const skip = (page - 1) * limit;
 
-		const facilities = await prisma.facility.findMany({
-			where: activeOnly ? { isActive: true } : undefined,
-			orderBy: { order: "asc" },
+		const where = activeOnly ? { isActive: true } : undefined;
+
+		const [facilities, total] = await Promise.all([
+			prisma.facility.findMany({
+				where,
+				orderBy: { order: "asc" },
+				skip,
+				take: limit,
+			}),
+			prisma.facility.count({ where }),
+		]);
+
+		return NextResponse.json({
+			data: facilities,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
 		});
-
-		return NextResponse.json(facilities);
 	} catch (error) {
 		console.error("Error fetching facilities:", error);
 		return NextResponse.json(

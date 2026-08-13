@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { Pagination } from "@/components/Pagination";
 import DeferredImageUpload from "@/components/DeferredImageUpload";
 import {
 	deleteCloudinaryImage,
@@ -45,6 +46,8 @@ export default function NewsTab() {
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
 	const [deleting, setDeleting] = useState<number | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(1);
 
 	// Separate state for pending file uploads
 	const [pendingPrimaryImage, setPendingPrimaryImage] = useState<File | null>(
@@ -67,10 +70,12 @@ export default function NewsTab() {
 		isPublished: true,
 	});
 
-	const loadNews = async () => {
+	const loadNews = async (page: number) => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getNews(100);
+			const response = await apiClient.getNews(page, 12);
+			const data = response.data;
+			setTotalPages(response.meta.totalPages);
 			const sorted = data.sort(
                  
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,8 +92,8 @@ export default function NewsTab() {
 	};
 
 	useEffect(() => {
-		loadNews();
-	}, []);
+		loadNews(currentPage);
+	}, [currentPage]);
 
 	const resetForm = () => {
 		setFormData({
@@ -232,16 +237,17 @@ export default function NewsTab() {
 			};
 
 			if (editingId) {
-				await apiClient.updateNews(editingId, submitData);
+				const updated = await apiClient.updateNews(editingId, submitData);
+				setNews((prev) => prev.map((n) => (n.id === editingId ? { ...n, ...updated } : n)).sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()));
 				toast.success("News updated successfully");
 			} else {
-				await apiClient.createNews(submitData);
+				const created = await apiClient.createNews(submitData);
+				setNews((prev) => [...prev, created].sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()));
 				toast.success("News created successfully");
 			}
 
 			setShowModal(false);
 			resetForm();
-			await loadNews();
 		} catch (err) {
 			console.error("Error saving news:", err);
 			toast.error("Failed to save news. Rolling back images...");
@@ -294,7 +300,7 @@ export default function NewsTab() {
 			}
 
 			toast.success("News deleted successfully");
-			await loadNews();
+			setNews((prev) => prev.filter((n) => n.id !== id));
 		} catch (error) {
 			console.error("Error deleting news:", error);
 			toast.error("Failed to delete news");
@@ -465,6 +471,13 @@ export default function NewsTab() {
 								))}
 							</div>
 						</div>
+					)}
+					{!loading && news.length > 0 && (
+						<Pagination
+							currentPage={currentPage}
+							totalPages={totalPages}
+							onPageChange={setCurrentPage}
+						/>
 					)}
 				</CardContent>
 			</Card>

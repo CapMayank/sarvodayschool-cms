@@ -60,14 +60,18 @@ const Banner = () => {
 			{/* ✅ Banner Content */}
 			<div
 				ref={ref}
-				className="relative mx-auto p-6 md:p-10 bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl"
-				style={{
-					backgroundImage: "url('/banner.jpg')",
-					backgroundSize: "cover",
-					backgroundPosition: "center",
-				}}
+				className="relative mx-auto p-6 md:p-10 bg-black/40 backdrop-blur-xs border border-white/20 shadow-xl overflow-hidden"
 			>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white">
+				{/* Next.js Optimized Background Image */}
+				<Image
+					src="/banner.jpg"
+					alt="Banner Background"
+					fill
+					quality={80}
+					className="object-cover z-[-1]"
+				/>
+
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white relative z-10">
 					{bannerData.map((val, index) => (
 						<motion.div
 							key={index}

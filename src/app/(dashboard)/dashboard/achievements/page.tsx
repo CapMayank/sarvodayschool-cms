@@ -45,8 +45,8 @@ export default function AchievementsTab() {
 	const loadAchievements = async () => {
 		try {
 			setLoading(true);
-			const data = await apiClient.getAchievements();
-			setAchievements(data);
+			const response = await apiClient.getAchievements();
+			setAchievements(response.data);
 		} catch (error) {
 			console.error("Error loading achievements:", error);
 			toast.error("Failed to load achievements");
@@ -102,16 +102,17 @@ export default function AchievementsTab() {
 			setSubmitting(true);
 
 			if (editingId) {
-				await apiClient.updateAchievement(editingId, formData);
+				const updated = await apiClient.updateAchievement(editingId, formData);
+				setAchievements((prev) => prev.map((a) => (a.id === editingId ? { ...a, ...updated } : a)));
 				toast.success("Achievement updated successfully");
 			} else {
-				await apiClient.createAchievement(formData);
+				const created = await apiClient.createAchievement(formData);
+				setAchievements((prev) => [...prev, created]);
 				toast.success("Achievement created successfully");
 			}
 
 			setShowModal(false);
 			resetForm();
-			await loadAchievements();
 		} catch (error) {
 			console.error("Error saving achievement:", error);
 			if (formData.imageUrl && formData.imageUrl !== originalImageUrl) {
@@ -158,7 +159,7 @@ export default function AchievementsTab() {
 			}
 
 			toast.success("Achievement deleted successfully");
-			await loadAchievements();
+			setAchievements((prev) => prev.filter((a) => a.id !== id));
 		} catch (error) {
 			console.error("Error deleting achievement:", error);
 			toast.error("Failed to delete achievement");

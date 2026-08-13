@@ -33,7 +33,7 @@ const Slideshow = () => {
 				if (!response.ok) throw new Error("Failed to fetch slideshows");
 
 				const data = await response.json();
-				const activeSlides = data
+				const activeSlides = data.data
 					.filter((slide: Slide) => slide.isActive)
 					.sort((a: Slide, b: Slide) => a.order - b.order);
 
@@ -162,7 +162,7 @@ const Slideshow = () => {
 							sizes="100vw"
 							className="object-contain drop-shadow-xl"
 							onClick={() => openModal(slides[currentIndex].imageUrl)}
-							loading="eager"
+							priority={currentIndex === 0}
 						/>
 					</div>
 				</motion.div>

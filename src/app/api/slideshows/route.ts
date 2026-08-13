@@ -4,13 +4,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	try {
-		const slideshows = await prisma.slideShow.findMany({
-			where: { isActive: true },
-			orderBy: { order: "asc" },
+		const searchParams = request.nextUrl.searchParams;
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "1000");
+		const skip = (page - 1) * limit;
+
+		const [slideshows, total] = await Promise.all([
+			prisma.slideShow.findMany({
+				where: { isActive: true },
+				orderBy: { order: "asc" },
+				skip,
+				take: limit,
+			}),
+			prisma.slideShow.count({ where: { isActive: true } }),
+		]);
+
+		return NextResponse.json({
+			data: slideshows,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
 		});
-		return NextResponse.json(slideshows);
 	} catch (error) {
 		console.error("Error fetching slideshows:", error);
 		return NextResponse.json(

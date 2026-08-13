@@ -1,12 +1,16 @@
 /** @format */
 
 import Hero from "@/components/public/hero";
-import Banner from "@/components/public/banner";
-import Slideshow from "@/components/public/slideshow";
-import News from "@/components/public/news";
 import Footer from "@/components/public/footer";
-import FacilitiesSection from "@/components/public/facilities";
-import AchievementsSection from "@/components/public/achievements";
+import dynamic from "next/dynamic";
+
+const Banner = dynamic(() => import("@/components/public/banner"));
+const Slideshow = dynamic(() => import("@/components/public/slideshow"), {
+	loading: () => <div className="w-full h-[650px] bg-gray-100 animate-pulse" />,
+});
+const FacilitiesSection = dynamic(() => import("@/components/public/facilities"));
+const AchievementsSection = dynamic(() => import("@/components/public/achievements"));
+const News = dynamic(() => import("@/components/public/news"));
 
 export default function Home() {
 	return (

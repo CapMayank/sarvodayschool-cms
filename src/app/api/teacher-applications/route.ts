@@ -13,10 +13,29 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		const applications = await prisma.teacherApplication.findMany({
-			orderBy: { createdAt: "desc" },
+		const searchParams = request.nextUrl.searchParams;
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "1000");
+		const skip = (page - 1) * limit;
+
+		const [applications, total] = await Promise.all([
+			prisma.teacherApplication.findMany({
+				orderBy: { createdAt: "desc" },
+				skip,
+				take: limit,
+			}),
+			prisma.teacherApplication.count(),
+		]);
+
+		return NextResponse.json({
+			data: applications,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
 		});
-		return NextResponse.json(applications);
 	} catch (error) {
 		console.error("Error fetching applications:", error);
 		return NextResponse.json(

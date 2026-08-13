@@ -12,10 +12,29 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		const forms = await prisma.admissionForm.findMany({
-			orderBy: { createdAt: "desc" },
+		const searchParams = request.nextUrl.searchParams;
+		const page = parseInt(searchParams.get("page") || "1");
+		const limit = parseInt(searchParams.get("limit") || "1000");
+		const skip = (page - 1) * limit;
+
+		const [forms, total] = await Promise.all([
+			prisma.admissionForm.findMany({
+				orderBy: { createdAt: "desc" },
+				skip,
+				take: limit,
+			}),
+			prisma.admissionForm.count(),
+		]);
+
+		return NextResponse.json({
+			data: forms,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
 		});
-		return NextResponse.json(forms);
 	} catch (error) {
 		console.error("Error fetching admission forms:", error);
 		return NextResponse.json(

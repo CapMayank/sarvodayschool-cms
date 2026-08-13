@@ -8,11 +8,13 @@ import { requireAuth } from "@/lib/auth-helpers";
 export async function GET(request: NextRequest) {
 	try {
 		const searchParams = request.nextUrl.searchParams;
+		const page = parseInt(searchParams.get("page") || "1");
 		const limit = parseInt(searchParams.get("limit") || "10");
+		const skip = (page - 1) * limit;
 		const category = searchParams.get("category");
 		const publishedOnly = searchParams.get("published") !== "false"; // Default to true
 
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const where: any = {};
 		if (category) {
 			where.category = category;
@@ -21,12 +23,25 @@ export async function GET(request: NextRequest) {
 			where.isPublished = true;
 		}
 
-		const news = await prisma.news.findMany({
-			where,
-			orderBy: { publishDate: "desc" },
-			take: limit,
+		const [news, total] = await Promise.all([
+			prisma.news.findMany({
+				where,
+				orderBy: { publishDate: "desc" },
+				skip,
+				take: limit,
+			}),
+			prisma.news.count({ where }),
+		]);
+
+		return NextResponse.json({
+			data: news,
+			meta: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			},
 		});
-		return NextResponse.json(news);
 	} catch (error) {
 		console.error("Error fetching news:", error);
 		return NextResponse.json(

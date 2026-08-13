@@ -38,7 +38,7 @@ export default function FacilitiesSection() {
 			try {
 				const response = await fetch("/api/facilities?activeOnly=true");
 				const data = await response.json();
-				setFacilities(data);
+				setFacilities(data.data);
 			} catch (error) {
 				console.error("Error loading facilities:", error);
 			} finally {
