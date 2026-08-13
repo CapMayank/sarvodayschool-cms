@@ -3,7 +3,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { CldImage as Image } from "next-cloudinary";
 import { ChevronLeft, ChevronRight, Award, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -225,6 +225,7 @@ export default function AchievementsSection() {
 									width={600}
 									height={350}
 									className="w-full h-[350px] object-cover transition-transform duration-500 group-hover/card:scale-110"
+									placeholder="blur"
 								/>
 
 								{/* Overlay */}

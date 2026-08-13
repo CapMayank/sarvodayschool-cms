@@ -59,21 +59,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		},
 	];
 
-	// Facility pages - using actual facility IDs from facilities.js
-	const facilities = [
-		"assembly-ground",
-		"smart-classrooms",
-		"laboratories",
-		"monthly-awards",
-		"parents-meeting",
-	];
-
-	const facilityRoutes: MetadataRoute.Sitemap = facilities.map((facility) => ({
-		url: `${baseUrl}/facilities/${facility}`,
-		lastModified: new Date(),
-		changeFrequency: "monthly" as const,
-		priority: 0.6,
-	}));
+	let facilityRoutes: MetadataRoute.Sitemap = [];
+	try {
+		const facilitiesData = await prisma.facility.findMany({
+			where: { isActive: true },
+			select: { slug: true, updatedAt: true },
+		});
+		facilityRoutes = facilitiesData.map((facility) => ({
+			url: `${baseUrl}/facilities/${facility.slug}`,
+			lastModified: facility.updatedAt || new Date(),
+			changeFrequency: "monthly" as const,
+			priority: 0.6,
+		}));
+	} catch (error) {
+		console.error("Error fetching facilities for sitemap:", error);
+	}
 
 	// Dynamic gallery category pages from database
 	let galleryRoutes: MetadataRoute.Sitemap = [];

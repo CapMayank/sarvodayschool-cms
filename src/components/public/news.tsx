@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FaCalendarAlt, FaArrowRight } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import Link from "next/link";
-import Image from "next/image";
+import { CldImage as Image } from "next-cloudinary";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface NewsItem {
@@ -248,6 +248,7 @@ const News = () => {
 													alt={filteredNews[0].title}
 													fill
 													className="object-cover transform group-hover:scale-105 transition-transform duration-700"
+													placeholder="blur"
 												/>
 											) : (
 												<div className="w-full h-full flex items-center justify-center bg-linear-to-br from-red-100 to-red-200">
@@ -332,6 +333,7 @@ const News = () => {
 																alt={newsItem.title}
 																fill
 																className="object-cover transform group-hover:scale-110 transition-transform duration-500"
+																placeholder="blur"
 															/>
 														) : (
 															<div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200">

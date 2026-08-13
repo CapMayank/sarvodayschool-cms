@@ -10,6 +10,7 @@ import ImageGallery from "@/components/public/news-detail/ImageGallery";
 import SocialLinks from "@/components/public/news-detail/SocialLinks";
 import Header from "@/components/public/header";
 import Footer from "@/components/public/footer";
+import ReadingProgressBar from "@/components/public/ReadingProgressBar";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { createDynamicMetadata, BASE_URL } from "@/lib/seo";
@@ -223,6 +224,7 @@ export default async function NewsDetailPage({
 
 	return (
 		<>
+			<ReadingProgressBar />
 			<Header title={news.title} />
 			{/* Add JSON-LD structured data for SEO */}
 			<script

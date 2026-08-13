@@ -4,7 +4,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { CldImage as Image } from "next-cloudinary";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -174,6 +174,7 @@ export default function FacilitiesSection() {
 								width={400}
 								height={250}
 								className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+								placeholder="blur"
 							/>
 							{/* Overlay */}
 							<div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
