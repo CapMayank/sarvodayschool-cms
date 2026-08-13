@@ -58,7 +58,7 @@ export default async function UsersPage() {
 			</div>
 
 			{/* Stats Summary */}
-			<div className="grid gap-3 grid-cols-3 w-full">
+			<div className="grid gap-3 grid-cols-1 sm:grid-cols-3 w-full">
 				<div className="rounded-lg bg-linear-to-br from-blue-50 to-blue-50/50 px-4 py-3 border border-blue-100/50">
 					<p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">
 						Total Users

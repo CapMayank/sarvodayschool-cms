@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 	}
 
 	return (
-		<div className="flex min-h-screen bg-slate-50/50">
+		<div className="flex flex-col lg:flex-row min-h-screen bg-slate-50/50">
 			{/* Mobile uses the header inside DashboardSidebar and places sidebar logic in a Sheet */}
 			<DashboardSidebar session={session} />
 			<main className="flex-1 max-w-[1600px] w-full min-w-0">
