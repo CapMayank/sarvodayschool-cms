@@ -259,26 +259,20 @@ export default function FacilitiesTab() {
 	};
 
 	const handleReorder = async (reorderedItems: Facility[]) => {
-		setIsReordering(true);
 		try {
-			for (const item of reorderedItems) {
-				await apiClient.updateFacility(item.id, {
-					slug: item.slug,
-					title: item.title,
-					description: item.description,
-					imageUrl: item.imageUrl,
-					isActive: item.isActive,
-					order: item.order,
-				});
-			}
+			const res = await fetch("/api/facilities", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(
+					reorderedItems.map(({ id, order }) => ({ id, order }))
+				),
+			});
+			if (!res.ok) throw new Error("Failed to reorder");
 			setFacilities(reorderedItems);
-			toast.success("Order updated successfully");
 		} catch (error) {
 			console.error("Error reordering:", error);
 			toast.error("Failed to update order");
-			await loadFacilities();
-		} finally {
-			setIsReordering(false);
+			throw error;
 		}
 	};
 

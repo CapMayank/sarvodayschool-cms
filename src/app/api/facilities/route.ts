@@ -92,3 +92,32 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
+
+// PATCH /api/facilities - Bulk reorder: [{id, order}]
+export async function PATCH(request: NextRequest) {
+	try {
+		const session = await auth.api.getSession({
+			headers: request.headers,
+		});
+		if (!session?.user || session.user.role !== "admin") {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
+		const body: { id: number; order: number }[] = await request.json();
+		await prisma.$transaction(
+			body.map(({ id, order }) =>
+				prisma.facility.update({ where: { id }, data: { order } })
+			)
+		);
+		return NextResponse.json({ ok: true });
+	} catch (error) {
+		console.error("Error reordering facilities:", error);
+		return NextResponse.json(
+			{ error: "Failed to reorder facilities" },
+			{ status: 500 }
+		);
+	}
+}

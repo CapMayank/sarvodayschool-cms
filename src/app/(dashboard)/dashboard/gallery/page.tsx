@@ -278,7 +278,6 @@ export default function GalleryTab() {
 	const handleCategoryReorder = async (
 		reorderedCategories: GalleryCategory[]
 	) => {
-		setIsReorderingCategories(true);
 		try {
 			const res = await fetch("/api/admin/gallery", {
 				method: "PUT",
@@ -286,19 +285,14 @@ export default function GalleryTab() {
 				body: JSON.stringify({ categories: reorderedCategories }),
 			});
 			if (!res.ok) throw new Error();
-
 			setCategories(reorderedCategories);
-			toast.success("Category order updated successfully");
 		} catch {
 			toast.error("Failed to update category order");
-			fetchCategories(); // Reload to reset order
-		} finally {
-			setIsReorderingCategories(false);
+			throw new Error("Reorder failed");
 		}
 	};
 
 	const handlePlaylistReorder = async (reorderedPlaylists: PlaylistVideo[]) => {
-		setIsReorderingPlaylists(true);
 		try {
 			const res = await fetch("/api/admin/playlists", {
 				method: "PUT",
@@ -306,14 +300,10 @@ export default function GalleryTab() {
 				body: JSON.stringify({ playlists: reorderedPlaylists }),
 			});
 			if (!res.ok) throw new Error();
-
 			setPlaylists(reorderedPlaylists);
-			toast.success("Playlist order updated successfully");
 		} catch {
 			toast.error("Failed to update playlist order");
-			fetchPlaylists(); // Reload to reset order
-		} finally {
-			setIsReorderingPlaylists(false);
+			throw new Error("Reorder failed");
 		}
 	};
 

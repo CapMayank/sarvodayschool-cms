@@ -168,24 +168,20 @@ export default function AchievementsTab() {
 
                                               // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleReorder = async (reorderedItems: any[]) => {
-		setIsReordering(true);
 		try {
-			for (const item of reorderedItems) {
-				await apiClient.updateAchievement(item.id, {
-					title: item.title,
-					description: item.description,
-					imageUrl: item.imageUrl,
-					order: item.order,
-				});
-			}
+			const res = await fetch("/api/achievements", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(
+					reorderedItems.map(({ id, order }: { id: number; order: number }) => ({ id, order }))
+				),
+			});
+			if (!res.ok) throw new Error("Failed to reorder");
 			setAchievements(reorderedItems);
-			toast.success("Order updated successfully");
 		} catch (error) {
 			console.error("Error reordering:", error);
 			toast.error("Failed to update order");
-			await loadAchievements();
-		} finally {
-			setIsReordering(false);
+			throw error;
 		}
 	};
 

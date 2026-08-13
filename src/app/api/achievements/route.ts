@@ -46,3 +46,27 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
+
+// PATCH /api/achievements - Bulk reorder: [{id, order}]
+export async function PATCH(request: NextRequest) {
+	try {
+		await requireAuth(request);
+	} catch {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	try {
+		const body: { id: number; order: number }[] = await request.json();
+		await prisma.$transaction(
+			body.map(({ id, order }) =>
+				prisma.achievement.update({ where: { id }, data: { order } })
+			)
+		);
+		return NextResponse.json({ ok: true });
+	} catch (error) {
+		console.error("Error reordering achievements:", error);
+		return NextResponse.json(
+			{ error: "Failed to reorder achievements" },
+			{ status: 500 }
+		);
+	}
+}
