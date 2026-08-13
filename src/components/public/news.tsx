@@ -248,7 +248,6 @@ const News = () => {
 													alt={filteredNews[0].title}
 													fill
 													className="object-cover transform group-hover:scale-105 transition-transform duration-700"
-													placeholder="blur"
 												/>
 											) : (
 												<div className="w-full h-full flex items-center justify-center bg-linear-to-br from-red-100 to-red-200">
@@ -333,7 +332,6 @@ const News = () => {
 																alt={newsItem.title}
 																fill
 																className="object-cover transform group-hover:scale-110 transition-transform duration-500"
-																placeholder="blur"
 															/>
 														) : (
 															<div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200">

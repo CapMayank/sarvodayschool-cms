@@ -3,7 +3,7 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
 import { CldImage as Image } from "next-cloudinary";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -157,62 +157,93 @@ export default function FacilitiesSection() {
 				onMouseLeave={handleMouseUp}
 			>
 				{facilities.map((facility, index) => (
-					<motion.div
-						key={facility.id}
-						className="group relative min-w-[300px] md:min-w-[400px] bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 snap-center"
-						initial={{ opacity: 0, y: 50 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: index * 0.1 }}
-						viewport={{ once: true }}
-						onClick={() => openFacilityPage(facility.slug)}
-					>
-						{/* Image Container */}
-						<div className="relative h-72 overflow-hidden">
-							<Image
-								src={facility.imageUrl}
-								alt={facility.title}
-								width={400}
-								height={250}
-								className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-								placeholder="blur"
-							/>
-							{/* Overlay */}
-							<div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-						</div>
-
-						{/* Content */}
-						<div className="p-6">
-							<h3 className="text-2xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-300">
-								{facility.title}
-							</h3>
-							<p className="mt-2 text-gray-600 line-clamp-2">
-								{facility.description}
-							</p>
-
-							{/* Highlights Preview */}
-							<div className="mt-4 flex flex-wrap gap-2">
-								{facility.highlights?.slice(0, 2).map((highlight, idx) => (
-									<span
-										key={idx}
-										className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-50 text-red-600 border border-red-100"
-									>
-										{highlight.value}
-									</span>
-								))}
-							</div>
-
-							{/* View More Button */}
-							<div className="mt-4 flex items-center text-red-600 font-medium">
-								<span className="mr-2">Learn More</span>
-								<ChevronRight
-									size={16}
-									className="transition-transform group-hover:translate-x-2"
-								/>
-							</div>
-						</div>
-					</motion.div>
+					<FacilityCard 
+						key={facility.id} 
+						facility={facility} 
+						index={index} 
+						onClick={() => openFacilityPage(facility.slug)} 
+					/>
 				))}
 			</div>
 		</div>
+	);
+}
+
+function FacilityCard({ facility, index, onClick }: { facility: Facility; index: number; onClick: () => void }) {
+	const mouseX = useMotionValue(0);
+	const mouseY = useMotionValue(0);
+
+	function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+		const { left, top } = currentTarget.getBoundingClientRect();
+		mouseX.set(clientX - left);
+		mouseY.set(clientY - top);
+	}
+
+	return (
+		<motion.div
+			className="group relative min-w-[300px] md:min-w-[400px] bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-500 snap-center border border-transparent hover:border-red-100"
+			initial={{ opacity: 0, y: 50 }}
+			whileInView={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.5, delay: index * 0.1 }}
+			viewport={{ once: true }}
+			onClick={onClick}
+			onMouseMove={handleMouseMove}
+		>
+			<motion.div
+				className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100 z-20"
+				style={{
+					background: useMotionTemplate`
+						radial-gradient(
+							600px circle at ${mouseX}px ${mouseY}px,
+							rgba(220, 38, 38, 0.08),
+							transparent 80%
+						)
+					`,
+				}}
+			/>
+			{/* Image Container */}
+			<div className="relative h-72 overflow-hidden z-10">
+				<Image
+					src={facility.imageUrl}
+					alt={facility.title}
+					width={400}
+					height={250}
+					className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+				/>
+				{/* Overlay */}
+				<div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+			</div>
+
+			{/* Content */}
+			<div className="p-6 relative z-10">
+				<h3 className="text-2xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-300">
+					{facility.title}
+				</h3>
+				<p className="mt-2 text-gray-600 line-clamp-2">
+					{facility.description}
+				</p>
+
+				{/* Highlights Preview */}
+				<div className="mt-4 flex flex-wrap gap-2">
+					{facility.highlights?.slice(0, 2).map((highlight, idx) => (
+						<span
+							key={idx}
+							className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-50 text-red-600 border border-red-100"
+						>
+							{highlight.value}
+						</span>
+					))}
+				</div>
+
+				{/* View More Button */}
+				<div className="mt-4 flex items-center text-red-600 font-medium">
+					<span className="mr-2">Learn More</span>
+					<ChevronRight
+						size={16}
+						className="transition-transform group-hover:translate-x-2"
+					/>
+				</div>
+			</div>
+		</motion.div>
 	);
 }

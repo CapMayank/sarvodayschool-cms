@@ -2,7 +2,7 @@
 
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
 import { CldImage as Image } from "next-cloudinary";
 import { ChevronLeft, ChevronRight, Award, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -206,60 +206,92 @@ export default function AchievementsSection() {
 						className="w-full flex space-x-6 px-8 py-6 overflow-x-auto scrollbar-hide scroll-smooth snap-x relative z-10"
 					>
 						{achievements.map((achievement, index) => (
-							<motion.div
+							<AchievementCard 
 								key={achievement.id}
-								className="relative min-w-[300px] md:min-w-[400px] rounded-2xl overflow-hidden cursor-pointer group/card"
-								initial={{ opacity: 0, x: 50 }}
-								whileInView={{ opacity: 1, x: 0 }}
-								transition={{ duration: 0.5, delay: index * 0.2 }}
-								viewport={{ once: true }}
-								whileHover={{ y: -8 }}
-							>
-								{/* Card Background */}
-								<div className="absolute inset-0 bg-linear-to-br from-red-600/0 to-red-600/0 group-hover/card:from-red-600/10 group-hover/card:to-red-600/20 transition-all duration-500 z-20 pointer-events-none" />
-
-								{/* Achievement Image */}
-								<Image
-									src={achievement.imageUrl}
-									alt={achievement.title}
-									width={600}
-									height={350}
-									className="w-full h-[350px] object-cover transition-transform duration-500 group-hover/card:scale-110"
-									placeholder="blur"
-								/>
-
-								{/* Overlay */}
-								<div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20" />
-
-								{/* Content Box */}
-								<div className="absolute bottom-0 left-0 w-full bg-linear-to-t from-gray-950 via-gray-950/80 to-transparent text-white p-6 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300 z-30">
-									<motion.div
-										initial={{ opacity: 0 }}
-										whileInView={{ opacity: 1 }}
-										transition={{ delay: 0.2 }}
-									>
-										<div className="flex items-start gap-2 mb-2">
-											<Sparkles className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-											<h3 className="text-xl font-bold leading-tight">
-												{achievement.title}
-											</h3>
-										</div>
-										<p className="text-sm text-gray-200 line-clamp-2">
-											{achievement.description}
-										</p>
-									</motion.div>
-								</div>
-
-								{/* Border Glow */}
-								<div className="absolute inset-0 rounded-2xl pointer-events-none border-2 border-transparent group-hover/card:border-red-600/50 transition-colors duration-300 z-20" />
-
-								{/* Card Shadow */}
-								<div className="absolute -inset-0.5 bg-linear-to-r from-red-600/0 to-red-600/0 group-hover/card:from-red-600/20 group-hover/card:to-red-600/20 rounded-2xl blur-lg opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 -z-10" />
-							</motion.div>
+								achievement={achievement}
+								index={index}
+							/>
 						))}
 					</div>
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function AchievementCard({ achievement, index }: { achievement: Achievement; index: number }) {
+	const mouseX = useMotionValue(0);
+	const mouseY = useMotionValue(0);
+
+	function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+		const { left, top } = currentTarget.getBoundingClientRect();
+		mouseX.set(clientX - left);
+		mouseY.set(clientY - top);
+	}
+
+	return (
+		<motion.div
+			className="relative min-w-[300px] md:min-w-[400px] rounded-2xl overflow-hidden cursor-pointer group/card border border-transparent"
+			initial={{ opacity: 0, x: 50 }}
+			whileInView={{ opacity: 1, x: 0 }}
+			transition={{ duration: 0.5, delay: index * 0.2 }}
+			viewport={{ once: true }}
+			whileHover={{ y: -8 }}
+			onMouseMove={handleMouseMove}
+		>
+			{/* Spotlight Effect */}
+			<motion.div
+				className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover/card:opacity-100 z-40"
+				style={{
+					background: useMotionTemplate`
+						radial-gradient(
+							600px circle at ${mouseX}px ${mouseY}px,
+							rgba(255, 255, 255, 0.15),
+							transparent 80%
+						)
+					`,
+				}}
+			/>
+
+			{/* Card Background */}
+			<div className="absolute inset-0 bg-linear-to-br from-red-600/0 to-red-600/0 group-hover/card:from-red-600/10 group-hover/card:to-red-600/20 transition-all duration-500 z-20 pointer-events-none" />
+
+			{/* Achievement Image */}
+			<Image
+				src={achievement.imageUrl}
+				alt={achievement.title}
+				width={600}
+				height={350}
+				className="w-full h-[350px] object-cover transition-transform duration-500 group-hover/card:scale-110"
+			/>
+
+			{/* Overlay */}
+			<div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20" />
+
+			{/* Content Box */}
+			<div className="absolute bottom-0 left-0 w-full bg-linear-to-t from-gray-950 via-gray-950/80 to-transparent text-white p-6 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300 z-30">
+				<motion.div
+					initial={{ opacity: 0 }}
+					whileInView={{ opacity: 1 }}
+					transition={{ delay: 0.2 }}
+				>
+					<div className="flex items-start gap-2 mb-2">
+						<Sparkles className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+						<h3 className="text-xl font-bold leading-tight">
+							{achievement.title}
+						</h3>
+					</div>
+					<p className="text-sm text-gray-200 line-clamp-2">
+						{achievement.description}
+					</p>
+				</motion.div>
+			</div>
+
+			{/* Border Glow */}
+			<div className="absolute inset-0 rounded-2xl pointer-events-none border-2 border-transparent group-hover/card:border-red-600/50 transition-colors duration-300 z-20" />
+
+			{/* Card Shadow */}
+			<div className="absolute -inset-0.5 bg-linear-to-r from-red-600/0 to-red-600/0 group-hover/card:from-red-600/20 group-hover/card:to-red-600/20 rounded-2xl blur-lg opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 -z-10" />
+		</motion.div>
 	);
 }

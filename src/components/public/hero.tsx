@@ -4,24 +4,33 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const Hero = () => {
+	const { scrollY } = useScroll();
+	const y = useTransform(scrollY, [0, 500], [0, 150]);
+
 	return (
-		<section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden  ">
+		<section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
 			{/* Background Image covers entire screen including behind navbar */}
-			<Image
-				src="/bg.jpg"
-				alt="School Building"
-				fill
-				priority
-				className="absolute inset-0 z-[-2] w-full h-full object-cover "
-			/>
+			<motion.div
+				className="absolute inset-0 z-[-2] w-full h-[120%]"
+				style={{ y }}
+			>
+				<Image
+					src="/bg.jpg"
+					alt="School Building"
+					fill
+					priority
+					className="object-cover"
+				/>
+			</motion.div>
 
 			{/*  Gradient Overlay */}
 			<div className="absolute inset-0 z-[-1] bg-linear-to-b from-transparent to-black/90" />
 			{/* <div className="absolute inset-0 z-[-1] bg-blue-600/2" /> */}
 
-			<div className="w-[90%] mt-96 md:flex items-center animate-fadeUp ">
+			<div className="w-[90%] mt-96 md:flex items-center animate-fadeUp z-10 relative">
 				<div className=" md:w-[60%] h-full">
 					<h1 className="heading-text-yellow text-xl md:text-4xl font-black sm:mb-2 md:mb-4">
 						WELCOME TO SARVODAYA ENGLISH HIGHER SECONDARY SCHOOL
