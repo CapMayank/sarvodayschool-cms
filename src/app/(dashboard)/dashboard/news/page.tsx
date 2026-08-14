@@ -494,7 +494,7 @@ export default function NewsTab() {
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 pb-20">
+					<div className="space-y-6 px-4 pb-20">
 						{/* Title & Slug */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">

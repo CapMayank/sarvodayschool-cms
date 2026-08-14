@@ -354,7 +354,7 @@ export default function GalleryTab() {
 									</SheetDescription>
 								</SheetHeader>
 
-								<div className="grid gap-6 py-4">
+								<div className="grid gap-6 py-4 px-4">
 									<div className="space-y-2">
 										<Label>Category Title</Label>
 										<Input
@@ -559,7 +559,7 @@ export default function GalleryTab() {
 									</SheetDescription>
 								</SheetHeader>
 
-								<div className="grid gap-6 py-4">
+								<div className="grid gap-6 py-4 px-4">
 									<div className="space-y-2">
 										<Label>Playlist Title</Label>
 										<Input

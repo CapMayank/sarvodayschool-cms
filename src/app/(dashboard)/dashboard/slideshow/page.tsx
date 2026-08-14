@@ -363,7 +363,7 @@ export default function SlideshowsTab() {
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 pb-20">
+					<div className="space-y-6 px-4 pb-20">
 						<div>
 							<Label className="mb-2 block">
 								Title (Optional)

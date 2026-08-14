@@ -536,7 +536,7 @@ export default function FacilitiesTab() {
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 pb-20">
+					<div className="space-y-6 px-4 pb-20">
 						<div>
 							<Label className="mb-2 block">
 								Facility Name <span className="text-red-500">*</span>

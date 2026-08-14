@@ -360,7 +360,7 @@ export default function AdmissionsTab() {
 					</SheetHeader>
 
 					{selectedForm && (
-						<div className="space-y-6 pb-20">
+						<div className="space-y-6 px-4 pb-20">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								{/* Status Management */}
 								<div className="bg-muted/50 rounded-lg p-4 border md:col-span-2">
