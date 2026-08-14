@@ -16,38 +16,11 @@ interface Slide {
 	order: number;
 }
 
-const Slideshow = () => {
-	const [slides, setSlides] = useState<Slide[]>([]);
+const Slideshow = ({ initialSlides = [] }: { initialSlides?: Slide[] }) => {
+	const [slides, setSlides] = useState<Slide[]>(initialSlides);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [showModal, setShowModal] = useState(false);
 	const [selectedImage, setSelectedImage] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		const fetchSlideshows = async () => {
-			try {
-				setLoading(true);
-				const response = await fetch("/api/slideshows");
-
-				if (!response.ok) throw new Error("Failed to fetch slideshows");
-
-				const data = await response.json();
-				const activeSlides = data.data
-					.filter((slide: Slide) => slide.isActive)
-					.sort((a: Slide, b: Slide) => a.order - b.order);
-
-				setSlides(activeSlides);
-			} catch (err) {
-				console.error("Error fetching slideshows:", err);
-				setError("Failed to load slideshows");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchSlideshows();
-	}, []);
 
 	const nextSlide = useCallback(() => {
 		setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
@@ -70,42 +43,7 @@ const Slideshow = () => {
 		setShowModal(true);
 	};
 
-	/* ✅ Loading State */
-	if (loading) {
-		return (
-			<section className="relative w-full bg-linear-to-b from-white to-gray-50 py-20 overflow-visible">
-				<div className="text-center mb-16">
-					<Skeleton className="h-12 w-64 mx-auto mb-4" />
-					<Skeleton className="w-24 h-1 mx-auto rounded-full" />
-				</div>
-				<div className="relative w-full max-w-7xl mx-auto h-[480px] md:h-[650px] rounded-xl overflow-hidden shadow-xl">
-					<Skeleton className="w-full h-full rounded-xl" />
-					<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-						{[1, 2, 3].map((i) => (
-							<Skeleton key={i} className="w-2 h-2 rounded-full bg-white/50" />
-						))}
-					</div>
-				</div>
-			</section>
-		);
-	}
 
-	/* ✅ Error State */
-	if (error) {
-		return (
-			<div className="relative w-full h-[480px] md:h-[680px] flex items-center justify-center">
-				<div className="text-center">
-					<p className="text-red-600 text-xl mb-2">{error}</p>
-					<button
-						onClick={() => window.location.reload()}
-						className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-					>
-						Retry
-					</button>
-				</div>
-			</div>
-		);
-	}
 
 	/* ✅ No Slides */
 	if (slides.length === 0) {

@@ -24,30 +24,13 @@ interface Facility {
 	isActive: boolean;
 }
 
-export default function FacilitiesSection() {
+export default function FacilitiesSection({ initialFacilities = [] }: { initialFacilities?: Facility[] }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const [isDragging, setIsDragging] = useState(false);
 	const [startX, setStartX] = useState(0);
 	const [scrollLeftStart, setScrollLeftStart] = useState(0);
-	const [facilities, setFacilities] = useState<Facility[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		const loadFacilities = async () => {
-			try {
-				const response = await fetch("/api/facilities?activeOnly=true");
-				const data = await response.json();
-				setFacilities(data.data);
-			} catch (error) {
-				console.error("Error loading facilities:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		loadFacilities();
-	}, []);
+	const [facilities, setFacilities] = useState<Facility[]>(initialFacilities);
 
 	const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
 		setIsDragging(true);
@@ -82,34 +65,6 @@ export default function FacilitiesSection() {
 	const openFacilityPage = (slug: string) => {
 		router.push(`/facilities/${slug}`);
 	};
-
-	if (loading) {
-		return (
-			<div className="relative w-full bg-linear-to-b from-white to-gray-50 py-24 px-6 sm:px-6 lg:px-8 overflow-hidden">
-				<div className="text-center mb-16">
-					<Skeleton className="h-12 w-80 mx-auto mb-4" />
-					<Skeleton className="w-24 h-1 mx-auto rounded-full" />
-				</div>
-				<div className="w-full flex space-x-6 px-8 py-6 overflow-x-auto scrollbar-hide scroll-smooth snap-x relative z-10">
-					{[1, 2, 3].map((i) => (
-						<div key={i} className="min-w-[300px] md:min-w-[400px] bg-white rounded-xl shadow-lg overflow-hidden snap-center">
-							<Skeleton className="h-72 w-full rounded-none" />
-							<div className="p-6">
-								<Skeleton className="h-8 w-3/4 mb-2" />
-								<Skeleton className="h-4 w-full mb-1" />
-								<Skeleton className="h-4 w-5/6 mb-4" />
-								<div className="flex gap-2">
-									<Skeleton className="h-6 w-24 rounded-full" />
-									<Skeleton className="h-6 w-20 rounded-full" />
-								</div>
-								<Skeleton className="h-4 w-24 mt-6" />
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		);
-	}
 
 	if (facilities.length === 0) {
 		return null;

@@ -21,44 +21,9 @@ interface NewsItem {
 	updatedAt: string;
 }
 
-const News = () => {
-	const [news, setNews] = useState<NewsItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+const News = ({ initialNews = [] }: { initialNews?: NewsItem[] }) => {
+	const [news, setNews] = useState<NewsItem[]>(initialNews);
 	const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-	// Fetch news from API
-	useEffect(() => {
-		const fetchNews = async () => {
-			try {
-				setLoading(true);
-				const response = await fetch("/api/news?limit=10");
-
-				if (!response.ok) {
-					throw new Error("Failed to fetch news");
-				}
-
-				const data = await response.json();
-
-				// Sort by publishDate (newest first)
-				const sortedNews = data.data.sort(
-					(a: NewsItem, b: NewsItem) =>
-						new Date(b.publishDate).getTime() -
-						new Date(a.publishDate).getTime()
-				);
-
-				setNews(sortedNews);
-				setError(null);
-			} catch (err) {
-				console.error("Error fetching news:", err);
-				setError("Failed to load news");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchNews();
-	}, []);
 
 	// Format date
 	const formatDate = (dateString: string) => {
@@ -81,85 +46,6 @@ const News = () => {
 		selectedCategory === "All"
 			? news
 			: news.filter((item) => item.category === selectedCategory);
-
-	// Loading state
-	if (loading) {
-		return (
-			<div className="py-16 bg-linear-to-b from-gray-50 to-white">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="text-center mb-12">
-						<h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-							Latest <span className="text-red-600">News</span>
-						</h2>
-						<div className="w-24 h-1 bg-linear-to-r from-red-600 to-red-500 mx-auto rounded-full mb-4" />
-					</div>
-					<div className="space-y-8">
-						{/* Featured News Skeleton */}
-						<div className="bg-white rounded-2xl overflow-hidden shadow-xl">
-							<div className="grid md:grid-cols-2 gap-0">
-								<Skeleton className="h-[300px] md:h-[500px] w-full rounded-none" />
-								<div className="p-8 md:p-12 flex flex-col justify-center">
-									<Skeleton className="h-4 w-32 mb-4" />
-									<Skeleton className="h-10 w-full mb-4" />
-									<Skeleton className="h-10 w-3/4 mb-6" />
-									<Skeleton className="h-4 w-full mb-2" />
-									<Skeleton className="h-4 w-full mb-2" />
-									<Skeleton className="h-4 w-5/6 mb-6" />
-									<Skeleton className="h-6 w-32" />
-								</div>
-							</div>
-						</div>
-						
-						{/* Compact List Skeleton */}
-						<div className="grid md:grid-cols-2 gap-6 mt-8">
-							{[1, 2, 3, 4].map((i) => (
-								<div key={i} className="bg-white rounded-xl overflow-hidden shadow-md flex h-full">
-									<Skeleton className="w-32 md:w-40 h-full min-h-[160px] rounded-none shrink-0" />
-									<div className="p-4 grow flex flex-col justify-between">
-										<div>
-											<Skeleton className="h-3 w-40 mb-3" />
-											<Skeleton className="h-5 w-full mb-2" />
-											<Skeleton className="h-5 w-3/4 mb-3" />
-											<Skeleton className="h-3 w-full mb-1" />
-											<Skeleton className="h-3 w-full mb-3" />
-										</div>
-										<Skeleton className="h-4 w-24" />
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	// Error state
-	if (error) {
-		return (
-			<div className="py-16 bg-linear-to-b from-gray-50 to-white">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="text-center mb-12">
-						<h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-							Latest <span className="text-red-600">News</span>
-						</h2>
-						<div className="w-24 h-1 bg-linear-to-r from-red-600 to-red-500 mx-auto rounded-full" />
-					</div>
-					<div className="flex items-center justify-center min-h-[400px]">
-						<div className="text-center">
-							<p className="text-red-600 text-xl mb-4">{error}</p>
-							<button
-								onClick={() => window.location.reload()}
-								className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-							>
-								Retry
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	// No news available
 	if (news.length === 0) {

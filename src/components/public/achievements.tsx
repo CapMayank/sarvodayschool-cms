@@ -17,42 +17,9 @@ interface Achievement {
 	updatedAt: string;
 }
 
-export default function AchievementsSection() {
+export default function AchievementsSection({ initialAchievements = [] }: { initialAchievements?: Achievement[] }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
-	const [achievements, setAchievements] = useState<Achievement[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	// Fetch achievements from API
-	useEffect(() => {
-		const fetchAchievements = async () => {
-			try {
-				setLoading(true);
-				const response = await fetch("/api/achievements");
-
-				if (!response.ok) {
-					throw new Error("Failed to fetch achievements");
-				}
-
-				const data = await response.json();
-
-				// Sort by order field
-				const sortedAchievements = data.data.sort(
-					(a: Achievement, b: Achievement) => a.order - b.order
-				);
-
-				setAchievements(sortedAchievements);
-				setError(null);
-			} catch (err) {
-				console.error("Error fetching achievements:", err);
-				setError("Failed to load achievements");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchAchievements();
-	}, []);
+	const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
 
 	const scrollLeft = useCallback(() => {
 		if (scrollRef.current) {
@@ -65,72 +32,6 @@ export default function AchievementsSection() {
 			scrollRef.current.scrollBy({ left: 350, behavior: "smooth" });
 		}
 	}, []);
-
-	// Loading state
-	if (loading) {
-		return (
-			<div className="relative w-full bg-linear-to-b from-white to-gray-50 py-20">
-				<div className="max-w-7xl mx-auto px-4">
-					<div className="text-center mb-16">
-						<div className="inline-flex items-center gap-3 mb-6">
-							<Award className="text-red-600 w-10 h-10" />
-							<h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-								Our <span className="text-red-600">Achievements</span>
-							</h2>
-						</div>
-						<Skeleton className="h-6 w-3/4 max-w-2xl mx-auto" />
-					</div>
-					<div className="w-full flex space-x-6 px-8 py-6 overflow-hidden relative z-10">
-						{[1, 2, 3].map((i) => (
-							<div key={i} className="relative min-w-[300px] md:min-w-[400px] rounded-2xl overflow-hidden bg-white shadow-md">
-								<Skeleton className="w-full h-[350px] rounded-none" />
-								<div className="absolute bottom-0 left-0 w-full bg-linear-to-t from-gray-950/80 to-transparent p-6">
-									<Skeleton className="h-6 w-3/4 mb-3 bg-white/40" />
-									<Skeleton className="h-4 w-full bg-white/40 mb-1" />
-									<Skeleton className="h-4 w-5/6 bg-white/40" />
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	// Error state
-	if (error) {
-		return (
-			<div className="relative w-full bg-linear-to-b from-white to-gray-50 py-20">
-				<div className="max-w-7xl mx-auto px-4">
-					<motion.div
-						className="text-center mb-16"
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-					>
-						<div className="inline-flex items-center gap-3 mb-4">
-							<Award className="text-red-600 w-10 h-10" />
-							<h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-								Our <span className="text-red-600">Achievements</span>
-							</h2>
-						</div>
-					</motion.div>
-					<motion.div
-						className="bg-red-50 border-2 border-red-200 rounded-xl p-8 max-w-md mx-auto text-center"
-						initial={{ opacity: 0, y: 10 }}
-						animate={{ opacity: 1, y: 0 }}
-					>
-						<p className="text-red-700 text-lg font-medium mb-4">{error}</p>
-						<button
-							onClick={() => window.location.reload()}
-							className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg"
-						>
-							Retry
-						</button>
-					</motion.div>
-				</div>
-			</div>
-		);
-	}
 
 	// No achievements available
 	if (achievements.length === 0) {
