@@ -1,6 +1,7 @@
 /** @format */
 "use client";
 import React from "react";
+import Image from "next/image";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { GraduationCap, Users, Trophy, BookOpen } from "lucide-react";
