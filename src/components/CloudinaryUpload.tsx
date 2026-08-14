@@ -3,9 +3,10 @@
 "use client";
 
 import { CldUploadWidget } from "next-cloudinary";
-                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
+import { UploadCloud, RefreshCw, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CloudinaryUploadProps {
 	onUploadSuccess: (url: string) => void;
@@ -21,123 +22,128 @@ export default function CloudinaryUpload({
 	const [imageUrl, setImageUrl] = useState(currentImage || "");
 	const [prevImage, setPrevImage] = useState(currentImage);
 
+	// Sync when parent resets the form
 	if (currentImage !== prevImage) {
 		setPrevImage(currentImage);
 		setImageUrl(currentImage || "");
 	}
 
-	return (
-		<div className="space-y-3">
-			<CldUploadWidget
-				uploadPreset={
-					process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
-				}
-				options={{
-					folder: folder, // This will organize uploads into subfolders
-					maxFiles: 1,
-					resourceType: "image",
-					clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif"],
-					maxFileSize: 10000000, // 10MB
-					sources: ["local", "url", "camera"],
-					showSkipCropButton: false,
-					cropping: false,
-				}}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-				onSuccess={(result: any) => {
-					console.log("Upload successful:", result);
-					const url = result?.info?.secure_url;
-					if (url) {
-						if (imageUrl && imageUrl !== currentImage) {
-							import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
-								deleteCloudinaryImage(imageUrl).catch(console.error);
-							});
-						}
-						setImageUrl(url);
-						onUploadSuccess(url);
-					}
-				}}
-                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-				onError={(error: any) => {
-					console.error("Upload error:", error);
-					alert(
-						"Upload failed. Please try again or check your Cloudinary settings."
-					);
-				}}
-			>
-				{({ open }) => {
-					const handleClick = () => {
-						if (typeof open === "function") {
-							open();
-						} else {
-							console.error("Cloudinary widget not ready");
-							alert("Upload widget is not ready. Please refresh the page.");
-						}
-					};
+	const handleRemove = () => {
+		if (imageUrl && imageUrl !== currentImage) {
+			import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
+				deleteCloudinaryImage(imageUrl).catch(console.error);
+			});
+		}
+		setImageUrl("");
+		onUploadSuccess("");
+	};
 
+	return (
+		<CldUploadWidget
+			uploadPreset={
+				process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+			}
+			options={{
+				folder,
+				maxFiles: 1,
+				resourceType: "image",
+				clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif"],
+				maxFileSize: 10000000,
+				sources: ["local", "url", "camera"],
+				showSkipCropButton: false,
+				cropping: false,
+			}}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			onSuccess={(result: any) => {
+				const url = result?.info?.secure_url;
+				if (url) {
+					if (imageUrl && imageUrl !== currentImage) {
+						import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
+							deleteCloudinaryImage(imageUrl).catch(console.error);
+						});
+					}
+					setImageUrl(url);
+					onUploadSuccess(url);
+				}
+			}}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			onError={(error: any) => {
+				console.error("Upload error:", error);
+				alert("Upload failed. Please try again or check your Cloudinary settings.");
+			}}
+		>
+			{({ open }) => {
+				const handleOpen = () => {
+					if (typeof open === "function") {
+						open();
+					} else {
+						console.error("Cloudinary widget not ready");
+						alert("Upload widget is not ready. Please refresh the page.");
+					}
+				};
+
+				// ── Filled state: image preview with hover overlay ──
+				if (imageUrl) {
 					return (
-						<div>
-							<button
-								type="button"
-								onClick={handleClick}
-								className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-							>
-								<svg
-									className="w-5 h-5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
+						<div className="group relative w-full aspect-video rounded-xl overflow-hidden border border-border bg-muted">
+							<Image
+								src={imageUrl}
+								alt="Uploaded image preview"
+								fill
+								className="object-cover"
+							/>
+							{/* Hover overlay */}
+							<div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+								<Button
+									type="button"
+									size="sm"
+									variant="secondary"
+									onClick={handleOpen}
+									className="gap-2 shadow-lg"
 								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-									/>
-								</svg>
-								{imageUrl ? "Change Image" : "Upload Image"}
-							</button>
-							<p className="text-xs text-gray-500 mt-1">
-								Will upload to: <span className="font-mono">{folder}</span>
-							</p>
+									<RefreshCw className="w-4 h-4" />
+									Change
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									variant="destructive"
+									onClick={handleRemove}
+									className="gap-2 shadow-lg"
+								>
+									<Trash2 className="w-4 h-4" />
+									Remove
+								</Button>
+							</div>
+							{/* Corner badge */}
+							<div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">
+								Image uploaded ✓
+							</div>
 						</div>
 					);
-				}}
-			</CldUploadWidget>
+				}
 
-			{imageUrl && (
-				<div className="relative inline-block">
-					<Image
-						src={imageUrl}
-						alt="Preview"
-						width={400}
-						height={200}
-						className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-gray-200"
-					/>
-
+				// ── Empty state: dashed upload zone ──
+				return (
 					<button
 						type="button"
-						onClick={() => {
-							if (imageUrl && imageUrl !== currentImage) {
-								import("@/lib/cloudinary-helper").then(({ deleteCloudinaryImage }) => {
-									deleteCloudinaryImage(imageUrl).catch(console.error);
-								});
-							}
-							setImageUrl("");
-							onUploadSuccess("");
-						}}
-						className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 shadow-lg"
-						title="Remove image"
+						onClick={handleOpen}
+						className="w-full aspect-video rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/30 hover:border-primary/50 hover:bg-muted/60 transition-all duration-200 flex flex-col items-center justify-center gap-3 group cursor-pointer"
 					>
-						<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fillRule="evenodd"
-								d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-								clipRule="evenodd"
-							/>
-						</svg>
+						<div className="p-3 rounded-full bg-muted group-hover:bg-background transition-colors duration-200">
+							<UploadCloud className="w-7 h-7 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+						</div>
+						<div className="text-center">
+							<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200">
+								Click to upload image
+							</p>
+							<p className="text-xs text-muted-foreground mt-0.5">
+								JPG, PNG, WEBP · Max 10 MB
+							</p>
+						</div>
 					</button>
-				</div>
-			)}
-		</div>
+				);
+			}}
+		</CldUploadWidget>
 	);
 }

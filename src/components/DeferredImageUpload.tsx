@@ -2,8 +2,9 @@
 
 "use client";
 
-import { useState } from "react";
-import { Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { UploadCloud, RefreshCw, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DeferredImageUploadProps {
 	onImageSelect: (file: File) => void;
@@ -22,18 +23,19 @@ export default function DeferredImageUpload({
 }: DeferredImageUploadProps) {
 	const [preview, setPreview] = useState<string | null>(previewUrl || null);
 	const [error, setError] = useState<string | null>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const openPicker = () => inputRef.current?.click();
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
-		// Validate file type
 		if (!file.type.startsWith("image/")) {
 			setError("Please select an image file");
 			return;
 		}
 
-		// Validate file size
 		const maxSize = maxSizeMB * 1024 * 1024;
 		if (file.size > maxSize) {
 			setError(`File size must be less than ${maxSizeMB}MB`);
@@ -42,66 +44,97 @@ export default function DeferredImageUpload({
 
 		setError(null);
 
-		// Create preview
 		const reader = new FileReader();
-		reader.onloadend = () => {
-			setPreview(reader.result as string);
-		};
+		reader.onloadend = () => setPreview(reader.result as string);
 		reader.readAsDataURL(file);
 
-		// Pass file to parent
 		onImageSelect(file);
+
+		// Reset input so the same file can be re-selected
+		if (inputRef.current) inputRef.current.value = "";
 	};
 
 	const handleRemove = () => {
 		setPreview(null);
 		setError(null);
 		onImageRemove();
+		if (inputRef.current) inputRef.current.value = "";
 	};
 
 	return (
-		<div className="space-y-3">
-			<div className="flex items-center gap-3">
-				<label className="cursor-pointer">
-					<input
-						type="file"
-						accept="image/*"
-						onChange={handleFileChange}
-						className="hidden"
-					/>
-					<div className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-						<Upload className="w-5 h-5" />
-						{preview ? "Change Image" : label}
-					</div>
-				</label>
-				<p className="text-xs text-gray-500">
-					Max {maxSizeMB}MB • JPG, PNG, WEBP, GIF
-				</p>
-			</div>
+		<div className="space-y-2">
+			{/* Hidden file input */}
+			<input
+				ref={inputRef}
+				type="file"
+				accept="image/*"
+				onChange={handleFileChange}
+				className="hidden"
+			/>
 
-			{error && (
-				<div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-					{error}
-				</div>
-			)}
-
-			{preview && (
-				<div className="relative inline-block">
+			{preview ? (
+				// ── Filled state: full-width preview with hover overlay ──
+				<div className="group relative w-full aspect-video rounded-xl overflow-hidden border border-border bg-muted">
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
 						src={preview}
 						alt="Preview"
-						className="w-full max-w-sm h-48 object-cover rounded-lg border-2 border-gray-200"
+						className="w-full h-full object-cover"
 					/>
-					<button
-						type="button"
-						onClick={handleRemove}
-						className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 shadow-lg transition-colors"
-						title="Remove image"
-					>
-						<X className="w-4 h-4" />
-					</button>
+					{/* Hover overlay */}
+					<div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+						<Button
+							type="button"
+							size="sm"
+							variant="secondary"
+							onClick={openPicker}
+							className="gap-2 shadow-lg"
+						>
+							<RefreshCw className="w-4 h-4" />
+							Change
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant="destructive"
+							onClick={handleRemove}
+							className="gap-2 shadow-lg"
+						>
+							<Trash2 className="w-4 h-4" />
+							Remove
+						</Button>
+					</div>
+					{/* Corner badge */}
+					<div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">
+						Image selected ✓
+					</div>
 				</div>
+			) : (
+				// ── Empty state: dashed upload zone ──
+				<button
+					type="button"
+					onClick={openPicker}
+					className="w-full aspect-video rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/30 hover:border-primary/50 hover:bg-muted/60 transition-all duration-200 flex flex-col items-center justify-center gap-3 group cursor-pointer"
+				>
+					<div className="p-3 rounded-full bg-muted group-hover:bg-background transition-colors duration-200">
+						<UploadCloud className="w-7 h-7 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+					</div>
+					<div className="text-center">
+						<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200">
+							{label}
+						</p>
+						<p className="text-xs text-muted-foreground mt-0.5">
+							JPG, PNG, WEBP · Max {maxSizeMB} MB
+						</p>
+					</div>
+				</button>
+			)}
+
+			{/* Validation error */}
+			{error && (
+				<p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">
+					{error}
+				</p>
 			)}
 		</div>
 	);
