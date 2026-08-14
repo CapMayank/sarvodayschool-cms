@@ -61,10 +61,10 @@ const Navbar = () => {
 
 					<Link href="/">
 						<div className="leading-tight">
-							<h1 className={`font-black text-xl md:text-2xl lg:text-3xl drop-shadow-md transition-colors duration-300
+							<span className={`font-black text-xl md:text-2xl lg:text-3xl drop-shadow-md transition-colors duration-300
 								${scrolled ? "text-red-700" : "heading-text-red text-white"}`}>
 								SARVODAYA ENGLISH HIGHER SECONDARY SCHOOL LAKHNADON
-							</h1>
+							</span>
 							<p className={`text-sm md:text-base font-semibold transition-colors duration-300
 								${scrolled ? "text-slate-500" : "heading-text-yellow"}`}>
 								A Commitment to Best Education &amp; Discipline for a Better World

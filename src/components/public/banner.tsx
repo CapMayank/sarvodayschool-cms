@@ -1,9 +1,9 @@
 /** @format */
 "use client";
 import React from "react";
-import Image from "next/image";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import { GraduationCap, Users, Trophy, BookOpen } from "lucide-react";
 
 const AnimatedNumber = ({ value }: { value: string }) => {
 	const count = useMotionValue(0);
@@ -32,24 +32,26 @@ const Banner = () => {
 
 	const bannerData = [
 		{
-			cover:
-				"https://img.icons8.com/external-yogi-aprelliyanto-basic-outline-yogi-aprelliyanto/80/ffffff/external-graduation-education-yogi-aprelliyanto-basic-outline-yogi-aprelliyanto.png",
+			icon: <GraduationCap className="w-14 h-14 text-white" strokeWidth={1.5} />,
+			iconLabel: "Students icon",
 			data: "900+",
 			title: "STUDENTS",
 		},
 		{
-			cover: "https://img.icons8.com/ios/80/ffffff/athlete.png",
+			icon: <Users className="w-14 h-14 text-white" strokeWidth={1.5} />,
+			iconLabel: "Teachers icon",
 			data: "30+",
 			title: "TRAINED TEACHERS",
 		},
 		{
-			cover:
-				"https://img.icons8.com/external-outline-icons-maxicons/80/ffffff/external-calender-insurance-outline-outline-icons-maxicons.png",
+			icon: <Trophy className="w-14 h-14 text-white" strokeWidth={1.5} />,
+			iconLabel: "Result trophy icon",
 			data: "100%",
 			title: "RESULT",
 		},
 		{
-			cover: "https://img.icons8.com/ios/80/ffffff/macbook-idea--v3.png",
+			icon: <BookOpen className="w-14 h-14 text-white" strokeWidth={1.5} />,
+			iconLabel: "Streams icon",
 			data: "Science, Commerce",
 			title: "STREAMS",
 		},
@@ -80,9 +82,9 @@ const Banner = () => {
 							transition={{ duration: 0.5, delay: index * 0.2 }}
 							className="flex items-center gap-3"
 						>
-							<Image src={val.cover} alt="icon" width={60} height={60} />
+							<span aria-label={val.iconLabel} role="img">{val.icon}</span>
 							<div>
-								<h1 className="text-xl md:text-3xl font-bold">
+								<h2 className="text-xl md:text-3xl font-bold">
 									{val.data.includes("+") ? (
 										<>
 											<AnimatedNumber value={val.data} />+
@@ -90,7 +92,7 @@ const Banner = () => {
 									) : (
 										val.data
 									)}
-								</h1>
+								</h2>
 								<p className="text-sm md:text-lg font-semibold opacity-90">
 									{val.title}
 								</p>

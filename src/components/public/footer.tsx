@@ -30,7 +30,8 @@ const Footer = () => {
 					{/* School Info */}
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
 						transition={{ duration: 0.5 }}
 						className="col-span-1 lg:col-span-2"
 					>
@@ -56,7 +57,8 @@ const Footer = () => {
 					{/* Quick Links */}
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
 						transition={{ duration: 0.5, delay: 0.2 }}
 					>
 						<h3 className="text-lg font-bold text-gray-800 mb-6">
@@ -80,7 +82,8 @@ const Footer = () => {
 					{/* Contact Info */}
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
 						transition={{ duration: 0.5, delay: 0.3 }}
 					>
 						<h3 className="text-lg font-bold text-gray-800 mb-6">Contact Us</h3>
@@ -115,7 +118,8 @@ const Footer = () => {
 				{/* Social Links & Copyright */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
 					transition={{ duration: 0.5, delay: 0.4 }}
 					className="mt-12 pt-8 border-t border-gray-200"
 				>

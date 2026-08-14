@@ -158,7 +158,9 @@ export default function AchievementsSection() {
 				<motion.div
 					className="text-center mb-16"
 					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.6 }}
 				>
 					<div className="inline-flex items-center gap-3 mb-6">
 						<motion.div

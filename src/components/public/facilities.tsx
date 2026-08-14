@@ -121,7 +121,8 @@ export default function FacilitiesSection() {
 			<motion.div
 				className="text-center mb-16"
 				initial={{ opacity: 0, y: -30 }}
-				animate={{ opacity: 1, y: 0 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true }}
 				transition={{ duration: 0.6 }}
 			>
 				<h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
