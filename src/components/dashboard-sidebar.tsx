@@ -59,6 +59,7 @@ const navigationGroups = [
 			{ href: "/dashboard/slideshow", label: "Slideshows", icon: Presentation },
 			{ href: "/dashboard/achievements", label: "Achievements", icon: Award },
 			{ href: "/dashboard/facilities", label: "Facilities", icon: Building2 },
+			{ href: "/dashboard/settings", label: "Site Settings", icon: Settings },
 		],
 	},
 	{

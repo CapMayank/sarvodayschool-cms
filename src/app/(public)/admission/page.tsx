@@ -81,7 +81,7 @@ const districts: Districts = {
 	],
 };
 
-const feeStructure = [
+const fallbackFeeStructure = [
 	{ class: "Nursery", fee: 8690 },
 	{ class: "K.G.I", fee: 9910 },
 	{ class: "K.G.II", fee: 10580 },
@@ -99,10 +99,9 @@ const feeStructure = [
 	{ class: "12th", fee: 22160 },
 ];
 
-const requiredDocuments = [
+const fallbackRequiredDocuments = [
 	{
 		title: "Identity Proof",
-		icon: FileCheck,
 		items: [
 			"Aadhar Card Photocopy",
 			"Birth Certificate Attested Photocopy",
@@ -162,6 +161,29 @@ export default function Admission() {
 		type: "success" | "error";
 		text: string;
 	} | null>(null);
+
+	const [feeStructure, setFeeStructure] = useState<{class: string; fee: number}[]>(fallbackFeeStructure);
+	const [requiredDocuments, setRequiredDocuments] = useState<{title: string; items: string[]}[]>(fallbackRequiredDocuments);
+
+	React.useEffect(() => {
+		async function fetchData() {
+			try {
+				const [feeRes, docsRes] = await Promise.all([
+					fetch("/api/settings/admission_fee_structure"),
+					fetch("/api/settings/admission_documents")
+				]);
+				if (feeRes.ok) {
+					setFeeStructure(await feeRes.json());
+				}
+				if (docsRes.ok) {
+					setRequiredDocuments(await docsRes.json());
+				}
+			} catch (error) {
+				console.error("Failed to fetch admission data", error);
+			}
+		}
+		fetchData();
+	}, []);
 
 	const handleChange = (
 		e: React.ChangeEvent<
@@ -638,7 +660,7 @@ export default function Admission() {
 										{category.title}
 									</h3>
 									<ul className="space-y-3">
-										{category.items.map((item, idx) => (
+										{category.items.map((item: string, idx: number) => (
 											<motion.li
 												key={idx}
 												initial={{ opacity: 0, x: -10 }}

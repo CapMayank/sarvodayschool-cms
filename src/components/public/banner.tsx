@@ -6,6 +6,14 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { GraduationCap, Users, Trophy, BookOpen } from "lucide-react";
 
+// Icon mapping helper
+const IconMap: Record<string, React.ElementType> = {
+	"graduation-cap": GraduationCap,
+	users: Users,
+	trophy: Trophy,
+	"book-open": BookOpen,
+};
+
 const AnimatedNumber = ({ value }: { value: string }) => {
 	const count = useMotionValue(0);
 	const rounded = useTransform(count, (latest) => Math.round(latest));
@@ -31,32 +39,46 @@ const Banner = () => {
 		threshold: 0.1,
 	});
 
-	const bannerData = [
-		{
-			icon: <GraduationCap className="w-14 h-14 text-white" strokeWidth={1.5} />,
-			iconLabel: "Students icon",
-			data: "900+",
-			title: "STUDENTS",
-		},
-		{
-			icon: <Users className="w-14 h-14 text-white" strokeWidth={1.5} />,
-			iconLabel: "Teachers icon",
-			data: "30+",
-			title: "TRAINED TEACHERS",
-		},
-		{
-			icon: <Trophy className="w-14 h-14 text-white" strokeWidth={1.5} />,
-			iconLabel: "Result trophy icon",
-			data: "100%",
-			title: "RESULT",
-		},
-		{
-			icon: <BookOpen className="w-14 h-14 text-white" strokeWidth={1.5} />,
-			iconLabel: "Streams icon",
-			data: "Science, Commerce",
-			title: "STREAMS",
-		},
-	];
+	const [bannerData, setBannerData] = React.useState<any[]>([]);
+
+	React.useEffect(() => {
+		async function fetchBanner() {
+			try {
+				const res = await fetch("/api/settings/landing_banner");
+				if (res.ok) {
+					const data = await res.json();
+					setBannerData(data);
+				} else {
+					// Fallback
+					setBannerData([
+						{
+							iconId: "graduation-cap",
+							data: "900+",
+							title: "STUDENTS",
+						},
+						{
+							iconId: "users",
+							data: "30+",
+							title: "TRAINED TEACHERS",
+						},
+						{
+							iconId: "trophy",
+							data: "100%",
+							title: "RESULT",
+						},
+						{
+							iconId: "book-open",
+							data: "Science, Commerce",
+							title: "STREAMS",
+						},
+					]);
+				}
+			} catch (error) {
+				console.error("Failed to fetch banner data", error);
+			}
+		}
+		fetchBanner();
+	}, []);
 
 	return (
 		<section className="relative w-full">
@@ -83,7 +105,16 @@ const Banner = () => {
 							transition={{ duration: 0.5, delay: index * 0.2 }}
 							className="flex items-center gap-3"
 						>
-							<span aria-label={val.iconLabel} role="img">{val.icon}</span>
+							<span aria-label={val.iconId} role="img">
+								{val.iconId && IconMap[val.iconId] ? (
+									React.createElement(IconMap[val.iconId], {
+										className: "w-14 h-14 text-white",
+										strokeWidth: 1.5,
+									})
+								) : (
+									<GraduationCap className="w-14 h-14 text-white" strokeWidth={1.5} />
+								)}
+							</span>
 							<div>
 								<h2 className="text-xl md:text-3xl font-bold">
 									{val.data.includes("+") ? (

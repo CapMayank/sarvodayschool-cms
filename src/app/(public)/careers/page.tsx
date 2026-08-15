@@ -124,6 +124,28 @@ const Careers: React.FC = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+	const [careersReq, setCareersReq] = useState({
+		subjects: "English, Mathematics, Biology, Physics, Chemistry, Social Science, Hindi, Sanskrit",
+		qualifications: "Bachelor's Degree with B.Ed or equivalent",
+		experience: "Minimum 2 years of teaching experience",
+		salary: "₹15,000 - ₹25,000 per month",
+		imageUrl: "/recruitment.png",
+	});
+
+	React.useEffect(() => {
+		async function fetchCareers() {
+			try {
+				const res = await fetch("/api/settings/careers_requirements");
+				if (res.ok) {
+					setCareersReq(await res.json());
+				}
+			} catch (error) {
+				console.error("Failed to fetch careers requirements", error);
+			}
+		}
+		fetchCareers();
+	}, []);
+
 	const handleChange = (
 		e: React.ChangeEvent<
 			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -362,8 +384,7 @@ const Careers: React.FC = () => {
 												Subjects Required
 											</h3>
 											<p className="text-gray-600 text-sm">
-												English, Mathematics, Biology, Physics, Chemistry,
-												Social Science, Hindi, Sanskrit
+												{careersReq.subjects}
 											</p>
 										</div>
 									</div>
@@ -378,7 +399,7 @@ const Careers: React.FC = () => {
 												Qualifications
 											</h3>
 											<p className="text-gray-600 text-sm">
-												Bachelor&apos;s Degree with B.Ed or equivalent
+												{careersReq.qualifications}
 											</p>
 										</div>
 									</div>
@@ -393,7 +414,7 @@ const Careers: React.FC = () => {
 												Experience
 											</h3>
 											<p className="text-gray-600 text-sm">
-												Minimum 2 years of teaching experience
+												{careersReq.experience}
 											</p>
 										</div>
 									</div>
@@ -408,7 +429,7 @@ const Careers: React.FC = () => {
 												Salary Range
 											</h3>
 											<p className="text-gray-600 text-sm">
-												₹15,000 - ₹25,000 per month
+												{careersReq.salary}
 											</p>
 										</div>
 									</div>
@@ -416,10 +437,10 @@ const Careers: React.FC = () => {
 									{/* Recruitment Poster Image */}
 									<div
 										className="rounded-lg shadow-md mt-6 cursor-pointer transform hover:scale-105 transition-transform duration-300 overflow-hidden"
-										onClick={() => openModal("/recruitment.png")}
+										onClick={() => openModal(careersReq.imageUrl)}
 									>
 										<Image
-											src="/recruitment.png"
+											src={careersReq.imageUrl}
 											alt="Teacher Recruitment Poster"
 											width={500}
 											height={600}

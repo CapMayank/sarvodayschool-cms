@@ -2,6 +2,7 @@
 
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import Header from "@/components/public/header";
@@ -13,8 +14,30 @@ import { faFacebookF, faYoutube } from "@fortawesome/free-brands-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function ContactPage() {
+	const [contactStats, setContactStats] = useState({
+		yearsOfExcellence: "",
+		facultyMembers: "30+",
+		happyStudents: "900+",
+		resultPercentage: "100%",
+	});
+
+	useEffect(() => {
+		async function fetchContactStats() {
+			try {
+				const res = await fetch("/api/settings/contact_stats");
+				if (res.ok) {
+					setContactStats(await res.json());
+				}
+			} catch (error) {
+				console.error("Failed to fetch contact stats", error);
+			}
+		}
+		fetchContactStats();
+	}, []);
+
 	// Add this function at the top of your component
 	const calculateYears = () => {
+		if (contactStats.yearsOfExcellence) return contactStats.yearsOfExcellence;
 		const foundingDate = new Date("2002-06-10");
 		const today = new Date();
 		let years = today.getFullYear() - foundingDate.getFullYear();
@@ -302,21 +325,21 @@ export default function ContactPage() {
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										30+
+										{contactStats.facultyMembers}
 									</div>
 									<div className="text-sm text-gray-600">Faculty Members</div>
 								</div>
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										900+
+										{contactStats.happyStudents}
 									</div>
 									<div className="text-sm text-gray-600">Happy Students</div>
 								</div>
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										100%
+										{contactStats.resultPercentage}
 									</div>
 									<div className="text-sm text-gray-600">Result</div>
 								</div>
