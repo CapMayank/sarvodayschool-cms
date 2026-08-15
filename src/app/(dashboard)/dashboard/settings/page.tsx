@@ -42,14 +42,6 @@ export default function SettingsPage() {
     { data: "Science, Commerce", title: "STREAMS", iconId: "book-open" },
   ]);
 
-  // Contact Us Stats (Mirrors Banner conceptually, but can have extra)
-  const [contactStats, setContactStats] = useState({
-    yearsOfExcellence: "22+",
-    facultyMembers: "30+",
-    happyStudents: "900+",
-    resultPercentage: "100%",
-  });
-
   // Admission Fee Structure
   const [feeStructure, setFeeStructure] = useState([
     { class: "Nursery", fee: 8690 },
@@ -78,9 +70,6 @@ export default function SettingsPage() {
     try {
       const banner = await fetchSettings("landing_banner");
       if (banner) setBannerStats(banner);
-
-      const contact = await fetchSettings("contact_stats");
-      if (contact) setContactStats(contact);
 
       const fees = await fetchSettings("admission_fee_structure");
       if (fees) setFeeStructure(fees);
@@ -146,9 +135,8 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="landing">
-        <TabsList className="mb-6 grid grid-cols-2 lg:grid-cols-4 bg-gray-100 rounded-lg p-1 h-auto">
+        <TabsList className="mb-6 grid grid-cols-2 lg:grid-cols-3 bg-gray-100 rounded-lg p-1 h-auto">
           <TabsTrigger value="landing" className="py-2.5">Landing Page</TabsTrigger>
-          <TabsTrigger value="contact" className="py-2.5">Contact Us</TabsTrigger>
           <TabsTrigger value="admission" className="py-2.5">Admission</TabsTrigger>
           <TabsTrigger value="careers" className="py-2.5">Careers</TabsTrigger>
         </TabsList>
@@ -197,34 +185,6 @@ export default function SettingsPage() {
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Banner
               </Button>
             </div>
-          </div>
-        </TabsContent>
-
-        {/* Contact Us Settings */}
-        <TabsContent value="contact" className="space-y-6">
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Contact Page Numbers</h2>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <Label>Years of Excellence</Label>
-                <Input value={contactStats.yearsOfExcellence} onChange={(e) => setContactStats({...contactStats, yearsOfExcellence: e.target.value})} />
-              </div>
-              <div>
-                <Label>Faculty Members</Label>
-                <Input value={contactStats.facultyMembers} onChange={(e) => setContactStats({...contactStats, facultyMembers: e.target.value})} />
-              </div>
-              <div>
-                <Label>Happy Students</Label>
-                <Input value={contactStats.happyStudents} onChange={(e) => setContactStats({...contactStats, happyStudents: e.target.value})} />
-              </div>
-              <div>
-                <Label>Result Percentage</Label>
-                <Input value={contactStats.resultPercentage} onChange={(e) => setContactStats({...contactStats, resultPercentage: e.target.value})} />
-              </div>
-            </div>
-            <Button className="mt-6" disabled={saving} onClick={() => handleSave("contact_stats", contactStats)}>
-              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Contact Stats
-            </Button>
           </div>
         </TabsContent>
 

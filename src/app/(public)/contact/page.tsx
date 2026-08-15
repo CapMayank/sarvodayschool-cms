@@ -14,30 +14,24 @@ import { faFacebookF, faYoutube } from "@fortawesome/free-brands-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function ContactPage() {
-	const [contactStats, setContactStats] = useState({
-		yearsOfExcellence: "",
-		facultyMembers: "30+",
-		happyStudents: "900+",
-		resultPercentage: "100%",
-	});
+	const [bannerStats, setBannerStats] = useState<any[]>([]);
 
 	useEffect(() => {
-		async function fetchContactStats() {
+		async function fetchStats() {
 			try {
-				const res = await fetch("/api/settings/contact_stats");
+				const res = await fetch("/api/settings/landing_banner");
 				if (res.ok) {
-					setContactStats(await res.json());
+					setBannerStats(await res.json());
 				}
 			} catch (error) {
-				console.error("Failed to fetch contact stats", error);
+				console.error("Failed to fetch banner stats", error);
 			}
 		}
-		fetchContactStats();
+		fetchStats();
 	}, []);
 
 	// Add this function at the top of your component
 	const calculateYears = () => {
-		if (contactStats.yearsOfExcellence) return contactStats.yearsOfExcellence;
 		const foundingDate = new Date("2002-06-10");
 		const today = new Date();
 		let years = today.getFullYear() - foundingDate.getFullYear();
@@ -49,6 +43,11 @@ export default function ContactPage() {
 		}
 
 		return `${years}+`;
+	};
+
+	const getStat = (title: string, fallback: string) => {
+		const stat = bannerStats.find(s => s.title.toUpperCase() === title);
+		return stat ? stat.data : fallback;
 	};
 
 	return (
@@ -325,21 +324,21 @@ export default function ContactPage() {
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										{contactStats.facultyMembers}
+										{getStat("TRAINED TEACHERS", "30+")}
 									</div>
 									<div className="text-sm text-gray-600">Faculty Members</div>
 								</div>
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										{contactStats.happyStudents}
+										{getStat("STUDENTS", "900+")}
 									</div>
 									<div className="text-sm text-gray-600">Happy Students</div>
 								</div>
 
 								<div className="text-center">
 									<div className="text-4xl font-bold text-red-600 mb-1">
-										{contactStats.resultPercentage}
+										{getStat("RESULT", "100%")}
 									</div>
 									<div className="text-sm text-gray-600">Result</div>
 								</div>
