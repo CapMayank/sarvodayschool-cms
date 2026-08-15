@@ -341,8 +341,8 @@ export default function AdmissionsTab() {
 			<Sheet open={showModal} onOpenChange={(open) => {
 				if (!open) setShowModal(false);
 			}}>
-				<SheetContent className="w-full sm:max-w-2xl overflow-y-auto" side="right">
-					<SheetHeader className="mb-6">
+				<SheetContent className="w-full sm:max-w-2xl p-0 flex flex-col h-full" side="right">
+					<SheetHeader className="px-6 pt-6 pb-2 border-b">
 						<SheetTitle className="text-2xl flex items-center gap-3">
 							<div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
 								<span className="font-bold">
@@ -356,11 +356,11 @@ export default function AdmissionsTab() {
 								</div>
 							</div>
 						</SheetTitle>
-						<SheetDescription></SheetDescription>
 					</SheetHeader>
 
+					<div className="flex-1 overflow-y-auto">
 					{selectedForm && (
-						<div className="space-y-6 px-4 pb-20">
+						<div className="space-y-8 p-6">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								{/* Status Management */}
 								<div className="bg-muted/50 rounded-lg p-4 border md:col-span-2">
@@ -487,8 +487,9 @@ export default function AdmissionsTab() {
 							</div>
 						</div>
 					)}
+					</div>
 
-					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 						<Button variant="outline" onClick={() => setShowModal(false)}>
 							Cancel
 						</Button>

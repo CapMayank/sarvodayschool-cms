@@ -17,6 +17,8 @@ import {
 	Trash2,
 	Image as ImageIcon,
 	GripVertical,
+	Type,
+	Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -353,75 +355,98 @@ export default function SlideshowsTab() {
 			<Sheet open={showModal} onOpenChange={(open) => {
 				if (!open) handleCancel();
 			}}>
-				<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
-					<SheetHeader className="mb-6">
+				<SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full" side="right">
+					<SheetHeader className="px-6 pt-6 pb-2 border-b">
 						<SheetTitle className="text-2xl">
-							{editingId ? "Edit Slideshow" : "Create New Slideshow"}
+							{editingId ? "Edit Slide" : "Add New Slide"}
 						</SheetTitle>
 						<SheetDescription>
-							Add banner images to display on your website homepage
+							Upload and manage images for the homepage slideshow
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 px-4 pb-20">
-						<div>
-							<Label className="mb-2 block">
-								Title (Optional)
-							</Label>
-							<Input
-								placeholder="Enter banner title"
-								value={formData.title}
-								onChange={(e) =>
-									setFormData({ ...formData, title: e.target.value })
-								}
-							/>
-						</div>
-
-						<div>
-							<Label className="mb-2 block">
-								Banner Image <span className="text-red-500">*</span>
-							</Label>
-							<CloudinaryUpload
-								currentImage={formData.imageUrl}
-								folder="sarvodaya/slideshows"
-								onUploadSuccess={(url) =>
-									setFormData({ ...formData, imageUrl: url })
-								}
-							/>
-							{!formData.imageUrl && (
-								<p className="text-red-500 text-xs mt-2">
-									Image is required
-								</p>
-							)}
-						</div>
-
-						<div className="bg-muted/50 rounded-lg p-4 border">
-							<label className="flex items-center gap-3 cursor-pointer">
-								<input
-									type="checkbox"
-									checked={formData.isActive}
+					<div className="flex-1 overflow-y-auto">
+						<div className="space-y-8 p-6">
+						{/* Basic Information Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Type className="w-5 h-5 text-blue-500" />
+								Basic Information
+							</h3>
+							<div className="space-y-2">
+								<Label className="mb-2 block">
+									Title (Optional)
+								</Label>
+								<Input
+									placeholder="Enter banner title"
+									value={formData.title}
 									onChange={(e) =>
-										setFormData({
-											...formData,
-											isActive: e.target.checked,
-										})
+										setFormData({ ...formData, title: e.target.value })
 									}
-									className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
 								/>
-								<div>
-									<span className="text-sm font-medium">
-										Active
-									</span>
-									<p className="text-xs text-muted-foreground mt-1">
-										Only active slideshows will be displayed on the
-										website
-									</p>
+							</div>
+						</div>
+
+						{/* Media Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<ImageIcon className="w-5 h-5 text-purple-500" />
+								Media
+							</h3>
+							<div className="space-y-2">
+								<Label className="mb-2 block">
+									Banner Image <span className="text-red-500">*</span>
+								</Label>
+								<div className="border border-dashed rounded-lg p-2 bg-background">
+									<CloudinaryUpload
+										currentImage={formData.imageUrl}
+										folder="sarvodaya/slideshows"
+										onUploadSuccess={(url) =>
+											setFormData({ ...formData, imageUrl: url })
+										}
+									/>
 								</div>
-							</label>
+								{!formData.imageUrl && (
+									<p className="text-red-500 text-xs mt-2">
+										Image is required for the slideshow
+									</p>
+								)}
+							</div>
+						</div>
+
+						{/* Settings Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Settings className="w-5 h-5 text-gray-500" />
+								Settings
+							</h3>
+							<div className="bg-background rounded-lg p-4 border">
+								<label className="flex items-center gap-3 cursor-pointer">
+									<input
+										type="checkbox"
+										checked={formData.isActive}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												isActive: e.target.checked,
+											})
+										}
+										className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+									/>
+									<div>
+										<span className="text-sm font-medium">
+											Active
+										</span>
+										<p className="text-xs text-muted-foreground mt-1">
+											Only active slideshows will be displayed on the website
+										</p>
+									</div>
+								</label>
+							</div>
 						</div>
 					</div>
 
-					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 						<Button variant="outline" onClick={handleCancel}>
 							Cancel
 						</Button>

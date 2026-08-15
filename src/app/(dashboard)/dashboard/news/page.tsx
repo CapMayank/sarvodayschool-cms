@@ -484,8 +484,8 @@ export default function NewsTab() {
 
 			{/* Sheet Modal */}
 			<Sheet open={showModal} onOpenChange={setShowModal}>
-				<SheetContent className="w-full sm:max-w-2xl overflow-y-auto" side="right">
-					<SheetHeader className="mb-6">
+				<SheetContent className="w-full sm:max-w-2xl p-0 flex flex-col h-full" side="right">
+					<SheetHeader className="px-6 pt-6 pb-2 border-b">
 						<SheetTitle className="text-2xl">
 							{editingId ? "Edit News Article" : "Create News Article"}
 						</SheetTitle>
@@ -494,275 +494,303 @@ export default function NewsTab() {
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 px-4 pb-20">
-						{/* Title & Slug */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label>Title <span className="text-red-500">*</span></Label>
-								<Input
-									placeholder="Enter news title"
-									value={formData.title}
-									onChange={(e) => {
-										const newTitle = e.target.value;
-										setFormData({
-											...formData,
-											title: newTitle,
-											slug:
-												!editingId && !formData.slug
-													? generateSlug(newTitle)
-													: formData.slug,
-										});
-									}}
-								/>
+					<div className="flex-1 overflow-y-auto">
+						<div className="space-y-8 p-6">
+						{/* Basic Information Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Newspaper className="w-5 h-5 text-blue-500" />
+								Basic Information
+							</h3>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Label>Title <span className="text-red-500">*</span></Label>
+									<Input
+										placeholder="Enter news title"
+										value={formData.title}
+										onChange={(e) => {
+											const newTitle = e.target.value;
+											setFormData({
+												...formData,
+												title: newTitle,
+												slug:
+													!editingId && !formData.slug
+														? generateSlug(newTitle)
+														: formData.slug,
+											});
+										}}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label>URL Slug</Label>
+									<Input
+										placeholder="auto-generated-from-title"
+										value={formData.slug}
+										onChange={(e) =>
+											setFormData({ ...formData, slug: e.target.value })
+										}
+									/>
+									<p className="text-xs text-muted-foreground">
+										Leave empty to auto-generate
+									</p>
+								</div>
 							</div>
-							<div className="space-y-2">
-								<Label>URL Slug</Label>
-								<Input
-									placeholder="auto-generated-from-title"
-									value={formData.slug}
-									onChange={(e) =>
-										setFormData({ ...formData, slug: e.target.value })
-									}
-								/>
-								<p className="text-xs text-muted-foreground">
-									Leave empty to auto-generate
-								</p>
+						</div>
+
+						{/* Content Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Edit className="w-5 h-5 text-green-500" />
+								Content
+							</h3>
+							<div className="space-y-4">
+								<div className="space-y-2">
+									<Label>Excerpt / Summary <span className="text-red-500">*</span></Label>
+									<Textarea
+										rows={3}
+										placeholder="Brief summary for carousel and preview (200 characters recommended)"
+										value={formData.excerpt}
+										onChange={(e) =>
+											setFormData({ ...formData, excerpt: e.target.value })
+										}
+										className="resize-none"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label>Detailed Article</Label>
+									<Textarea
+										rows={8}
+										placeholder="Full detailed article content (supports HTML)"
+										value={formData.detailedArticle}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												detailedArticle: e.target.value,
+											})
+										}
+										className="resize-none font-mono text-sm"
+									/>
+									<p className="text-xs text-muted-foreground">
+										You can use HTML tags for formatting
+									</p>
+								</div>
 							</div>
 						</div>
 
-						{/* Excerpt */}
-						<div className="space-y-2">
-							<Label>Excerpt / Summary <span className="text-red-500">*</span></Label>
-							<Textarea
-								rows={3}
-								placeholder="Brief summary for carousel and preview (200 characters recommended)"
-								value={formData.excerpt}
-								onChange={(e) =>
-									setFormData({ ...formData, excerpt: e.target.value })
-								}
-								className="resize-none"
-							/>
+						{/* Media Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<ImageIcon className="w-5 h-5 text-purple-500" />
+								Media
+							</h3>
+							<div className="space-y-6">
+								<div className="space-y-2">
+									<Label>Primary Image (for carousel)</Label>
+									<DeferredImageUpload
+										previewUrl={formData.imageUrl}
+										label="Upload Primary Image"
+										onImageSelect={(file) => setPendingPrimaryImage(file)}
+										onImageRemove={() => {
+											setPendingPrimaryImage(null);
+											setFormData({ ...formData, imageUrl: "" });
+										}}
+									/>
+									{formData.imageUrl && !pendingPrimaryImage && (
+										<p className="text-xs text-muted-foreground">
+											Current image will be kept unless you upload a new one
+										</p>
+									)}
+								</div>
+
+								<div className="space-y-2 border-t pt-4">
+									<Label>Additional Images (Optional)</Label>
+									<div className="space-y-3">
+										{/* Display already uploaded images */}
+										{formData.images.map((img, index) => (
+											<div
+												key={`uploaded-${index}`}
+												className="flex items-center gap-3 p-3 border rounded-lg bg-background shadow-sm"
+											>
+												<Image
+													src={img}
+													alt={`Additional ${index + 1}`}
+													width={48}
+													height={48}
+													className="w-12 h-12 object-cover rounded-md"
+												/>
+												<Input
+													value={img}
+													readOnly
+													className="flex-1 bg-muted/50 text-sm h-8"
+												/>
+												<Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 hidden sm:inline-flex">
+													Uploaded
+												</Badge>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													onClick={() => removeImage(index)}
+													className="text-red-600 hover:bg-red-50 hover:text-red-700"
+												>
+													<X className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+
+										{/* Display pending images to upload */}
+										{pendingAdditionalImages.map((file, index) => (
+											<div
+												key={`pending-${index}`}
+												className="flex items-center gap-3 p-3 border border-blue-200 rounded-lg bg-blue-50/50 shadow-sm"
+											>
+												<div className="w-12 h-12 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
+													<ImageIcon className="w-6 h-6 text-blue-600" />
+												</div>
+												<Input
+													value={file.name}
+													readOnly
+													className="flex-1 bg-background text-sm h-8"
+												/>
+												<Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 hidden sm:inline-flex">
+													Pending
+												</Badge>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													onClick={() => {
+														setPendingAdditionalImages(
+															pendingAdditionalImages.filter(
+																(_, i) => i !== index
+															)
+														);
+													}}
+													className="text-red-600 hover:bg-red-50 hover:text-red-700"
+												>
+													<X className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+
+										{/* Add new image button */}
+										<Label className="cursor-pointer block">
+											<input
+												type="file"
+												accept="image/*"
+												onChange={(e) => {
+													const file = e.target.files?.[0];
+													if (file) {
+														if (!file.type.startsWith("image/")) {
+															toast.error("Please select an image file");
+															return;
+														}
+														if (file.size > 10 * 1024 * 1024) {
+															toast.error("File size must be less than 10MB");
+															return;
+														}
+														setPendingAdditionalImages([
+															...pendingAdditionalImages,
+															file,
+														]);
+														e.target.value = "";
+													}
+												}}
+												className="hidden"
+											/>
+											<div className="w-full p-4 border-2 border-dashed rounded-lg text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors text-center cursor-pointer flex flex-col items-center justify-center gap-2">
+												<Upload className="w-6 h-6" />
+												<span className="text-sm font-medium">Click to add an additional image</span>
+											</div>
+										</Label>
+										<p className="text-xs text-muted-foreground text-center">
+											Images will be uploaded when you save the article
+										</p>
+									</div>
+								</div>
+							</div>
 						</div>
 
-						{/* Detailed Article */}
-						<div className="space-y-2">
-							<Label>Detailed Article</Label>
-							<Textarea
-								rows={8}
-								placeholder="Full detailed article content (supports HTML)"
-								value={formData.detailedArticle}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										detailedArticle: e.target.value,
-									})
-								}
-								className="resize-none font-mono text-sm"
-							/>
-							<p className="text-xs text-muted-foreground">
-								You can use HTML tags for formatting
-							</p>
-						</div>
-
-						{/* Primary Image */}
-						<div className="space-y-2">
-							<Label>Primary Image (for carousel)</Label>
-							<DeferredImageUpload
-								previewUrl={formData.imageUrl}
-								label="Upload Primary Image"
-								onImageSelect={(file) => setPendingPrimaryImage(file)}
-								onImageRemove={() => {
-									setPendingPrimaryImage(null);
-									setFormData({ ...formData, imageUrl: "" });
-								}}
-							/>
-							{formData.imageUrl && !pendingPrimaryImage && (
-								<p className="text-xs text-muted-foreground">
-									Current image will be kept unless you upload a new one
-								</p>
-							)}
-						</div>
-
-						{/* Additional Images */}
-						<div className="space-y-2">
-							<Label>Additional Images (Optional)</Label>
+						{/* Links Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Tag className="w-5 h-5 text-orange-500" />
+								Links (Optional)
+							</h3>
 							<div className="space-y-3">
-								{/* Display already uploaded images */}
-								{formData.images.map((img, index) => (
+								{formData.links.map((link, index) => (
 									<div
-										key={`uploaded-${index}`}
-										className="flex items-center gap-2 p-2 border rounded-lg bg-muted/30"
+										key={index}
+										className="flex flex-col sm:flex-row gap-2 p-3 border rounded-lg bg-background shadow-sm"
 									>
-										<Image
-											src={img}
-											alt={`Additional ${index + 1}`}
-											width={64}
-											height={64}
-											className="w-16 h-16 object-cover rounded"
+										<select
+											value={link.type}
+											onChange={(e) =>
+												updateLink(index, "type", e.target.value)
+											}
+											className="flex h-9 w-full sm:w-1/4 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											<option value="youtube">YouTube Video</option>
+											<option value="youtube-playlist">
+												YouTube Playlist
+											</option>
+											<option value="facebook">Facebook</option>
+											<option value="instagram">Instagram</option>
+											<option value="twitter">Twitter</option>
+											<option value="custom">Custom</option>
+										</select>
+										<Input
+											placeholder={
+												link.type === "youtube-playlist"
+													? "https://youtube.com/playlist?list=..."
+													: link.type === "youtube"
+													? "https://youtube.com/watch?v=..."
+													: "URL"
+											}
+											value={link.url}
+											onChange={(e) =>
+												updateLink(index, "url", e.target.value)
+											}
+											className="flex-1"
 										/>
 										<Input
-											value={img}
-											readOnly
-											className="flex-1 bg-background"
+											placeholder="Title"
+											value={link.title}
+											onChange={(e) =>
+												updateLink(index, "title", e.target.value)
+											}
+											className="sm:w-1/4"
 										/>
-										<Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
-											Uploaded
-										</Badge>
 										<Button
 											type="button"
 											variant="ghost"
 											size="icon"
-											onClick={() => removeImage(index)}
-											className="text-red-600 hover:bg-red-50 hover:text-red-700"
+											onClick={() => removeLink(index)}
+											className="text-red-600 hover:bg-red-50 hover:text-red-700 shrink-0"
 										>
 											<X className="w-4 h-4" />
 										</Button>
 									</div>
 								))}
-
-								{/* Display pending images to upload */}
-								{pendingAdditionalImages.map((file, index) => (
-									<div
-										key={`pending-${index}`}
-										className="flex items-center gap-2 p-2 border border-blue-200 rounded-lg bg-blue-50"
-									>
-										<div className="w-16 h-16 bg-blue-100 rounded flex items-center justify-center shrink-0">
-											<ImageIcon className="w-8 h-8 text-blue-600" />
-										</div>
-										<Input
-											value={file.name}
-											readOnly
-											className="flex-1 bg-background"
-										/>
-										<Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
-											Pending
-										</Badge>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => {
-												setPendingAdditionalImages(
-													pendingAdditionalImages.filter(
-														(_, i) => i !== index
-													)
-												);
-											}}
-												className="text-red-600 hover:bg-red-50 hover:text-red-700"
-											>
-												<X className="w-4 h-4" />
-											</Button>
-										</div>
-									))}
-
-									{/* Add new image button */}
-									<Label className="cursor-pointer block">
-										<input
-											type="file"
-											accept="image/*"
-											onChange={(e) => {
-												const file = e.target.files?.[0];
-												if (file) {
-													if (!file.type.startsWith("image/")) {
-														toast.error("Please select an image file");
-														return;
-													}
-													if (file.size > 10 * 1024 * 1024) {
-														toast.error("File size must be less than 10MB");
-														return;
-													}
-													setPendingAdditionalImages([
-														...pendingAdditionalImages,
-														file,
-													]);
-													e.target.value = "";
-												}
-											}}
-											className="hidden"
-										/>
-										<div className="w-full p-4 border-2 border-dashed rounded-lg text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors text-center">
-											<Upload className="w-5 h-5 inline-block mr-2" />
-											Add Additional Image
-										</div>
-									</Label>
-									<p className="text-xs text-muted-foreground">
-										Images will be uploaded when you save
-									</p>
-								</div>
+								<Button
+									type="button"
+									variant="outline"
+									className="w-full border-dashed"
+									onClick={addLink}
+								>
+									<Plus className="w-4 h-4 mr-2" />
+									Add Link
+								</Button>
 							</div>
+						</div>
 
-							{/* Links */}
-							<div className="space-y-2">
-								<Label>Links (Optional)</Label>
-								<div className="space-y-3">
-									{formData.links.map((link, index) => (
-										<div
-											key={index}
-											className="flex flex-col sm:flex-row gap-2 p-3 border rounded-lg bg-muted/10"
-										>
-											<select
-												value={link.type}
-												onChange={(e) =>
-													updateLink(index, "type", e.target.value)
-												}
-												className="flex h-9 w-full sm:w-1/4 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												<option value="youtube">YouTube Video</option>
-												<option value="youtube-playlist">
-													YouTube Playlist
-												</option>
-												<option value="facebook">Facebook</option>
-												<option value="instagram">Instagram</option>
-												<option value="twitter">Twitter</option>
-												<option value="custom">Custom</option>
-											</select>
-											<Input
-												placeholder={
-													link.type === "youtube-playlist"
-														? "https://youtube.com/playlist?list=..."
-														: link.type === "youtube"
-														? "https://youtube.com/watch?v=..."
-														: "URL"
-												}
-												value={link.url}
-												onChange={(e) =>
-													updateLink(index, "url", e.target.value)
-												}
-												className="flex-1"
-											/>
-											<Input
-												placeholder="Title"
-												value={link.title}
-												onChange={(e) =>
-													updateLink(index, "title", e.target.value)
-												}
-												className="sm:w-1/4"
-											/>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												onClick={() => removeLink(index)}
-												className="text-red-600 hover:bg-red-50 hover:text-red-700 shrink-0"
-											>
-												<X className="w-4 h-4" />
-											</Button>
-										</div>
-									))}
-									<Button
-										type="button"
-										variant="outline"
-										className="w-full border-dashed"
-										onClick={addLink}
-									>
-										<Plus className="w-4 h-4 mr-2" />
-										Add Link
-									</Button>
-								</div>
-							</div>
-
-							{/* Category, Date, Published */}
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						{/* Settings Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Calendar className="w-5 h-5 text-red-500" />
+								Publish Settings
+							</h3>
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 								<div className="space-y-2">
 									<Label>Category</Label>
 									<Select
@@ -797,7 +825,7 @@ export default function NewsTab() {
 
 								<div className="space-y-2">
 									<Label>Status</Label>
-									<div className="flex items-center gap-4 h-10 px-3 border rounded-md">
+									<div className="flex items-center gap-4 h-10 px-3 border rounded-md bg-background">
 										<label className="flex items-center gap-2 cursor-pointer">
 											<input
 												type="radio"
@@ -830,8 +858,10 @@ export default function NewsTab() {
 								</div>
 							</div>
 						</div>
+					</div>
+					</div>
 
-						<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+						<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 							<Button variant="outline" onClick={() => setShowModal(false)}>
 								Cancel
 							</Button>

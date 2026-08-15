@@ -342,8 +342,8 @@ export default function GalleryTab() {
 									<Plus className="mr-2 h-4 w-4" /> Add Category
 								</Button>
 							</SheetTrigger>
-							<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
-								<SheetHeader className="mb-6">
+							<SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full" side="right">
+								<SheetHeader className="px-6 pt-6 pb-2 border-b">
 									<SheetTitle className="text-xl sm:text-2xl">
 										{editingCategory ? "Edit Category" : "Create Category"}
 									</SheetTitle>
@@ -354,37 +354,48 @@ export default function GalleryTab() {
 									</SheetDescription>
 								</SheetHeader>
 
-								<div className="grid gap-6 py-4 px-4">
-									<div className="space-y-2">
-										<Label>Category Title</Label>
-										<Input
-											placeholder="e.g., Annual Sports Day"
-											value={categoryFormData.title}
-											onChange={(e) =>
-												setCategoryFormData({
-													...categoryFormData,
-													title: e.target.value,
-												})
-											}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label>Description</Label>
-										<Textarea
-											placeholder="Brief description"
-											value={categoryFormData.description}
-											onChange={(e) =>
-												setCategoryFormData({
-													...categoryFormData,
-													description: e.target.value,
-												})
-											}
-											rows={4}
-										/>
+								<div className="flex-1 overflow-y-auto">
+									<div className="space-y-6 p-6">
+									<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+										<h3 className="font-semibold text-lg flex items-center gap-2">
+											<ImageIcon className="w-5 h-5 text-blue-500" />
+											Category Details
+										</h3>
+										<div className="space-y-2">
+											<Label>Category Title <span className="text-red-500">*</span></Label>
+											<Input
+												placeholder="e.g., Annual Sports Day"
+												value={categoryFormData.title}
+												onChange={(e) =>
+													setCategoryFormData({
+														...categoryFormData,
+														title: e.target.value,
+													})
+												}
+											/>
+										</div>
+										<div className="space-y-2 pt-2">
+											<Label>Description</Label>
+											<Textarea
+												placeholder="Brief description"
+												value={categoryFormData.description}
+												onChange={(e) =>
+													setCategoryFormData({
+														...categoryFormData,
+														description: e.target.value,
+													})
+												}
+												rows={4}
+												className="resize-none"
+											/>
+										</div>
 									</div>
 								</div>
 
-								<SheetFooter className="mt-6">
+									</div>
+								</div>
+
+								<SheetFooter className="p-4 bg-background border-t shrink-0">
 									<Button onClick={handleCategorySubmit} className="w-full sm:w-auto">
 										{editingCategory ? "Save Changes" : "Create Category"}
 									</Button>
@@ -549,8 +560,8 @@ export default function GalleryTab() {
 									<Plus className="mr-2 h-4 w-4" /> Add Playlist
 								</Button>
 							</SheetTrigger>
-							<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
-								<SheetHeader className="mb-6">
+							<SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full" side="right">
+								<SheetHeader className="px-6 pt-6 pb-2 border-b">
 									<SheetTitle className="text-xl sm:text-2xl">
 										{editingPlaylist ? "Edit Playlist" : "Create Playlist"}
 									</SheetTitle>
@@ -559,39 +570,49 @@ export default function GalleryTab() {
 									</SheetDescription>
 								</SheetHeader>
 
-								<div className="grid gap-6 py-4 px-4">
-									<div className="space-y-2">
-										<Label>Playlist Title</Label>
-										<Input
-											placeholder="e.g., Science Fair Highlights"
-											value={playlistFormData.title}
-											onChange={(e) =>
-												setPlaylistFormData({
-													...playlistFormData,
-													title: e.target.value,
-												})
-											}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label>YouTube Playlist ID</Label>
-										<Input
-											placeholder="e.g., PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-"
-											value={playlistFormData.youtubeId}
-											onChange={(e) =>
-												setPlaylistFormData({
-													...playlistFormData,
-													youtubeId: e.target.value,
-												})
-											}
-										/>
-										<p className="text-xs text-muted-foreground mt-1">
-											Example ID: PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-
-										</p>
+								<div className="flex-1 overflow-y-auto">
+									<div className="space-y-6 p-6">
+									<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+										<h3 className="font-semibold text-lg flex items-center gap-2">
+											<Youtube className="w-5 h-5 text-red-500" />
+											Playlist Details
+										</h3>
+										<div className="space-y-2">
+											<Label>Playlist Title <span className="text-red-500">*</span></Label>
+											<Input
+												placeholder="e.g., Science Fair Highlights"
+												value={playlistFormData.title}
+												onChange={(e) =>
+													setPlaylistFormData({
+														...playlistFormData,
+														title: e.target.value,
+													})
+												}
+											/>
+										</div>
+										<div className="space-y-2 pt-2">
+											<Label>YouTube Playlist ID <span className="text-red-500">*</span></Label>
+											<Input
+												placeholder="e.g., PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-"
+												value={playlistFormData.youtubeId}
+												onChange={(e) =>
+													setPlaylistFormData({
+														...playlistFormData,
+														youtubeId: e.target.value,
+													})
+												}
+											/>
+											<p className="text-xs text-muted-foreground mt-1">
+												Example ID: PLLNvFiU5ntQd5nwiHP3Y8F5WKM4ywa11-
+											</p>
+										</div>
 									</div>
 								</div>
 
-								<SheetFooter className="mt-6">
+									</div>
+								</div>
+
+								<SheetFooter className="p-4 bg-background border-t shrink-0">
 									<Button onClick={handlePlaylistSubmit} className="w-full sm:w-auto">
 										{editingPlaylist ? "Save Changes" : "Create Playlist"}
 									</Button>

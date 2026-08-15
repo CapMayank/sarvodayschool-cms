@@ -15,6 +15,9 @@ import {
 	Trash2,
 	Building2,
 	GripVertical,
+	Info,
+	ImageIcon,
+	ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
@@ -526,8 +529,8 @@ export default function FacilitiesTab() {
 			<Sheet open={showModal} onOpenChange={(open) => {
 				if (!open) setShowModal(false);
 			}}>
-				<SheetContent className="w-full sm:max-w-2xl overflow-y-auto" side="right">
-					<SheetHeader className="mb-6">
+				<SheetContent className="w-full sm:max-w-2xl p-0 flex flex-col h-full" side="right">
+					<SheetHeader className="px-6 pt-6 pb-2 border-b">
 						<SheetTitle className="text-2xl">
 							{editingId ? "Edit Facility" : "Create New Facility"}
 						</SheetTitle>
@@ -536,293 +539,328 @@ export default function FacilitiesTab() {
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 px-4 pb-20">
-						<div>
-							<Label className="mb-2 block">
-								Facility Name <span className="text-red-500">*</span>
-							</Label>
-							<Input
-								placeholder="e.g., Science Laboratory"
-								value={formData.title}
-								onChange={(e) =>
-									setFormData({ ...formData, title: e.target.value })
-								}
-							/>
-						</div>
-						<div>
-							<Label className="mb-2 block">
-								URL Slug (Optional)
-							</Label>
-							<Input
-								placeholder="Auto-generated from title"
-								value={formData.slug}
-								onChange={(e) =>
-									setFormData({ ...formData, slug: e.target.value })
-								}
-							/>
-							<p className="text-xs text-muted-foreground mt-1">
-								Leave empty to auto-generate from title
-							</p>
-						</div>
-						<div>
-							<Label className="mb-2 block">
-								Description <span className="text-red-500">*</span>
-							</Label>
-							<Textarea
-								placeholder="Brief description of the facility"
-								value={formData.description}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										description: e.target.value,
-									})
-								}
-								rows={3}
-								className="resize-none"
-							/>
-						</div>
-						<div>
-							<Label className="mb-2 block">
-								Facility Image <span className="text-red-500">*</span>
-							</Label>
-							<DeferredImageUpload
-								onImageSelect={(file) => setMainImageFile(file)}
-								onImageRemove={() => {
-									setMainImageFile(null);
-									if (!editingId) {
-										setFormData({ ...formData, imageUrl: "" });
-									}
-								}}
-								previewUrl={formData.imageUrl}
-								label="Upload Main Image"
-							/>
-							<p className="text-xs text-muted-foreground mt-1">
-								Image uploads when you submit the form
-							</p>
-						</div>
-
-						<div className="bg-muted/50 rounded-lg p-4 border">
-							<label className="flex items-center gap-3 cursor-pointer">
-								<input
-									type="checkbox"
-									checked={formData.isActive}
+					<div className="flex-1 overflow-y-auto">
+						<div className="space-y-8 p-6">
+						{/* Basic Information Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Info className="w-5 h-5 text-blue-500" />
+								Basic Information
+							</h3>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Label className="mb-2 block">
+										Facility Name <span className="text-red-500">*</span>
+									</Label>
+									<Input
+										placeholder="e.g., Science Laboratory"
+										value={formData.title}
+										onChange={(e) =>
+											setFormData({ ...formData, title: e.target.value })
+										}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label className="mb-2 block">
+										URL Slug (Optional)
+									</Label>
+									<Input
+										placeholder="Auto-generated from title"
+										value={formData.slug}
+										onChange={(e) =>
+											setFormData({ ...formData, slug: e.target.value })
+										}
+									/>
+									<p className="text-xs text-muted-foreground mt-1">
+										Leave empty to auto-generate from title
+									</p>
+								</div>
+							</div>
+							<div className="space-y-2 pt-2">
+								<Label className="mb-2 block">
+									Description <span className="text-red-500">*</span>
+								</Label>
+								<Textarea
+									placeholder="Brief description of the facility"
+									value={formData.description}
 									onChange={(e) =>
 										setFormData({
 											...formData,
-											isActive: e.target.checked,
+											description: e.target.value,
 										})
 									}
-									className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+									rows={3}
+									className="resize-none"
 								/>
-								<div>
-									<span className="text-sm font-medium">
-										Active
-									</span>
-									<p className="text-xs text-muted-foreground mt-1">
-										Only active facilities will be displayed on the
-										website
-									</p>
-								</div>
-							</label>
+							</div>
+							<div className="bg-background rounded-lg p-4 border mt-2">
+								<label className="flex items-center gap-3 cursor-pointer">
+									<input
+										type="checkbox"
+										checked={formData.isActive}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												isActive: e.target.checked,
+											})
+										}
+										className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+									/>
+									<div>
+										<span className="text-sm font-medium">
+											Active
+										</span>
+										<p className="text-xs text-muted-foreground mt-1">
+											Only active facilities will be displayed on the website
+										</p>
+									</div>
+								</label>
+							</div>
 						</div>
 
-						{/* Highlights Section */}
-						<div className="space-y-4 border-t pt-4">
-							<div className="flex justify-between items-center">
-								<h4 className="font-semibold text-foreground">
-									Highlights
-								</h4>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={addHighlight}
-									className="text-blue-600"
-								>
-									+ Add Highlight
-								</Button>
-							</div>
-
-							{formData.highlights.map((highlight, index) => (
-								<div
-									key={index}
-									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
-								>
-									<div className="flex-1 space-y-2">
-										<Input
-											placeholder="Title (e.g., Capacity)"
-											value={highlight.title}
-											onChange={(e) =>
-												updateHighlight(index, "title", e.target.value)
-											}
-										/>
-										<Input
-											placeholder="Value (e.g., 1000+ People)"
-											value={highlight.value}
-											onChange={(e) =>
-												updateHighlight(index, "value", e.target.value)
-											}
-										/>
-									</div>
+						{/* Highlights & Features Section */}
+						<div className="space-y-6 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<ListChecks className="w-5 h-5 text-orange-500" />
+								Highlights & Features
+							</h3>
+							
+							{/* Highlights */}
+							<div className="space-y-4">
+								<div className="flex justify-between items-center border-b pb-2">
+									<h4 className="font-medium text-foreground text-sm">
+										Highlights
+									</h4>
 									<Button
 										type="button"
 										variant="ghost"
 										size="sm"
-										onClick={() => removeHighlight(index)}
-										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+										onClick={addHighlight}
+										className="text-blue-600 hover:bg-blue-50 h-8"
 									>
-										<X className="h-4 w-4" />
+										<Plus className="w-4 h-4 mr-1" /> Add Highlight
 									</Button>
 								</div>
-							))}
-						</div>
 
-						{/* Facility Features Section */}
-						<div className="space-y-4 border-t pt-4">
-							<div className="flex justify-between items-center">
-								<h4 className="font-semibold text-foreground">
-									Facility Features
-								</h4>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={addFacilityFeature}
-									className="text-blue-600"
-								>
-									+ Add Feature
-								</Button>
-							</div>
-
-							{formData.facilityFeatures.map((feature, index) => (
-								<div
-									key={index}
-									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
-								>
-									<div className="flex-1 space-y-2">
-										<Input
-											placeholder="Title (e.g., Safety Measures)"
-											value={feature.title}
-											onChange={(e) =>
-												updateFacilityFeature(
-													index,
-													"title",
-													e.target.value
-												)
-											}
-										/>
-										<Input
-											placeholder="Value (e.g., CCTV, Fire safety)"
-											value={feature.value}
-											onChange={(e) =>
-												updateFacilityFeature(
-													index,
-													"value",
-													e.target.value
-												)
-											}
-										/>
-									</div>
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={() => removeFacilityFeature(index)}
-										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+								{formData.highlights.map((highlight, index) => (
+									<div
+										key={index}
+										className="flex gap-2 items-start p-3 bg-background rounded-lg border shadow-sm"
 									>
-										<X className="h-4 w-4" />
-									</Button>
-								</div>
-							))}
-						</div>
-
-						{/* Media Gallery Section */}
-						<div className="space-y-4 border-t pt-4">
-							<div className="flex justify-between items-center">
-								<h4 className="font-semibold text-foreground">
-									Media Gallery
-								</h4>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={addMediaItem}
-									className="text-blue-600"
-								>
-									+ Add Media
-								</Button>
-							</div>
-
-							{formData.mediaGallery.map((media, index) => (
-								<div
-									key={index}
-									className="flex gap-2 items-start p-3 bg-muted/30 rounded-lg border"
-								>
-									<div className="flex-1 space-y-2">
-										<select
-											value={media.type}
-											onChange={(e) =>
-												updateMediaItem(
-													index,
-													"type",
-													e.target.value as "image" | "youtube"
-												)
-											}
-											className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-										>
-											<option value="image">Image</option>
-											<option value="youtube">YouTube</option>
-										</select>
-
-										{media.type === "image" ? (
-											<DeferredImageUpload
-												onImageSelect={(file) => {
-													const newFiles = new Map(mediaImageFiles);
-													newFiles.set(index, file);
-													setMediaImageFiles(newFiles);
-												}}
-												onImageRemove={() => {
-													const newFiles = new Map(mediaImageFiles);
-													newFiles.delete(index);
-													setMediaImageFiles(newFiles);
-													updateMediaItem(index, "src", "");
-												}}
-												previewUrl={media.src}
-												label="Upload Gallery Image"
-											/>
-										) : (
+										<div className="flex-1 space-y-2">
 											<Input
-												placeholder="YouTube Video ID (e.g., n6U7VgrejiY)"
-												value={media.src}
+												placeholder="Title (e.g., Capacity)"
+												value={highlight.title}
 												onChange={(e) =>
-													updateMediaItem(index, "src", e.target.value)
+													updateHighlight(index, "title", e.target.value)
 												}
+												className="h-8 text-sm"
 											/>
-										)}
-
-										<Input
-											placeholder="Caption"
-											value={media.caption}
-											onChange={(e) =>
-												updateMediaItem(index, "caption", e.target.value)
-											}
-										/>
+											<Input
+												placeholder="Value (e.g., 1000+ People)"
+												value={highlight.value}
+												onChange={(e) =>
+													updateHighlight(index, "value", e.target.value)
+												}
+												className="h-8 text-sm"
+											/>
+										</div>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onClick={() => removeHighlight(index)}
+											className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0 h-8 w-8 p-0"
+										>
+											<X className="h-4 w-4" />
+										</Button>
 									</div>
+								))}
+							</div>
+
+							{/* Facility Features */}
+							<div className="space-y-4 pt-2">
+								<div className="flex justify-between items-center border-b pb-2">
+									<h4 className="font-medium text-foreground text-sm">
+										Facility Features
+									</h4>
 									<Button
 										type="button"
 										variant="ghost"
 										size="sm"
-										onClick={() => removeMediaItem(index)}
-										className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+										onClick={addFacilityFeature}
+										className="text-blue-600 hover:bg-blue-50 h-8"
 									>
-										<X className="h-4 w-4" />
+										<Plus className="w-4 h-4 mr-1" /> Add Feature
 									</Button>
 								</div>
-							))}
+
+								{formData.facilityFeatures.map((feature, index) => (
+									<div
+										key={index}
+										className="flex gap-2 items-start p-3 bg-background rounded-lg border shadow-sm"
+									>
+										<div className="flex-1 space-y-2">
+											<Input
+												placeholder="Title (e.g., Safety Measures)"
+												value={feature.title}
+												onChange={(e) =>
+													updateFacilityFeature(
+														index,
+														"title",
+														e.target.value
+													)
+												}
+												className="h-8 text-sm"
+											/>
+											<Input
+												placeholder="Value (e.g., CCTV, Fire safety)"
+												value={feature.value}
+												onChange={(e) =>
+													updateFacilityFeature(
+														index,
+														"value",
+														e.target.value
+													)
+												}
+												className="h-8 text-sm"
+											/>
+										</div>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onClick={() => removeFacilityFeature(index)}
+											className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0 h-8 w-8 p-0"
+										>
+											<X className="h-4 w-4" />
+										</Button>
+									</div>
+								))}
+							</div>
+						</div>
+
+						{/* Images & Media Section */}
+						<div className="space-y-6 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<ImageIcon className="w-5 h-5 text-purple-500" />
+								Images & Media
+							</h3>
+							
+							<div className="space-y-2">
+								<Label className="mb-2 block">
+									Facility Main Image <span className="text-red-500">*</span>
+								</Label>
+								<div className="border border-dashed rounded-lg p-2 bg-background">
+									<DeferredImageUpload
+										onImageSelect={(file) => setMainImageFile(file)}
+										onImageRemove={() => {
+											setMainImageFile(null);
+											if (!editingId) {
+												setFormData({ ...formData, imageUrl: "" });
+											}
+										}}
+										previewUrl={formData.imageUrl}
+										label="Upload Main Image"
+									/>
+								</div>
+								<p className="text-xs text-muted-foreground mt-1">
+									Image uploads when you submit the form
+								</p>
+							</div>
+
+							{/* Media Gallery */}
+							<div className="space-y-4 pt-4 border-t">
+								<div className="flex justify-between items-center pb-2">
+									<h4 className="font-medium text-foreground text-sm">
+										Media Gallery
+									</h4>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={addMediaItem}
+										className="text-blue-600 hover:bg-blue-50 h-8"
+									>
+										<Plus className="w-4 h-4 mr-1" /> Add Media
+									</Button>
+								</div>
+
+								{formData.mediaGallery.map((media, index) => (
+									<div
+										key={index}
+										className="flex gap-2 items-start p-3 bg-background rounded-lg border shadow-sm"
+									>
+										<div className="flex-1 space-y-3">
+											<select
+												value={media.type}
+												onChange={(e) =>
+													updateMediaItem(
+														index,
+														"type",
+														e.target.value as "image" | "youtube"
+													)
+												}
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-muted/20 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+											>
+												<option value="image">Image</option>
+												<option value="youtube">YouTube</option>
+											</select>
+
+											{media.type === "image" ? (
+												<div className="border border-dashed rounded-lg p-2 bg-muted/10">
+													<DeferredImageUpload
+														onImageSelect={(file) => {
+															const newFiles = new Map(mediaImageFiles);
+															newFiles.set(index, file);
+															setMediaImageFiles(newFiles);
+														}}
+														onImageRemove={() => {
+															const newFiles = new Map(mediaImageFiles);
+															newFiles.delete(index);
+															setMediaImageFiles(newFiles);
+															updateMediaItem(index, "src", "");
+														}}
+														previewUrl={media.src}
+														label="Upload Gallery Image"
+													/>
+												</div>
+											) : (
+												<Input
+													placeholder="YouTube Video ID (e.g., n6U7VgrejiY)"
+													value={media.src}
+													onChange={(e) =>
+														updateMediaItem(index, "src", e.target.value)
+													}
+													className="h-9"
+												/>
+											)}
+
+											<Input
+												placeholder="Caption"
+												value={media.caption}
+												onChange={(e) =>
+													updateMediaItem(index, "caption", e.target.value)
+												}
+												className="h-9"
+											/>
+										</div>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											onClick={() => removeMediaItem(index)}
+											className="text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0 h-8 w-8 p-0"
+										>
+											<X className="h-4 w-4" />
+										</Button>
+									</div>
+								))}
+							</div>
 						</div>
 					</div>
 
-					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 						<Button variant="outline" onClick={() => setShowModal(false)}>
 							Cancel
 						</Button>

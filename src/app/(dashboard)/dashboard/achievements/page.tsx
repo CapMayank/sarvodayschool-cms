@@ -8,7 +8,7 @@ import { deleteCloudinaryImage } from "@/lib/cloudinary-helper";
 import CloudinaryUpload from "@/components/CloudinaryUpload";
 import ReorderableList from "@/components/ReorderableList";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Edit, Trash2, Award, GripVertical } from "lucide-react";
+import { Plus, Loader2, Edit, Trash2, Award, GripVertical, AlignLeft, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -338,68 +338,88 @@ export default function AchievementsTab() {
 			<Sheet open={showModal} onOpenChange={(open) => {
 				if (!open) handleCancel();
 			}}>
-				<SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
-					<SheetHeader className="mb-6">
+				<SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full" side="right">
+					<SheetHeader className="px-6 pt-6 pb-2 border-b">
 						<SheetTitle className="text-2xl">
 							{editingId ? "Edit Achievement" : "Create New Achievement"}
 						</SheetTitle>
 						<SheetDescription>
-							Showcase your school&apos;s accomplishments and milestones
+							Add achievements to showcase your school's success
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className="space-y-6 px-4 pb-20">
-						<div>
-							<Label className="mb-2 block">
-								Title <span className="text-red-500">*</span>
-							</Label>
-							<Input
-								placeholder="Enter achievement title"
-								value={formData.title}
-								onChange={(e) =>
-									setFormData({ ...formData, title: e.target.value })
-								}
-							/>
+					<div className="flex-1 overflow-y-auto">
+						<div className="space-y-8 p-6">
+						{/* Basic Information Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<Award className="w-5 h-5 text-orange-500" />
+								Achievement Details
+							</h3>
+							
+							<div className="space-y-2">
+								<Label className="mb-2 block">
+									Title <span className="text-red-500">*</span>
+								</Label>
+								<Input
+									placeholder="Enter achievement title"
+									value={formData.title}
+									onChange={(e) =>
+										setFormData({ ...formData, title: e.target.value })
+									}
+								/>
+							</div>
+
+							<div className="space-y-2 pt-2">
+								<Label className="mb-2 flex items-center gap-2 block">
+									<AlignLeft className="w-4 h-4 text-muted-foreground" />
+									Description <span className="text-red-500">*</span>
+								</Label>
+								<Textarea
+									placeholder="Enter achievement description"
+									value={formData.description}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											description: e.target.value,
+										})
+									}
+									rows={4}
+									className="resize-none"
+								/>
+							</div>
 						</div>
 
-						<div>
-							<Label className="mb-2 block">
-								Description <span className="text-red-500">*</span>
-							</Label>
-							<Textarea
-								placeholder="Enter achievement description"
-								value={formData.description}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										description: e.target.value,
-									})
-								}
-								rows={4}
-								className="resize-none"
-							/>
-						</div>
-
-						<div>
-							<Label className="mb-2 block">
-								Image <span className="text-red-500">*</span>
-							</Label>
-							<CloudinaryUpload
-								currentImage={formData.imageUrl}
-								folder="sarvodaya/achievements"
-								onUploadSuccess={(url) =>
-									setFormData({ ...formData, imageUrl: url })
-								}
-							/>
-							{!formData.imageUrl && (
-								<p className="text-red-500 text-xs mt-2">
-									Image is required
-								</p>
-							)}
+						{/* Media Section */}
+						<div className="space-y-4 bg-muted/10 p-5 rounded-xl border">
+							<h3 className="font-semibold text-lg flex items-center gap-2">
+								<ImageIcon className="w-5 h-5 text-purple-500" />
+								Media
+							</h3>
+							
+							<div className="space-y-2">
+								<Label className="mb-2 block">
+									Image <span className="text-red-500">*</span>
+								</Label>
+								<div className="border border-dashed rounded-lg p-2 bg-background">
+									<CloudinaryUpload
+										currentImage={formData.imageUrl}
+										folder="sarvodaya/achievements"
+										onUploadSuccess={(url) =>
+											setFormData({ ...formData, imageUrl: url })
+										}
+									/>
+								</div>
+								{!formData.imageUrl && (
+									<p className="text-red-500 text-xs mt-2">
+										Image is required for the achievement
+									</p>
+								)}
+							</div>
 						</div>
 					</div>
 
-					<SheetFooter className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex sm:justify-end gap-3">
+					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 						<Button variant="outline" onClick={handleCancel}>
 							Cancel
 						</Button>
