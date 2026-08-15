@@ -43,6 +43,7 @@ export default function SettingsPage() {
   ]);
 
   // Admission Fee Structure
+  const [admissionSession, setAdmissionSession] = useState("2025-26");
   const [feeStructure, setFeeStructure] = useState([
     { class: "Nursery", fee: 8690 },
   ]);
@@ -70,6 +71,9 @@ export default function SettingsPage() {
     try {
       const banner = await fetchSettings("landing_banner");
       if (banner) setBannerStats(banner);
+
+      const session = await fetchSettings("admission_session");
+      if (session) setAdmissionSession(session.value || session);
 
       const fees = await fetchSettings("admission_fee_structure");
       if (fees) setFeeStructure(fees);
@@ -134,11 +138,11 @@ export default function SettingsPage() {
         <p className="text-gray-600 mt-2">Manage dynamic content across the website pages.</p>
       </div>
 
-      <Tabs defaultValue="landing">
-        <TabsList className="mb-6 grid grid-cols-2 lg:grid-cols-3 bg-gray-100 rounded-lg p-1 h-auto">
-          <TabsTrigger value="landing" className="py-2.5">Landing Page</TabsTrigger>
-          <TabsTrigger value="admission" className="py-2.5">Admission</TabsTrigger>
-          <TabsTrigger value="careers" className="py-2.5">Careers</TabsTrigger>
+      <Tabs defaultValue="landing" className="w-full">
+        <TabsList className="mb-6 flex flex-col md:flex-row bg-gray-100 rounded-lg p-1 h-auto w-full md:w-fit overflow-hidden">
+          <TabsTrigger value="landing" className="py-2.5 px-6 w-full md:w-auto">Landing Page</TabsTrigger>
+          <TabsTrigger value="admission" className="py-2.5 px-6 w-full md:w-auto">Admission</TabsTrigger>
+          <TabsTrigger value="careers" className="py-2.5 px-6 w-full md:w-auto">Careers</TabsTrigger>
         </TabsList>
 
         {/* Landing Page Settings */}
@@ -146,7 +150,7 @@ export default function SettingsPage() {
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <h2 className="text-xl font-bold mb-4">Banner Statistics</h2>
             {bannerStats.map((stat, idx) => (
-              <div key={idx} className="flex gap-4 mb-4 items-end bg-gray-50 p-4 rounded-lg">
+              <div key={idx} className="flex flex-col md:flex-row gap-4 mb-4 md:items-end bg-gray-50 p-4 rounded-lg border">
                 <div className="flex-1">
                   <Label>Title</Label>
                   <Input 
@@ -169,19 +173,20 @@ export default function SettingsPage() {
                     }}
                   />
                 </div>
-                <Button variant="destructive" size="icon" onClick={() => {
+                  <Button variant="destructive" className="w-full md:w-auto" onClick={() => {
                   const newStats = bannerStats.filter((_, i) => i !== idx);
                   setBannerStats(newStats);
                 }}>
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4 mr-2 md:mr-0" />
+                  <span className="md:hidden">Remove</span>
                 </Button>
               </div>
             ))}
-            <div className="flex gap-4 mt-4">
-              <Button variant="outline" onClick={() => setBannerStats([...bannerStats, { title: "NEW STAT", data: "0", iconId: "book-open" }])}>
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setBannerStats([...bannerStats, { title: "NEW STAT", data: "0", iconId: "book-open" }])}>
                 <Plus className="w-4 h-4 mr-2" /> Add Stat
               </Button>
-              <Button disabled={saving} onClick={() => handleSave("landing_banner", bannerStats)}>
+              <Button disabled={saving} className="w-full sm:w-auto" onClick={() => handleSave("landing_banner", bannerStats)}>
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Banner
               </Button>
             </div>
@@ -192,8 +197,19 @@ export default function SettingsPage() {
         <TabsContent value="admission" className="space-y-6">
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <h2 className="text-xl font-bold mb-4">Fee Structure</h2>
+            
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+              <Label>Academic Session</Label>
+              <Input 
+                value={admissionSession} 
+                onChange={(e) => setAdmissionSession(e.target.value)}
+                placeholder="e.g. 2025-26"
+                className="mt-1 max-w-sm"
+              />
+            </div>
+
             {feeStructure.map((fee, idx) => (
-              <div key={idx} className="flex gap-4 mb-3 items-end">
+              <div key={idx} className="flex flex-col sm:flex-row gap-4 mb-4 sm:items-end p-4 bg-gray-50 rounded-lg border">
                 <div className="flex-1">
                   <Label>Class</Label>
                   <Input value={fee.class} onChange={(e) => {
@@ -210,16 +226,20 @@ export default function SettingsPage() {
                     setFeeStructure(newFees);
                   }} />
                 </div>
-                <Button variant="destructive" size="icon" onClick={() => setFeeStructure(feeStructure.filter((_, i) => i !== idx))}>
-                  <Trash2 className="w-4 h-4" />
+                <Button variant="destructive" className="w-full sm:w-auto" onClick={() => setFeeStructure(feeStructure.filter((_, i) => i !== idx))}>
+                  <Trash2 className="w-4 h-4 mr-2 sm:mr-0" />
+                  <span className="sm:hidden">Remove</span>
                 </Button>
               </div>
             ))}
-            <div className="flex gap-4 mt-4">
-              <Button variant="outline" onClick={() => setFeeStructure([...feeStructure, { class: "New Class", fee: 0 }])}>
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setFeeStructure([...feeStructure, { class: "New Class", fee: 0 }])}>
                 <Plus className="w-4 h-4 mr-2" /> Add Class Fee
               </Button>
-              <Button disabled={saving} onClick={() => handleSave("admission_fee_structure", feeStructure)}>
+              <Button disabled={saving} className="w-full sm:w-auto" onClick={async () => {
+                await handleSave("admission_session", { value: admissionSession });
+                await handleSave("admission_fee_structure", feeStructure);
+              }}>
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Fee Structure
               </Button>
             </div>
@@ -228,8 +248,8 @@ export default function SettingsPage() {
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <h2 className="text-xl font-bold mb-4">Required Documents</h2>
             {requiredDocs.map((docCategory, idx) => (
-              <div key={idx} className="bg-gray-50 p-4 rounded-lg mb-4">
-                <div className="flex gap-4 items-end mb-4">
+              <div key={idx} className="bg-gray-50 p-4 rounded-lg mb-4 border">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-end mb-4">
                   <div className="flex-1">
                     <Label>Category Title</Label>
                     <Input value={docCategory.title} onChange={(e) => {
@@ -238,8 +258,9 @@ export default function SettingsPage() {
                       setRequiredDocs(newDocs);
                     }} />
                   </div>
-                  <Button variant="destructive" onClick={() => setRequiredDocs(requiredDocs.filter((_, i) => i !== idx))}>
-                    Remove Category
+                  <Button variant="destructive" className="w-full sm:w-auto" onClick={() => setRequiredDocs(requiredDocs.filter((_, i) => i !== idx))}>
+                    <Trash2 className="w-4 h-4 mr-2 sm:mr-0" />
+                    <span>Remove Category</span>
                   </Button>
                 </div>
                 <Label>Items (one per line)</Label>
@@ -254,11 +275,11 @@ export default function SettingsPage() {
                 />
               </div>
             ))}
-            <div className="flex gap-4 mt-4">
-              <Button variant="outline" onClick={() => setRequiredDocs([...requiredDocs, { title: "New Category", items: ["Document 1"] }])}>
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setRequiredDocs([...requiredDocs, { title: "New Category", items: ["Document 1"] }])}>
                 <Plus className="w-4 h-4 mr-2" /> Add Category
               </Button>
-              <Button disabled={saving} onClick={() => handleSave("admission_documents", requiredDocs)}>
+              <Button disabled={saving} className="w-full sm:w-auto" onClick={() => handleSave("admission_documents", requiredDocs)}>
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Documents
               </Button>
             </div>
@@ -312,7 +333,7 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              <Button className="mt-4" disabled={saving} onClick={() => handleSave("careers_requirements", careersReq)}>
+              <Button className="mt-4 w-full sm:w-auto" disabled={saving} onClick={() => handleSave("careers_requirements", careersReq)}>
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Careers Info
               </Button>
             </div>

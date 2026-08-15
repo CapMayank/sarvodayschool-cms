@@ -164,19 +164,25 @@ export default function Admission() {
 
 	const [feeStructure, setFeeStructure] = useState<{class: string; fee: number}[]>(fallbackFeeStructure);
 	const [requiredDocuments, setRequiredDocuments] = useState<{title: string; items: string[]}[]>(fallbackRequiredDocuments);
+	const [admissionSession, setAdmissionSession] = useState<string>("2025-26");
 
 	React.useEffect(() => {
 		async function fetchData() {
 			try {
-				const [feeRes, docsRes] = await Promise.all([
+				const [feeRes, docsRes, sessionRes] = await Promise.all([
 					fetch("/api/settings/admission_fee_structure"),
-					fetch("/api/settings/admission_documents")
+					fetch("/api/settings/admission_documents"),
+					fetch("/api/settings/admission_session")
 				]);
 				if (feeRes.ok) {
 					setFeeStructure(await feeRes.json());
 				}
 				if (docsRes.ok) {
 					setRequiredDocuments(await docsRes.json());
+				}
+				if (sessionRes.ok) {
+					const s = await sessionRes.json();
+					if (s?.value) setAdmissionSession(s.value);
 				}
 			} catch (error) {
 				console.error("Failed to fetch admission data", error);
@@ -576,7 +582,7 @@ export default function Admission() {
 								<h2 className="text-2xl font-bold text-white flex items-center">
 									<Upload className="mr-2" /> Fee Structure
 								</h2>
-								<p className="text-white/80 mt-2">Academic Session 2025-26</p>
+								<p className="text-white/80 mt-2">Academic Session {admissionSession}</p>
 							</div>
 
 							<div className="p-6 overflow-auto ">
