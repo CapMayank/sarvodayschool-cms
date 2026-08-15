@@ -857,7 +857,8 @@ export default function FacilitiesTab() {
 									</div>
 								))}
 							</div>
-						</div>
+					</div>
+					</div>
 					</div>
 
 					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">

@@ -391,8 +391,6 @@ export default function GalleryTab() {
 										</div>
 									</div>
 								</div>
-
-									</div>
 								</div>
 
 								<SheetFooter className="p-4 bg-background border-t shrink-0">
@@ -608,8 +606,6 @@ export default function GalleryTab() {
 										</div>
 									</div>
 								</div>
-
-									</div>
 								</div>
 
 								<SheetFooter className="p-4 bg-background border-t shrink-0">

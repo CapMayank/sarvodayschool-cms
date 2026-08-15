@@ -418,6 +418,7 @@ export default function AchievementsTab() {
 							</div>
 						</div>
 					</div>
+					</div>
 
 					<SheetFooter className="p-4 bg-background border-t flex sm:justify-end gap-3 shrink-0">
 						<Button variant="outline" onClick={handleCancel}>
